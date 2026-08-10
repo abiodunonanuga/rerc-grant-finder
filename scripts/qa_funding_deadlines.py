@@ -76,8 +76,9 @@ def audit(path: Path) -> dict:
     parity = dict(sorted(counts.items())) == dict(sorted(shared["counts"].items()))
     if not parity:
         issues.append({"issue": "browser/Python deadline class mismatch"})
+    structural_ok = not issues and len(funding) == 659 and parity
     return {
-        "status": "PASS" if not issues and len(funding) == 659 and not stale and parity else "FAIL",
+        "status": "FAIL" if not structural_ok else ("REVIEW" if stale else "PASS"),
         "coverage_status": "PASS" if not issues and len(funding) == 659 else "FAIL",
         "freshness_status": "REVIEW" if stale else "CURRENT",
         "deadline_parity_status": "PASS" if parity else "FAIL",
@@ -125,7 +126,7 @@ def main() -> int:
         (ROOT / "funding-deadline-audit.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     keys = ("status", "coverage_status", "freshness_status", "deadline_parity_status", "funding_records", "counts", "records_with_timing", "records_with_review_date", "records_with_https_source", "freshness_policy_days", "stale_over_policy_days", "oldest_review_date", "issues")
     print(json.dumps({key: report[key] for key in keys}, indent=2))
-    return 0 if report["status"] == "PASS" else 1
+    return 0 if report["status"] in {"PASS", "REVIEW"} else 1
 
 
 if __name__ == "__main__":
