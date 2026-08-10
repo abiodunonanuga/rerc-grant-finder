@@ -1,0 +1,48 @@
+{
+  "status": "PASS",
+  "updated": "2026-08-10",
+  "records": 1302,
+  "funding": 659,
+  "resources": 167,
+  "community_examples": 476,
+  "catalog_source_commit": "b24d2ab5d5817c591c635fd8e39c928da8331fb4",
+  "release_binding_note": "This is the source commit used to generate the files. The QA report records the generated file hashes.",
+  "site_sha256": {
+    "index.html": "10f8d15c1f943a84ecbb727a031035939f9d3c7ff18757a1be95be5758dd7243",
+    "styles.css": "025d224eb62f9e42e66f054084254280acfee2a4084a31a7502ac5b71f207f74",
+    "rercie.css": "8cc33fa867b0afb38c5523efb3d8f1d1c7dd76dce336b6b403549b39fae02a46",
+    "app.js": "789c1d13a12a84021012b92f9f3a260ec9d7b25bc47ea6b17c2e68207a5cd720",
+    "planner.js": "316efb37c7fefe5af36cb550e45b1304c64aacbd03265cf9f0d36a9069fb75ad",
+    "ui-i18n.js": "571facbfbb80d32b34e3f64b611d5cdcbfb7b1cb480cd923b5b917f3bcb6ec3e",
+    "deadline-utils.js": "9630163876672f5d0dd801ba18ab96b1c91b076a657e6b42f0130f7db959d402",
+    "site-config.js": "bdb1b689c79ced93d337a534d762ffe9239e7ed4ad6d802edb73e2548c7cb969",
+    "data.js": "84a5c3b6202d6dfc997a0ebb6080dd88a8d68e61f088cc170b0dd0c741f7f561",
+    "case_studies.js": "25d0c15098ce4ccadca2b5be6df27f956e6c6d33be5c51732d767fc47507c623",
+    "maintenance/multistate_coverage.json": "f258cb3101bcfc67901d07bc21bd00760570f71cb9fc0fefc495f2eda2f7c7f2",
+    "favicon.svg": "08bd8268fdeb2a2e83d8a55d89c92afcedc01024c585fc6401c8897f6878cd04",
+    "vendor/jszip.min.js": "acc7e41455a80765b5fd9c7ee1b8078a6d160bbbca455aeae854de65c947d59e",
+    "vendor/lucide.min.js": "3411692820cb8d47543f69496aa25fd603a358f4498046f41c508a5a3342210e",
+    "assets/hero-outdoor.jpg": "c401e10950d2fbc0698ef754003010cc6045b5ecd2ed7ce230fce72715c3983c",
+    "assets/rerc-e-eagle.jpg": "a549963e0172f9a8f27f9f78288cb974ef7a567ac0c9818fbb7f35b6d5a2e57a",
+    "README.md": "21addc4e4ded81a346aa6e686d1ee251b7e8f1c0809404bbe004514b33c0d43e"
+  },
+  "source_sha256": {
+    "data.js": "84a5c3b6202d6dfc997a0ebb6080dd88a8d68e61f088cc170b0dd0c741f7f561",
+    "case_studies.js": "25d0c15098ce4ccadca2b5be6df27f956e6c6d33be5c51732d767fc47507c623"
+  },
+  "docx": {
+    "file": "RERC_Community_Explorer_Appendix_2026-08-10.docx",
+    "bytes": 386306,
+    "sha256": "8e82c02f4de3e4e32a28ba29d31a8d861710aa7b671fa1506406cd0d895a0884"
+  },
+  "xlsx": {
+    "file": "RERC_Community_Explorer_Master_2026-08-10.xlsx",
+    "bytes": 378643,
+    "sha256": "8f9746ef2261d3abe2d73e27dc9e13231636f1bf988392c02a515c9daaf5a56e"
+  },
+  "csv": {
+    "file": "RERC_Community_Explorer_Master_2026-08-10.csv",
+    "bytes": 847745,
+    "sha256": "7c4d3271c4f5f0a5c241471c5b369234f3e294dd9f6bb493d97995cb1fd9d838"
+  }
+}
