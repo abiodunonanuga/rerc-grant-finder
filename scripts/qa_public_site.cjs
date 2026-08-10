@@ -57,11 +57,19 @@ async function main() {
   try {
     const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, acceptDownloads: true });
     const page = await context.newPage();
+    const isBenignGoogleFormsConsoleError = (message) => (
+      /filesystem:https:\/\/docs\.google\.com\/persistent\/docs\/fonts\/.*\.woff2/i.test(message)
+      && /net::ERR_FILE_NOT_FOUND/i.test(message)
+    ) || (
+      /Framing 'https:\/\/docs\.google\.com\/' violates the following report-only Content Security Policy directive/i.test(message)
+      && /frame-ancestors 'self'/i.test(message)
+    );
     page.on("pageerror", (error) => errors.push(`pageerror:${error.message}`));
     page.on("console", (message) => {
       if (message.type() === "error") {
         const where = message.location();
-        errors.push(`console:${where.url}:${where.lineNumber}:${where.columnNumber}:${message.text()}`);
+        const detail = `console:${where.url}:${where.lineNumber}:${where.columnNumber}:${message.text()}`;
+        if (!isBenignGoogleFormsConsoleError(detail)) errors.push(detail);
       }
     });
     await page.goto(baseUrl, { waitUntil: "networkidle", timeout: 60000 });
@@ -238,13 +246,31 @@ async function main() {
 
     checks.calendarRemoved = await page.evaluate(() => !document.getElementById("showFundingCalendar")
       && !document.getElementById("fundingCalendar") && !document.getElementById("exportCalendar"));
-    checks.intakeLinks = await page.evaluate(() => {
-      const links = [...document.querySelectorAll("#contribute a")];
-      return links.some((link) => link.href.includes("feedback.yml") && link.textContent.trim() === "Report an issue")
-        && links.some((link) => link.href.includes("catalog-submission.yml")
-          && link.textContent.trim() === "Submit a grant, resource, or case study");
-    });
-    check("public_intake_and_deadline_boundary", checks.calendarRemoved && checks.intakeLinks);
+    checks.intakeForms = await page.evaluate(() => ({
+      githubLinks: [...document.querySelectorAll("#contribute a")].some((link) => link.href.includes("github.com")),
+      issueButton: Boolean(document.getElementById("openIssueReport")),
+      submissionButton: Boolean(document.getElementById("openCatalogSubmission"))
+    }));
+    await page.locator("#openIssueReport").click();
+    checks.issueForm = await page.evaluate(() => ({
+      open: document.getElementById("issueReportDialog").open,
+      frame: document.getElementById("issueReportFrame").src,
+      external: document.getElementById("issueReportExternal").href
+    }));
+    await page.locator("#issueReportDialog [data-close-contribution]").first().click();
+    await page.locator("#openCatalogSubmission").click();
+    checks.submissionForm = await page.evaluate(() => ({
+      open: document.getElementById("catalogSubmissionDialog").open,
+      frame: document.getElementById("catalogSubmissionFrame").src,
+      external: document.getElementById("catalogSubmissionExternal").href
+    }));
+    await page.locator("#catalogSubmissionDialog [data-close-contribution]").first().click();
+    check("public_intake_and_deadline_boundary", checks.calendarRemoved
+      && !checks.intakeForms.githubLinks && checks.intakeForms.issueButton && checks.intakeForms.submissionButton
+      && checks.issueForm.open && checks.issueForm.frame.includes("1FAIpQLScBYulkwgoEVhLKftiGBm81LZxPdhojZVQtUT8ZQjWj4Sit6g")
+      && checks.issueForm.frame.includes("embedded=true") && checks.issueForm.external.includes("usp=header")
+      && checks.submissionForm.open && checks.submissionForm.frame.includes("1FAIpQLSdL4GfgKT_ub6I8zd0d7vXXszwZG498b81XR12L-ZCYiUvqfQ")
+      && checks.submissionForm.frame.includes("embedded=true") && checks.submissionForm.external.includes("usp=header"));
 
     const save = page.locator('[data-action="planner-save"]').first();
     await save.click(); await page.waitForTimeout(300);

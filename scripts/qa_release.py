@@ -20,7 +20,7 @@ EXPECTED_CSP = (
     "default-src 'self'; script-src 'self'; style-src 'self'; "
     "img-src 'self' data:; "
     "connect-src 'self'; "
-    "frame-src 'none'; "
+    "frame-src https://docs.google.com; "
     "font-src 'self'; object-src 'none'; base-uri 'self'; "
     "form-action 'self'; upgrade-insecure-requests"
 )
@@ -220,7 +220,10 @@ def main() -> int:
     assert "source-backed examples from Protos" not in index and "community profile" not in index.lower()
     assert "why it fits" not in index.lower()
     assert all(value not in index for value in ("fundingViewSwitch", "showFundingCalendar", "calendarGrid", "calendarAgenda", "exportCalendar"))
-    assert all(value in index for value in ("fundingTypeOptions", "caseStudyPhaseOptions", "Reset roadmap", "contribute"))
+    assert all(value in index for value in ("fundingTypeOptions", "caseStudyPhaseOptions", "Reset roadmap", "contribute", "openIssueReport", "openCatalogSubmission", "issueReportDialog", "catalogSubmissionDialog"))
+    assert "github.com/henkelpress/rerc-grant-finder/issues/new" not in index
+    contributions = (ROOT / "contributions.js").read_text(encoding="utf-8")
+    assert all(value in contributions for value in ("issueReportUrl", "catalogSubmissionUrl", "embedded", "docs.google.com"))
     assert 'src="deadline-utils.js?v=20260805-2"' in index
     deadline_utils = (ROOT / "deadline-utils.js").read_text(encoding="utf-8")
     assert all(value in deadline_utils for value in ("parseDeadline", "fundingTiming", "RERCDeadlineUtils"))

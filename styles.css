@@ -277,8 +277,8 @@ fieldset legend { margin-bottom: 9px; }
 .contribute-band { display: grid; grid-template-columns: minmax(260px, 1fr) auto; align-items: center; gap: 34px; padding: 38px max(24px, calc((100vw - 1240px) / 2)); background: #f4f8f5; border-top: 1px solid var(--line); }
 .contribute-band p:not(.eyebrow) { max-width: 760px; margin-top: 7px; color: var(--muted); }
 .contribute-actions { display: grid; gap: 8px; min-width: 220px; }
-.contribute-actions a { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 8px; padding: 9px 12px; color: var(--white); background: var(--rerc-green); border: 1px solid var(--rerc-green); border-radius: 4px; font-weight: 800; text-decoration: none; }
-.contribute-actions a + a { color: var(--rerc-green); background: var(--white); }
+.contribute-actions a, .contribute-actions button { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 8px; padding: 9px 12px; color: var(--white); background: var(--rerc-green); border: 1px solid var(--rerc-green); border-radius: 4px; cursor: pointer; font: inherit; font-weight: 800; text-decoration: none; }
+.contribute-actions a + a, .contribute-actions button + button { color: var(--rerc-green); background: var(--white); }
 .writer-band { grid-template-columns: minmax(220px, 280px) minmax(300px, 1fr) minmax(280px, 390px); color: var(--white); background: var(--forest); }
 .writer-band .eyebrow { color: #bfe7d0; }
 .rercie-mascot { display: block; width: min(280px, 100%); height: auto; aspect-ratio: 16 / 9; align-self: center; justify-self: center; object-fit: contain; object-position: center; background: #f4f8f5; border: 4px solid var(--gold); border-radius: 8px; }
@@ -299,6 +299,11 @@ fieldset legend { margin-bottom: 9px; }
 .dialog-shell { display: grid; max-height: calc(100vh - 34px); padding: 22px; overflow-y: auto; gap: 15px; }
 .dialog-shell > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
 .dialog-shell > footer { display: flex; justify-content: flex-end; padding-top: 12px; border-top: 1px solid var(--line); }
+.contribution-dialog { width: min(960px, calc(100vw - 32px)); }
+.contribution-dialog .dialog-shell { grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; }
+.contribution-dialog .dialog-shell > footer { flex-wrap: wrap; gap: 8px; }
+.contribution-frame { min-height: 430px; height: min(720px, calc(100vh - 230px)); overflow: hidden; border: 1px solid var(--line); border-radius: 4px; background: var(--mist); }
+.contribution-frame iframe { display: block; width: 100%; height: 100%; border: 0; background: var(--white); }
 .comparison-table { min-height: 180px; overflow: auto; }
 .comparison-table table { width: 100%; border-collapse: collapse; }
 .comparison-table th, .comparison-table td { min-width: 180px; padding: 10px; border: 1px solid var(--line); text-align: left; vertical-align: top; }
@@ -416,6 +421,8 @@ fieldset legend { margin-bottom: 9px; }
   .mobile-icon b { position: absolute; top: -8px; right: -13px; display: grid; min-width: 19px; height: 19px; place-items: center; padding: 0 4px; color: var(--white); background: var(--rerc-green); border-radius: 8px; font-size: 0.64rem; }
   .app-dialog, .compact-dialog { width: calc(100vw - 16px); max-height: calc(100vh - 16px); }
   .dialog-shell { max-height: calc(100vh - 18px); padding: 16px; }
+  .contribution-dialog .dialog-shell { padding: 12px; }
+  .contribution-frame { min-height: 56dvh; height: calc(100dvh - 215px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

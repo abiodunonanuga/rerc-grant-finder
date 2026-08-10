@@ -7,6 +7,10 @@ window.RERC_SITE_CONFIG = {
     regionalCoverageField: "covered_states",
     failClosedWithoutRegionalCoverage: true
   },
+  contributions: {
+    issueReportUrl: "https://docs.google.com/forms/d/e/1FAIpQLScBYulkwgoEVhLKftiGBm81LZxPdhojZVQtUT8ZQjWj4Sit6g/viewform?usp=header",
+    catalogSubmissionUrl: "https://docs.google.com/forms/d/e/1FAIpQLSdL4GfgKT_ub6I8zd0d7vXXszwZG498b81XR12L-ZCYiUvqfQ/viewform?usp=header"
+  },
   filters: {
     applicants: [
       ["local government|local governments|municipal|municipality|municipalities|county|counties|city|cities|town|towns|village|villages|political subdivision|political subdivisions", "Local government"],

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Build a practical community plan with funding, planning resources, and community examples.">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src 'none'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src https://docs.google.com; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
   <title>RERC Community Explorer</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="rercie.css?v=20260717-1">
@@ -181,8 +181,8 @@
   <section id="contribute" class="contribute-band" aria-labelledby="contributeTitle">
     <div><p class="eyebrow">Help improve the explorer</p><h2 id="contributeTitle">Report a problem or submit a new item.</h2><p>Report a website issue, incorrect information, or a broken link. You can also submit a grant, resource, or case study for review before it is added.</p></div>
     <div class="contribute-actions">
-      <a href="https://github.com/henkelpress/rerc-grant-finder/issues/new?template=feedback.yml" target="_blank" rel="noopener"><i data-lucide="message-square-warning" aria-hidden="true"></i>Report an issue</a>
-      <a href="https://github.com/henkelpress/rerc-grant-finder/issues/new?template=catalog-submission.yml" target="_blank" rel="noopener"><i data-lucide="plus-circle" aria-hidden="true"></i>Submit a grant, resource, or case study</a>
+      <button id="openIssueReport" type="button"><i data-lucide="message-square-warning" aria-hidden="true"></i>Report an issue</button>
+      <button id="openCatalogSubmission" type="button"><i data-lucide="plus-circle" aria-hidden="true"></i>Submit a grant, resource, or case study</button>
     </div>
   </section>
 
@@ -241,6 +241,21 @@
     </form>
   </dialog>
 
+  <dialog id="issueReportDialog" class="app-dialog contribution-dialog" aria-labelledby="issueReportTitle">
+    <div class="dialog-shell">
+      <header><div><p class="eyebrow">Help improve the explorer</p><h2 id="issueReportTitle">Report an issue</h2><p>Tell us about a broken link, incorrect information, or a website problem.</p></div><button class="icon-button" type="button" data-close-contribution aria-label="Close issue report"><i data-lucide="x" aria-hidden="true"></i></button></header>
+      <div class="contribution-frame"><iframe id="issueReportFrame" title="RERC Explorer issue report form" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+      <footer><a id="issueReportExternal" class="secondary-button" target="_blank" rel="noopener"><i data-lucide="external-link" aria-hidden="true"></i>Open form in a new tab</a><button class="secondary-button" type="button" data-close-contribution>Close</button></footer>
+    </div>
+  </dialog>
+  <dialog id="catalogSubmissionDialog" class="app-dialog contribution-dialog" aria-labelledby="catalogSubmissionTitle">
+    <div class="dialog-shell">
+      <header><div><p class="eyebrow">Help improve the explorer</p><h2 id="catalogSubmissionTitle">Submit a new item</h2><p>Send a funding opportunity, resource, or case study for review.</p></div><button class="icon-button" type="button" data-close-contribution aria-label="Close new item submission"><i data-lucide="x" aria-hidden="true"></i></button></header>
+      <div class="contribution-frame"><iframe id="catalogSubmissionFrame" title="RERC Explorer new item submission form" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+      <footer><a id="catalogSubmissionExternal" class="secondary-button" target="_blank" rel="noopener"><i data-lucide="external-link" aria-hidden="true"></i>Open form in a new tab</a><button class="secondary-button" type="button" data-close-contribution>Close</button></footer>
+    </div>
+  </dialog>
+
   <script src="vendor/jszip.min.js"></script>
   <script src="data.js"></script>
   <script src="case_studies.js"></script>
@@ -250,5 +265,6 @@
   <script src="deadline-utils.js?v=20260805-2"></script>
   <script src="app.js?v=20260805-2"></script>
   <script src="planner.js?v=20260805-1"></script>
+  <script src="contributions.js?v=20260809-1"></script>
 </body>
 </html>
