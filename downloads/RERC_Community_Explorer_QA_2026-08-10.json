@@ -5,7 +5,7 @@
   "funding": 714,
   "resources": 175,
   "community_examples": 477,
-  "catalog_source_commit": "e852122be54d734504796f83ea21e9e7790ab1b0",
+  "catalog_source_commit": "92d884d5e3dedb57aa1798ebe281f7b3910799f8",
   "release_binding_note": "This is the source commit used to generate the files. The QA report records the generated file hashes.",
   "site_sha256": {
     "index.html": "10f8d15c1f943a84ecbb727a031035939f9d3c7ff18757a1be95be5758dd7243",
@@ -24,7 +24,7 @@
     "vendor/lucide.min.js": "3411692820cb8d47543f69496aa25fd603a358f4498046f41c508a5a3342210e",
     "assets/hero-outdoor.jpg": "c401e10950d2fbc0698ef754003010cc6045b5ecd2ed7ce230fce72715c3983c",
     "assets/rerc-e-eagle.jpg": "a549963e0172f9a8f27f9f78288cb974ef7a567ac0c9818fbb7f35b6d5a2e57a",
-    "README.md": "5772a4a83c356b9a2ea7fdb92e3ea5b4e434cb7a78bcac4de3f66647cf26d133"
+    "README.md": "5e707d35397c625ada3b102f76e1a1ef0f5440632ae494843c3d1219b6214a39"
   },
   "source_sha256": {
     "data.js": "02bf1e12aa6841c7a86756e4074a7ef84079e006d731d74c6fac912a6b6f8ff2",
@@ -33,12 +33,12 @@
   "docx": {
     "file": "RERC_Community_Explorer_Appendix_2026-08-10.docx",
     "bytes": 402054,
-    "sha256": "198ec5ae74f3bf6e985bba1f71ad5be32426aedcf9cc4863a70af2ee23081fdb"
+    "sha256": "b321eadb439e9788b416856e81e096d8a09792a7f0bf1af0b807e0b2874de54b"
   },
   "xlsx": {
     "file": "RERC_Community_Explorer_Master_2026-08-10.xlsx",
-    "bytes": 395053,
-    "sha256": "908acc70a99732b2d7ead00bd838e422b6f3d46643d9bb51c5372cd3aae9be22"
+    "bytes": 395052,
+    "sha256": "a0ba816e889b39bac680646d91c7aedc2df0b892194ae565531e9d981ceda1ad"
   },
   "csv": {
     "file": "RERC_Community_Explorer_Master_2026-08-10.csv",
