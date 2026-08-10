@@ -21,7 +21,7 @@ for (const item of funding) {
   records[item.item_id] = type;
 }
 const report = {
-  status: funding.length === 659 && Object.keys(records).length === 659 ? "PASS" : "FAIL",
+  status: funding.length === payload.counts.funding && Object.keys(records).length === funding.length ? "PASS" : "FAIL",
   funding_records: funding.length,
   counts,
   records

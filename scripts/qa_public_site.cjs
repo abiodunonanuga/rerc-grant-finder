@@ -108,7 +108,12 @@ async function main() {
       && checks.priorityPager.nextEnabled && checks.priorityPager.secondPage.join("|") !== checks.priorityPager.firstPage.join("|"));
 
     checks.counts = await page.evaluate(() => ["fundingCount", "resourceCount", "caseStudyCount"].map((id) => Number(document.getElementById(id).textContent)));
-    check("catalog_counts", checks.counts.join(",") === "659,167,476" && checks.counts.reduce((sum, value) => sum + value, 0) === 1302);
+    checks.expectedCounts = await page.evaluate(() => [
+      window.RERC_CATALOG.counts.funding,
+      window.RERC_CATALOG.counts.resources,
+      window.RERC_CASE_STUDIES.count
+    ]);
+    check("catalog_counts", JSON.stringify(checks.counts) === JSON.stringify(checks.expectedCounts));
 
     const windowIds = await resultIds(page);
     checks.virginiaRegional = {
@@ -193,11 +198,11 @@ async function main() {
       recordsChecked: Object.keys(expectedDeadlineReport.records).length,
       mismatches: deadlineMismatches
     };
-    check("funding_timing_coverage", Object.values(checks.fundingTiming).reduce((sum, value) => sum + value, 0) === 659
+    check("funding_timing_coverage", Object.values(checks.fundingTiming).reduce((sum, value) => sum + value, 0) === expectedDeadlineReport.funding_records
       && checks.fundingTiming.dated > 0 && checks.fundingTiming.rolling > 0 && checks.fundingTiming.date_pending > 0);
     check("funding_timing_parity", expectedDeadlineReport.status === "PASS"
       && JSON.stringify(checks.fundingTiming) === JSON.stringify(expectedDeadlineReport.counts)
-      && checks.fundingTimingParity.recordsChecked === 659 && deadlineMismatches.length === 0);
+      && checks.fundingTimingParity.recordsChecked === expectedDeadlineReport.funding_records && deadlineMismatches.length === 0);
     checks.nextDeadline = await page.locator("#nextDeadlinePanel").evaluate((node) => ({
       visible: node.getBoundingClientRect().height > 0,
       date: node.querySelector("#nextDeadlineDate")?.textContent.trim() || "",

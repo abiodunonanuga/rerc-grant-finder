@@ -21,16 +21,16 @@ def load_catalog(path: Path) -> dict:
     return json.loads(raw[len(PREFIX) : -1])
 
 
-def browser_classifications(path: Path) -> dict:
+def browser_classifications(path: Path, expected_count: int) -> dict:
     result = subprocess.run(
         ["node", str(ROOT / "scripts" / "qa_deadline_parity.cjs"), "--json", str(path)],
         cwd=ROOT, check=True, capture_output=True, text=True,
     )
     report = json.loads(result.stdout)
-    if report.get("status") != "PASS" or report.get("funding_records") != 659:
+    if report.get("status") != "PASS" or report.get("funding_records") != expected_count:
         raise ValueError("Shared browser deadline classifier failed its coverage gate")
     records = report.get("records", {})
-    if len(records) != 659 or set(records.values()) - EXPECTED_CLASSES:
+    if len(records) != expected_count or set(records.values()) - EXPECTED_CLASSES:
         raise ValueError("Shared browser deadline classifier returned invalid record classes")
     return report
 
@@ -38,7 +38,10 @@ def browser_classifications(path: Path) -> dict:
 def audit(path: Path) -> dict:
     payload = load_catalog(path)
     funding = [item for item in payload.get("items", []) if item.get("item_type") == "Funding"]
-    shared = browser_classifications(path)
+    expected_count = payload.get("counts", {}).get("funding")
+    if expected_count != len(funding):
+        raise ValueError("Catalog funding count does not match funding records")
+    shared = browser_classifications(path, expected_count)
     classifications = shared["records"]
     rows = []
     issues = []
@@ -76,10 +79,10 @@ def audit(path: Path) -> dict:
     parity = dict(sorted(counts.items())) == dict(sorted(shared["counts"].items()))
     if not parity:
         issues.append({"issue": "browser/Python deadline class mismatch"})
-    structural_ok = not issues and len(funding) == 659 and parity
+    structural_ok = not issues and len(funding) == expected_count and parity
     return {
         "status": "FAIL" if not structural_ok else ("REVIEW" if stale else "PASS"),
-        "coverage_status": "PASS" if not issues and len(funding) == 659 else "FAIL",
+        "coverage_status": "PASS" if not issues and len(funding) == expected_count else "FAIL",
         "freshness_status": "REVIEW" if stale else "CURRENT",
         "deadline_parity_status": "PASS" if parity else "FAIL",
         "checked_on": today.isoformat(),

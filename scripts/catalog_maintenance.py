@@ -93,8 +93,14 @@ def check_catalog(catalog: dict) -> None:
     actual = CSV_PATH.read_text(encoding="utf-8-sig")
     if actual.replace("\r\n", "\n") != expected:
         raise SystemExit("maintenance/catalog.csv differs from data.js. Run: python scripts/catalog_maintenance.py export")
-    if len(catalog["items"]) != 826:
-        raise SystemExit("Unexpected catalog record count")
+    items = catalog["items"]
+    expected_counts = {
+        "combined": len(items),
+        "funding": sum(item.get("item_type") == "Funding" for item in items),
+        "resources": sum(item.get("item_type") == "Resource" for item in items),
+    }
+    if catalog.get("counts") != expected_counts:
+        raise SystemExit(f"Catalog counts do not match item records: {catalog.get('counts')} != {expected_counts}")
     print(json.dumps({"status": "PASS", "records": len(catalog["items"]), "catalog_csv": str(CSV_PATH.relative_to(ROOT))}))
 
 

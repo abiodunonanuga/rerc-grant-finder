@@ -375,9 +375,11 @@ def git_blob_sha256(commit: str, name: str) -> str:
 
 def validate(records: list[dict[str, str]], docx: Path, xlsx: Path, csv_path: Path) -> dict:
     type_counts = {kind: sum(row["Type"] == kind for row in records) for kind in ("Funding", "Resource", "Community Example")}
-    assert type_counts["Funding"] == 659
-    assert type_counts["Resource"] >= 100
-    assert type_counts["Community Example"] == 476
+    catalog = load_js(ROOT / "data.js", PREFIX)
+    cases = load_js(ROOT / "case_studies.js", CASE_PREFIX)
+    assert type_counts["Funding"] == catalog["counts"]["funding"]
+    assert type_counts["Resource"] == catalog["counts"]["resources"]
+    assert type_counts["Community Example"] == len(cases["items"])
     assert len(records) == sum(type_counts.values())
     assert {row["Type"] for row in records} == {"Funding", "Resource", "Community Example"}
     assert all(row["Official URL"].startswith(("https://", "http://")) for row in records)

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "reviewed_on": "2026-08-05",
+  "reviewed_on": "2026-08-10",
   "policy": "Multi-State records match only the listed U.S. states and territories. Local service-area limits still apply.",
   "records": [
     {"item_id":"RERC-FND-0271","covered_states":["Kentucky","North Carolina","Ohio","Tennessee","Virginia","West Virginia"],"coverage_note":"Available in the Opportunity Appalachia service area; local and project rules still apply.","coverage_source_url":"https://appalachiancommunitycapitalcdfi.org/opportunity-appalachia/"},
@@ -22,6 +22,7 @@
     {"item_id":"RERC-FND-0265","covered_states":["American Samoa","Guam","Northern Mariana Islands","U.S. Virgin Islands"],"coverage_note":"For eligible U.S. insular areas served by the Office of Insular Affairs; program-specific rules apply.","coverage_source_url":"https://www.doi.gov/oia/oia-discretionary-grant-program"},
     {"item_id":"RERC-FND-0267","covered_states":["American Samoa","Guam","Northern Mariana Islands","U.S. Virgin Islands"],"coverage_note":"For eligible U.S. insular areas served by the Office of Insular Affairs; program-specific rules apply.","coverage_source_url":"https://www.doi.gov/oia/oia-discretionary-grant-program"},
     {"item_id":"RERC-FND-0648","covered_states":["American Samoa","Guam","Northern Mariana Islands","U.S. Virgin Islands"],"coverage_note":"For eligible U.S. insular areas served by the Office of Insular Affairs; program-specific rules apply.","coverage_source_url":"https://www.doi.gov/oia/oia-discretionary-grant-program"},
-    {"item_id":"RERC-RES-0029","covered_states":["Alabama","Arkansas","Louisiana","Mississippi","Oklahoma","Tennessee","Texas"],"coverage_note":"Communities Unlimited provides lending and technical assistance across its seven-state service area; services vary by location.","coverage_source_url":"https://communitiesu.org/lending/"}
+    {"item_id":"RERC-RES-0029","covered_states":["Alabama","Arkansas","Louisiana","Mississippi","Oklahoma","Tennessee","Texas"],"coverage_note":"Communities Unlimited provides lending and technical assistance across its seven-state service area; services vary by location.","coverage_source_url":"https://communitiesu.org/lending/"},
+    {"item_id":"RERC-FND-RCAC-2026-001","covered_states":["Alaska","Arizona","California","Colorado","Hawaii","Idaho","Montana","Nevada","New Mexico","Oregon","Utah","Washington","Wyoming","American Samoa","Guam","Northern Mariana Islands"],"coverage_note":"RCAC environmental loans serve the rural West and listed Pacific jurisdictions.","coverage_source_url":"https://www.rcac.org/lending/environmental-loans/"}
   ]
 }

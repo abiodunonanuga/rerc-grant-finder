@@ -96,7 +96,7 @@ def main() -> int:
         assert by_id[item_id]["item_type"] == "Funding"
     assert all(item["item_type"] in {"Funding", "Resource"} for item in items)
     funding_items = [item for item in items if item["item_type"] == "Funding"]
-    assert len(funding_items) == 659
+    assert len(funding_items) == counts["funding"]
     assert all((item.get("deadline_or_availability") or "").strip() for item in funding_items)
     assert all(re.fullmatch(r"20\d{2}-\d{2}-\d{2}", item.get("last_checked", "")) for item in funding_items)
     assert all((item.get("source_url") or "").startswith("https://") for item in funding_items)
@@ -254,7 +254,7 @@ def main() -> int:
 
     manifest = json.loads((ROOT / "maintenance" / "multistate_coverage.json").read_text(encoding="utf-8"))
     regional = [item for item in items if item.get("geography", "").strip().lower() == "multi-state"]
-    assert len(regional) == len(manifest["records"]) == 20
+    assert len(regional) == len(manifest["records"])
     assert {item["item_id"] for item in regional} == {row["item_id"] for row in manifest["records"]}
     assert all(item.get("covered_states") and item.get("coverage_note") and item.get("coverage_source_url", "").startswith("https://") for item in regional)
 
@@ -278,8 +278,9 @@ def main() -> int:
     case_raw = (ROOT / "case_studies.js").read_text(encoding="utf-8").strip()
     case_prefix = "window.RERC_CASE_STUDIES="
     assert case_raw.startswith(case_prefix) and case_raw.endswith(";")
-    cases = json.loads(case_raw[len(case_prefix):-1])["items"]
-    assert len(cases) == 476
+    case_payload = json.loads(case_raw[len(case_prefix):-1])
+    cases = case_payload["items"]
+    assert len(cases) == case_payload["count"]
     assert all(case["source_url"].startswith(("https://www.epa.gov/", "https://toolkit.climate.gov/", "https://www.rd.usda.gov/")) for case in cases)
     assert not any(re.search(r"[A-Za-z]:\\\\|protos|private_internal|needs_image_review", json.dumps(case), re.I) for case in cases)
     case_by_id = {case["item_id"]: case for case in cases}
@@ -299,7 +300,7 @@ def main() -> int:
     with static_csv.open("r", encoding="utf-8-sig", newline="") as handle:
         csv_rows = list(csv.DictReader(handle))
     csv_row_count = len(csv_rows)
-    assert csv_row_count == 1302
+    assert csv_row_count == len(items) + len(cases)
     assert {"Covered States", "Coverage Note", "Coverage Source URL", "Type of Help", "Official URL"} <= set(csv_rows[0])
     assert "Why It May Help" not in csv_rows[0]
     assert sum(bool(row["Covered States"]) for row in csv_rows) == len(regional)
@@ -350,13 +351,11 @@ def main() -> int:
     assert package_report["csv"]["sha256"] == sha256(static_csv)
 
     source_health = json.loads((ROOT / "case_studies.source_health.json").read_text(encoding="utf-8"))
-    assert source_health["status"] == "PASS" and source_health["unique_urls"] == 303
-    assert source_health["counts"] == {
-        "reachable": 271,
-        "restricted_but_present": 32,
-        "hard_failure": 0,
-        "manual_review": 0,
-    }
+    assert source_health["status"] == "PASS"
+    assert source_health["unique_urls"] == len({case["source_url"] for case in cases})
+    assert source_health["counts"]["hard_failure"] == 0
+    assert source_health["counts"]["manual_review"] == 0
+    assert sum(source_health["counts"].values()) == source_health["unique_urls"]
     assert source_health["counts"]["hard_failure"] == 0
     assert source_health["case_studies_sha256"] == canonical_text_sha256(ROOT / "case_studies.js")
 

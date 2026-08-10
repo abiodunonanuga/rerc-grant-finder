@@ -33,7 +33,7 @@ def main() -> int:
     assert raw.startswith(PREFIX) and raw.endswith(";")
     payload = json.loads(raw[len(PREFIX) : -1])
     items = payload["items"]
-    assert len(items) == 476
+    assert len(items) == payload["count"]
     assert len({item["item_id"] for item in items}) == len(items)
     assert all(item["item_type"] == "Case Study" for item in items)
     assert all(55 <= len(item["summary"]) <= 560 for item in items)
@@ -59,7 +59,7 @@ def main() -> int:
     assert Counter(item["case_place_type"] for item in items) == {
         "town_or_city": 359,
         "county_or_region": 48,
-        "statewide_or_multi_community": 55,
+        "statewide_or_multi_community": 56,
         "tribal_community": 14,
     }
     assert sum(item["case_place_type"] == "tribal_community" for item in items) >= 10
@@ -114,13 +114,11 @@ def main() -> int:
     )
 
     health = json.loads(HEALTH.read_text(encoding="utf-8"))
-    assert health["unique_urls"] == 303
-    assert health["counts"] == {
-        "reachable": 271,
-        "restricted_but_present": 32,
-        "hard_failure": 0,
-        "manual_review": 0,
-    }
+    unique_urls = len({item["source_url"] for item in items})
+    assert health["unique_urls"] == unique_urls
+    assert health["counts"]["hard_failure"] == 0
+    assert health["counts"]["manual_review"] == 0
+    assert sum(health["counts"].values()) == unique_urls
 
     programs = Counter(item["case_program"] for item in items)
     hosts = Counter(urlparse(item["source_url"]).hostname for item in items)

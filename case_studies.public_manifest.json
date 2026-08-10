@@ -1,5 +1,5 @@
 {
-  "release_id": "rerc-public-community-examples-2026-07-18",
+  "release_id": "rerc-public-community-examples-2026-08-10",
   "status": "PASS",
   "scope": "Text-only community examples derived from official federal public web records.",
   "approval_basis": "Public RERC community-example integration approved on 2026-07-17.",
@@ -10,19 +10,19 @@
     "images_included": false
   },
   "rights_note": "Official links and short source-derived descriptions are attributed. Images are excluded. This release check is not a legal opinion.",
-  "count": 476,
+  "count": 477,
   "program_counts": {
     "EPA Brownfields Success Stories": 113,
     "EPA Examples of Smart Growth Communities and Projects": 25,
     "Local Foods, Local Places": 124,
     "Recreation Economy for Rural Communities": 56,
     "U.S. Climate Resilience Toolkit": 126,
-    "USDA Rural Development Success Stories": 32
+    "USDA Rural Development Success Stories": 33
   },
   "source_host_counts": {
     "toolkit.climate.gov": 126,
     "www.epa.gov": 318,
-    "www.rd.usda.gov": 32
+    "www.rd.usda.gov": 33
   },
   "source_health": {
     "unique_urls": 303,

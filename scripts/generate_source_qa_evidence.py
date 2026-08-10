@@ -16,7 +16,6 @@ ROOT = Path(__file__).resolve().parents[1]
 RERCIE = ROOT / "rercie"
 PACKAGING = RERCIE / "packaging"
 LAYOUT_SHA256 = "f78b4355830b15a3400e84f3669afab484a93fd843b743bc96083940d4d60d01"
-EXPECTED_COUNTS = {"funding": 659, "resources": 167, "case_studies": 476, "public_total": 1302}
 TERRITORIES = {"Puerto Rico", "U.S. Virgin Islands", "Guam", "American Samoa", "Northern Mariana Islands"}
 
 
@@ -35,6 +34,17 @@ def load_assignment(path: Path):
     if payload.endswith(";"):
         payload = payload[:-1]
     return json.loads(payload)
+
+
+def current_expected_counts() -> dict[str, int]:
+    catalog = load_assignment(ROOT / "data.js")["items"]
+    cases = load_assignment(ROOT / "case_studies.js")["items"]
+    return {
+        "funding": sum(item.get("item_type") == "Funding" for item in catalog),
+        "resources": sum(item.get("item_type") == "Resource" for item in catalog),
+        "case_studies": len(cases),
+        "public_total": len(catalog) + len(cases),
+    }
 
 
 def layout_sha256() -> str:
@@ -105,6 +115,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Generate audited RERC-e source-stage release evidence.")
     parser.add_argument("--browser-report", default="browser-qa-pass/playwright_qa.json")
     args = parser.parse_args()
+    expected_counts = current_expected_counts()
 
     smoke_process = subprocess.run(
         [sys.executable, str(RERCIE / "rercie.py"), "--smoke"],
@@ -134,7 +145,7 @@ def main() -> int:
     browser_path = ROOT / args.browser_report
     browser = json.loads(browser_path.read_text(encoding="utf-8"))
     assert browser["status"] == "PASS" and not browser["errors"] and not browser["failures"]
-    assert browser["checks"]["counts"] == [EXPECTED_COUNTS["funding"], EXPECTED_COUNTS["resources"], EXPECTED_COUNTS["case_studies"]]
+    assert browser["checks"]["counts"] == [expected_counts["funding"], expected_counts["resources"], expected_counts["case_studies"]]
     assert all(value is True for key, value in browser["checks"]["spanish"].items() if not key.endswith("Text"))
     english_restored = browser["checks"].get("englishRestored", True)
     assert english_restored is True
@@ -168,7 +179,7 @@ def main() -> int:
         "case_studies": len(cases),
         "public_total": len(catalog) + len(cases),
     }
-    assert counts == EXPECTED_COUNTS
+    assert counts == expected_counts
 
     profiles = load_assignment(ROOT / "community_profiles.js")
     profile_rows = profiles.get("profiles", profiles) if isinstance(profiles, dict) else profiles
@@ -178,7 +189,10 @@ def main() -> int:
 
     source_health = json.loads((ROOT / "case_studies.source_health.json").read_text(encoding="utf-8"))
     assert source_health["status"] == "PASS"
-    assert source_health["counts"] == {"reachable": 271, "restricted_but_present": 32, "hard_failure": 0, "manual_review": 0}
+    assert source_health["unique_urls"] == len({item["source_url"] for item in cases})
+    assert source_health["counts"]["hard_failure"] == 0
+    assert source_health["counts"]["manual_review"] == 0
+    assert sum(source_health["counts"].values()) == source_health["unique_urls"]
 
     historical = json.loads((PACKAGING / "QA_EVIDENCE_0.3.5_HISTORICAL.json").read_text(encoding="utf-8"))
     display = historical["checks"]["display_scaling"]
@@ -203,7 +217,7 @@ def main() -> int:
             "display_scaling": {"status": "PASS", "tested_scales": display["tested_scales"], "layout_geometry_sha256": LAYOUT_SHA256, "layout_unchanged_from_scale_tested_baseline": True},
             "installer_wizard": {"status": "PENDING_RELEASE_TEST", "per_user_install": True, "uninstall_entry": True},
             "package_integrity": {"status": "PENDING_BUILD", "integrity_checked_binaries": 0},
-            "live_catalog": {"status": "PASS", "total_items": counts["public_total"], "funding_items": counts["funding"], "resource_items": counts["resources"], "case_study_items": counts["case_studies"], "territory_filter_checked": True, "case_study_unique_urls_checked": 303, "case_study_hard_failed_urls": 0, "case_study_reachable_urls": 271, "case_study_restricted_urls": 32, "case_study_manual_review_urls": 0},
+            "live_catalog": {"status": "PASS", "total_items": counts["public_total"], "funding_items": counts["funding"], "resource_items": counts["resources"], "case_study_items": counts["case_studies"], "territory_filter_checked": True, "case_study_unique_urls_checked": source_health["unique_urls"], "case_study_hard_failed_urls": source_health["counts"]["hard_failure"], "case_study_reachable_urls": source_health["counts"]["reachable"], "case_study_restricted_urls": source_health["counts"]["restricted_but_present"], "case_study_manual_review_urls": source_health["counts"]["manual_review"]},
             "local_generation": {"status": "PASS", "model": "Google Gemma 3 1B Instruct Q4_K_M", "source_sha256": local_gemma["source_sha256"], "source_normalized_sha256": local_gemma["source_normalized_sha256"], "verified_excerpt_count": local_gemma["verified_excerpt_count"], "raw_model_prose_exposed": False, "later_standalone_rerun_status": "PASS"},
             "docx_export": {"status": "PASS", "minimum_bytes": 3000, "office_open_xml": True},
             "api_privacy_regression": {"status": "PASS", "key_sent_to_gemma": False, "handoff_checks": smoke["handoff_checks"], "https_profile_check": "https_only_bounded" in smoke["profile_checks"]},

@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-08-10",
+  "status": "PASS",
+  "source_candidate_denominator": 100,
+  "resolved_candidates": 100,
+  "unresolved_candidates": 0,
+  "disposition_counts": {
+    "integrated_program_family": 94,
+    "mapped_existing_record": 5,
+    "context_only_duplicate": 1
+  },
+  "published_catalog_counts": {
+    "combined": 889,
+    "funding": 714,
+    "resources": 175
+  },
+  "published_case_studies": 477,
+  "validation": {
+    "funding_resource_unique_urls_checked": 789,
+    "funding_resource_hard_failures": 0,
+    "case_study_unique_urls_checked": 303,
+    "case_study_hard_failures": 0
+  }
+}
