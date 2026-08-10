@@ -56,10 +56,10 @@
     },
     "live_catalog": {
       "status": "PASS",
-      "total_items": 1302,
-      "funding_items": 659,
-      "resource_items": 167,
-      "case_study_items": 476,
+      "total_items": 1366,
+      "funding_items": 714,
+      "resource_items": 175,
+      "case_study_items": 477,
       "territory_filter_checked": true,
       "case_study_unique_urls_checked": 303,
       "case_study_hard_failed_urls": 0,
@@ -147,7 +147,7 @@
     "status": "PENDING_BUILD"
   },
   "verification_inputs": {
-    "browser_contract_sha256": "1541454793bc78946325e1abb81a6b99a6fb47d331dfe41cd0cc3d15c71bf903",
+    "browser_contract_sha256": "4f68cc0989126373be954fa9a5e31548121c9aac08d5471c20932bffc08d93ef",
     "local_gemma_report_sha256": "acf0f7274a2542c0000d25d09ddac5a453a06711067b91aca5f6e60cfe766946"
   }
 }
