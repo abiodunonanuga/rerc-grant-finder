@@ -1,12 +1,16 @@
-name: Daily Grant and Resource Update Check
+name: Daily RERC Maintenance Watcher
 
 on:
   schedule:
-    - cron: '17 10 * * *'
+    # GitHub schedules in UTC. Two triggers plus the Eastern-time guard preserve
+    # 03:33 local time across daylight saving time changes.
+    - cron: '33 7 * * *'
+    - cron: '33 8 * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: rerc-source-health-${{ github.workflow }}-${{ github.ref }}
@@ -15,14 +19,43 @@ concurrency:
 jobs:
   check-links:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
+      - name: Enforce 3:33 a.m. Eastern schedule
+        id: schedule
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          elif python - <<'PY'
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          now = datetime.now(ZoneInfo("America/New_York"))
+          raise SystemExit(0 if (now.hour, now.minute) == (3, 33) else 1)
+          PY
+          then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Checkout
+        if: steps.schedule.outputs.run == 'true'
         uses: actions/checkout@v6
       - name: Set up Python
+        if: steps.schedule.outputs.run == 'true'
         uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+      - name: Read and verify public intake sheets
+        id: intake
+        if: steps.schedule.outputs.run == 'true'
+        continue-on-error: true
+        env:
+          RERC_NEW_ITEMS_SHEET_URL: ${{ vars.RERC_NEW_ITEMS_SHEET_URL }}
+          RERC_ISSUES_SHEET_URL: ${{ vars.RERC_ISSUES_SHEET_URL }}
+        run: python scripts/rerc_intake_watcher.py --scheduled --force
       - name: Restore prior source signals
+        if: steps.schedule.outputs.run == 'true'
         uses: actions/cache/restore@v5
         with:
           path: .source-monitor/state.json
@@ -31,6 +64,7 @@ jobs:
             rerc-source-monitor-
       - name: Check funding and resource links
         id: catalog
+        if: steps.schedule.outputs.run == 'true'
         continue-on-error: true
         run: |
           if ! python scripts/grantlink_3po.py; then
@@ -39,12 +73,12 @@ jobs:
           fi
       - name: Audit funding deadline coverage
         id: deadlines
-        if: always()
+        if: always() && steps.schedule.outputs.run == 'true'
         continue-on-error: true
         run: python scripts/qa_funding_deadlines.py --write-report
       - name: Check community example links
         id: examples
-        if: always()
+        if: always() && steps.schedule.outputs.run == 'true'
         continue-on-error: true
         run: |
           if ! python scripts/check_case_sources.py; then
@@ -52,8 +86,14 @@ jobs:
             python scripts/check_case_sources.py
           fi
       - name: Add review summary
-        if: always()
+        if: always() && steps.schedule.outputs.run == 'true'
         run: |
+          if [ -f intake-review/intake-review-queue.md ]; then
+            cat intake-review/intake-review-queue.md >> "$GITHUB_STEP_SUMMARY"
+            printf "\n" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Intake review queue was not generated." >> "$GITHUB_STEP_SUMMARY"
+          fi
           if [ -f source-health-report.md ]; then
             cat source-health-report.md >> "$GITHUB_STEP_SUMMARY"
           else
@@ -65,27 +105,44 @@ jobs:
           else
             echo "Funding deadline audit was not generated." >> "$GITHUB_STEP_SUMMARY"
           fi
-      - name: Upload source health report
-        if: always()
+      - name: Upload maintenance reports
+        if: always() && steps.schedule.outputs.run == 'true'
         uses: actions/upload-artifact@v6
         with:
-          name: source-health-report
+          name: rerc-maintenance-report
           path: |
+            intake-review/intake-review-queue.json
+            intake-review/intake-review-queue.md
             source-health-report.json
             source-health-report.md
             case_studies.source_health.json
             funding-deadline-audit.json
             funding-deadline-audit.md
             .source-monitor/state.json
+      - name: Publish sanitized intake queue to maintainer issue
+        continue-on-error: true
+        if: always() && steps.schedule.outputs.run == 'true' && hashFiles('intake-review/intake-review-queue.md') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          title="RERC intake watcher review queue"
+          issue_number="$(gh issue list --state open --search "$title in:title" --json number,title --jq '.[] | select(.title == "RERC intake watcher review queue") | .number' | head -n 1)"
+          if [ -n "$issue_number" ]; then
+            gh issue edit "$issue_number" --body-file intake-review/intake-review-queue.md
+          else
+            gh issue create --title "$title" --body-file intake-review/intake-review-queue.md
+          fi
       - name: Save current source signals
-        if: always() && hashFiles('.source-monitor/state.json') != ''
+        if: always() && steps.schedule.outputs.run == 'true' && hashFiles('.source-monitor/state.json') != ''
         uses: actions/cache/save@v5
         with:
           path: .source-monitor/state.json
           key: rerc-source-monitor-${{ github.run_id }}
       - name: Enforce hard-failure gate
-        if: always()
+        if: always() && steps.schedule.outputs.run == 'true'
         run: |
+          test "${{ steps.intake.outcome }}" = "success"
           test "${{ steps.catalog.outcome }}" = "success"
           test "${{ steps.deadlines.outcome }}" = "success"
           test "${{ steps.examples.outcome }}" = "success"

@@ -271,7 +271,14 @@ def main() -> int:
     assert not (ROOT / ".github" / "workflows" / "deploy-pages.yml").exists()
     source_health = (ROOT / ".github" / "workflows" / "source-health.yml").read_text(encoding="utf-8")
     discovery = (ROOT / ".github" / "workflows" / "discover-federal-opportunities.yml").read_text(encoding="utf-8")
-    assert "17 10 * * *" in source_health and "actions/cache/restore@v5" in source_health
+    assert all(value in source_health for value in (
+        "33 7 * * *", "33 8 * * *", "America/New_York", "RERC_NEW_ITEMS_SHEET_URL",
+        "RERC_ISSUES_SHEET_URL", "rerc_intake_watcher.py", "actions/cache/restore@v5",
+        "Publish sanitized intake queue",
+    ))
+    watcher = (ROOT / "scripts" / "rerc_intake_watcher.py").read_text(encoding="utf-8")
+    assert all(value in watcher for value in ("redact_text", "ready_for_human_review", "No submission is published automatically"))
+    assert (ROOT / "maintenance" / "INTAKE_WATCHER.md").is_file()
     assert "23 11 * * *" in discovery
     assert ".source-monitor/" in (ROOT / ".gitignore").read_text(encoding="utf-8")
     assert 'id="nextDeadlinePanel"' in index and "renderNextDeadline" in app_js

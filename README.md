@@ -63,7 +63,9 @@ The reviewed source and Timberwing Systems license are in `rercie/`. Model weigh
 
 ## Automated Checks
 
-The `Daily Grant and Resource Update Check` workflow checks every catalog source and regional coverage source each day, compares available source signals such as status, redirects, ETag, last-modified date, and content length with the prior run, and uploads a review report. The `Daily Federal Opportunity Discovery` workflow searches the public Grants.gov API each day and uploads a review queue of posted and forecasted opportunities related to rural development, outdoor recreation, trails, tourism, community development, economic development, and technical assistance.
+The `Daily RERC Maintenance Watcher` runs at 3:33 a.m. Eastern. It reads the public response-only Google Sheets configured for the two site forms, removes contact fields, checks submitted links and duplicates, verifies reproducible broken-link reports, checks every catalog source and regional coverage source, audits every funding timing field, and checks every community-example source. It updates a sanitized maintainer issue and uploads the complete QA reports. See [`maintenance/INTAKE_WATCHER.md`](maintenance/INTAKE_WATCHER.md).
+
+The `Daily Federal Opportunity Discovery` workflow searches the public Grants.gov API each day and uploads a review queue of posted and forecasted opportunities related to rural development, outdoor recreation, trails, tourism, community development, economic development, and technical assistance.
 
 New opportunities, changed source signals, and status changes require human review before they enter the public catalog. The monitoring workflows do not publish unreviewed records.
 
