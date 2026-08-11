@@ -5,7 +5,7 @@
   "funding": 714,
   "resources": 175,
   "community_examples": 477,
-  "catalog_source_commit": "92d884d5e3dedb57aa1798ebe281f7b3910799f8",
+  "catalog_source_commit": "8524cdc2dd2cdca17a141a44c11141bb8a520991",
   "release_binding_note": "This is the source commit used to generate the files. The QA report records the generated file hashes.",
   "site_sha256": {
     "index.html": "10f8d15c1f943a84ecbb727a031035939f9d3c7ff18757a1be95be5758dd7243",
@@ -16,7 +16,7 @@
     "ui-i18n.js": "571facbfbb80d32b34e3f64b611d5cdcbfb7b1cb480cd923b5b917f3bcb6ec3e",
     "deadline-utils.js": "9630163876672f5d0dd801ba18ab96b1c91b076a657e6b42f0130f7db959d402",
     "site-config.js": "bdb1b689c79ced93d337a534d762ffe9239e7ed4ad6d802edb73e2548c7cb969",
-    "data.js": "02bf1e12aa6841c7a86756e4074a7ef84079e006d731d74c6fac912a6b6f8ff2",
+    "data.js": "852bfe6c0f43e1a24e466f4a70af623a83660373cfb3a1ccc26c2388bdc32b10",
     "case_studies.js": "fdcbc04be260b1afc65e929a8c50bf62d6f97c8942939631d770ba61c7c02b68",
     "maintenance/multistate_coverage.json": "1dc317b3f67c89968a94d44e2b26c6958749b008cc7ed7ff1225ef7202592afa",
     "favicon.svg": "08bd8268fdeb2a2e83d8a55d89c92afcedc01024c585fc6401c8897f6878cd04",
@@ -27,22 +27,22 @@
     "README.md": "5e707d35397c625ada3b102f76e1a1ef0f5440632ae494843c3d1219b6214a39"
   },
   "source_sha256": {
-    "data.js": "02bf1e12aa6841c7a86756e4074a7ef84079e006d731d74c6fac912a6b6f8ff2",
+    "data.js": "852bfe6c0f43e1a24e466f4a70af623a83660373cfb3a1ccc26c2388bdc32b10",
     "case_studies.js": "fdcbc04be260b1afc65e929a8c50bf62d6f97c8942939631d770ba61c7c02b68"
   },
   "docx": {
     "file": "RERC_Community_Explorer_Appendix_2026-08-10.docx",
-    "bytes": 402054,
-    "sha256": "b321eadb439e9788b416856e81e096d8a09792a7f0bf1af0b807e0b2874de54b"
+    "bytes": 402059,
+    "sha256": "17c2e9ac4806d192f5f0bffcf1431ee0fc0fe5708b0fc3dec8ec19b91e078a66"
   },
   "xlsx": {
     "file": "RERC_Community_Explorer_Master_2026-08-10.xlsx",
-    "bytes": 395052,
-    "sha256": "a0ba816e889b39bac680646d91c7aedc2df0b892194ae565531e9d981ceda1ad"
+    "bytes": 395058,
+    "sha256": "8257d739b639553d011888fdf9a8c008a9026f5b599639bdbc8ad640e6f8775e"
   },
   "csv": {
     "file": "RERC_Community_Explorer_Master_2026-08-10.csv",
-    "bytes": 891363,
-    "sha256": "1e2344e91c666e503a8b9f0d47645bb06f0b0abbfe12c0d9ea1607a4fd235db1"
+    "bytes": 891364,
+    "sha256": "e0ec040394ea47d947ef22b9ba92496ac4884cf4be60258d71915466904394b1"
   }
 }
