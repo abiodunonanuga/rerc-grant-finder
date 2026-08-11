@@ -156,7 +156,11 @@ def main() -> int:
         "modes": browser["checks"]["modes"],
         "saved_persistence": [browser["checks"]["savedBeforeReload"], browser["checks"]["savedAfterReload"]],
         "card_actions": browser["checks"]["cardActions"],
-        "spanish": browser["checks"]["spanish"],
+        "spanish": {
+            key: value
+            for key, value in browser["checks"]["spanish"].items()
+            if not key.endswith("Text")
+        },
         "english_restored": english_restored,
         "roadmap_phase_change": browser["checks"]["roadmapPhaseChange"],
         "roadmap_reset": {
