@@ -26,7 +26,7 @@ class IntakeWatcherTests(unittest.TestCase):
         result = WATCHER.google_csv_url(
             "https://docs.google.com/spreadsheets/d/test_sheet_id/edit?gid=123#gid=123"
         )
-        self.assertEqual(result, "https://docs.google.com/spreadsheets/d/test_sheet_id/export?format=csv&gid=123")
+        self.assertEqual(result, "https://docs.google.com/spreadsheets/d/test_sheet_id/gviz/tq?tqx=out:csv&gid=123")
 
     def test_contact_columns_are_removed(self) -> None:
         row = {

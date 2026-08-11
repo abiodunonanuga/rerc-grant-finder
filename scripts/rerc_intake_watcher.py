@@ -146,7 +146,7 @@ def google_csv_url(value: str) -> str:
     query = urllib.parse.parse_qs(parsed.query)
     fragment = urllib.parse.parse_qs(parsed.fragment)
     gid = (query.get("gid") or fragment.get("gid") or ["0"])[0]
-    return f"https://docs.google.com/spreadsheets/d/{match.group(1)}/export?format=csv&gid={gid}"
+    return f"https://docs.google.com/spreadsheets/d/{match.group(1)}/gviz/tq?tqx=out:csv&gid={gid}"
 
 
 def read_csv_source(value: str, timeout: int = 30) -> list[dict[str, str]]:
