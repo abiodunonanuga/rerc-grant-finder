@@ -1,10 +1,10 @@
 {
   "status": "PASS",
-  "checked_date": "2026-08-10",
-  "unique_urls": 303,
-  "case_studies_sha256": "fdcbc04be260b1afc65e929a8c50bf62d6f97c8942939631d770ba61c7c02b68",
+  "checked_date": "2026-08-14",
+  "unique_urls": 296,
+  "case_studies_sha256": "696ce5baadfd55d30fb469272ce02b3367b63abd325dfe52562764396da1fead",
   "counts": {
-    "reachable": 271,
+    "reachable": 264,
     "restricted_but_present": 32,
     "hard_failure": 0,
     "manual_review": 0
@@ -16,7 +16,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 662
+      "elapsed_ms": 2987
     },
     {
       "url": "https://toolkit.climate.gov/action-plan/city-alexandria-virginia-energy-climate-change-action-plan",
@@ -24,7 +24,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 661
+      "elapsed_ms": 2987
     },
     {
       "url": "https://toolkit.climate.gov/action-plan/city-san-antonio-tx-path-climate-action-adaptation",
@@ -32,7 +32,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 661
+      "elapsed_ms": 3090
     },
     {
       "url": "https://toolkit.climate.gov/action-plan/city-seattle-wa-preparing-changing-climate",
@@ -40,7 +40,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 661
+      "elapsed_ms": 2986
     },
     {
       "url": "https://toolkit.climate.gov/action-plan/climate-change-port-heiden-ak",
@@ -48,7 +48,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 802
+      "elapsed_ms": 3166
     },
     {
       "url": "https://toolkit.climate.gov/action-plan/los-angeles-ca-resilience-strategy",
@@ -56,7 +56,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 662
+      "elapsed_ms": 3092
     },
     {
       "url": "https://toolkit.climate.gov/action-plan/planning-climate-resilience%E2%80%94city-asheville-north-carolina",
@@ -64,7 +64,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 661
+      "elapsed_ms": 3012
     },
     {
       "url": "https://toolkit.climate.gov/action-plan/spearfish-sd-climate-resiliency-plan",
@@ -72,7 +72,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 605
+      "elapsed_ms": 2985
     },
     {
       "url": "https://toolkit.climate.gov/action-plan/st-paul-mn-climate-action-resilience-plan",
@@ -80,7 +80,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 604
+      "elapsed_ms": 3134
     },
     {
       "url": "https://toolkit.climate.gov/action-plan/state-louisiana-regional-adaptation-strategy",
@@ -88,7 +88,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 695
+      "elapsed_ms": 3091
     },
     {
       "url": "https://toolkit.climate.gov/action-plan/tompkins-county-ny-resiliency-and-recovery-plan",
@@ -96,7 +96,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 347
+      "elapsed_ms": 468
     },
     {
       "url": "https://toolkit.climate.gov/action-plan/triangle-region-nc-regional-resilience-assessment",
@@ -104,7 +104,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 317
+      "elapsed_ms": 467
     },
     {
       "url": "https://toolkit.climate.gov/action-plan/tybee-island-sea-level-rise-adaptation-plan",
@@ -112,7 +112,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 466
+      "elapsed_ms": 468
     },
     {
       "url": "https://toolkit.climate.gov/action-plan/vermont-climate-action-plan",
@@ -120,7 +120,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 451
+      "elapsed_ms": 525
     },
     {
       "url": "https://toolkit.climate.gov/action-plan/washington-coast-resilience-action-demonstration-project",
@@ -128,7 +128,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 346
+      "elapsed_ms": 440
     },
     {
       "url": "https://toolkit.climate.gov/case-study/adapting-rising-tides-san-francisco-bay-california",
@@ -136,7 +136,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 379
+      "elapsed_ms": 421
     },
     {
       "url": "https://toolkit.climate.gov/case-study/adapting-sea-level-rise-and-coastal-erosion-hawaii",
@@ -144,7 +144,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 404
+      "elapsed_ms": 360
     },
     {
       "url": "https://toolkit.climate.gov/case-study/addressing-links-between-climate-and-public-health-alaska-native-villages",
@@ -152,7 +152,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 345
+      "elapsed_ms": 323
     },
     {
       "url": "https://toolkit.climate.gov/case-study/after-record-breaking-rains-texas-medical-centers-planning-improved-resilience",
@@ -160,7 +160,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 297
+      "elapsed_ms": 514
     },
     {
       "url": "https://toolkit.climate.gov/case-study/alaska-native-villages-work-enhance-local-economies-they-minimize-environmental-risks",
@@ -168,7 +168,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 301
+      "elapsed_ms": 345
     },
     {
       "url": "https://toolkit.climate.gov/case-study/albemarle-pamlico-national-estuary-partnerships-climate-ready-estuaries-project",
@@ -176,7 +176,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 346
+      "elapsed_ms": 418
     },
     {
       "url": "https://toolkit.climate.gov/case-study/alligator-river-national-wildlife-refuge-albemarle-pamlico-peninsula-climate-adaptation",
@@ -184,7 +184,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 273
+      "elapsed_ms": 656
     },
     {
       "url": "https://toolkit.climate.gov/case-study/analyzing-future-urban-growth-and-flood-risk-north-carolina",
@@ -192,7 +192,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 348
+      "elapsed_ms": 588
     },
     {
       "url": "https://toolkit.climate.gov/case-study/aquifer-storage-and-recovery-strategy-long-term-water-security-puerto-rico",
@@ -200,7 +200,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 287
+      "elapsed_ms": 700
     },
     {
       "url": "https://toolkit.climate.gov/case-study/assessing-timing-and-extent-coastal-change-western-alaska",
@@ -208,7 +208,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 406
+      "elapsed_ms": 416
     },
     {
       "url": "https://toolkit.climate.gov/case-study/barnegat-bay-climate-change-adaptation-strategy-development",
@@ -216,7 +216,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 279
+      "elapsed_ms": 416
     },
     {
       "url": "https://toolkit.climate.gov/case-study/beaver-conflict-resolution",
@@ -224,7 +224,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 254
+      "elapsed_ms": 359
     },
     {
       "url": "https://toolkit.climate.gov/case-study/boosting-community-storm-resilience-alaska",
@@ -232,7 +232,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 216
+      "elapsed_ms": 530
     },
     {
       "url": "https://toolkit.climate.gov/case-study/bridgeport-connecticut-climate-preparedness-workshops",
@@ -240,7 +240,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 208
+      "elapsed_ms": 359
     },
     {
       "url": "https://toolkit.climate.gov/case-study/buffelgrass-removal-fire-and-climate-adaptation",
@@ -248,7 +248,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 193
+      "elapsed_ms": 220
     },
     {
       "url": "https://toolkit.climate.gov/case-study/california-state-coastal-conservancy-gravel-beach-and-berm-shorebird-habitat-creation",
@@ -256,7 +256,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 315
+      "elapsed_ms": 410
     },
     {
       "url": "https://toolkit.climate.gov/case-study/camera-trap-monitoring-document-pollinator-use-restored-private-lands",
@@ -264,7 +264,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 298
+      "elapsed_ms": 374
     },
     {
       "url": "https://toolkit.climate.gov/case-study/charting-colorado%E2%80%99s-vulnerability-climate-change",
@@ -272,7 +272,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 367
+      "elapsed_ms": 461
     },
     {
       "url": "https://toolkit.climate.gov/case-study/citizen-science-monarch-monitoring",
@@ -280,7 +280,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 283
+      "elapsed_ms": 374
     },
     {
       "url": "https://toolkit.climate.gov/case-study/climate-change-adaptation-planning-state-level-minnesota",
@@ -288,7 +288,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 314
+      "elapsed_ms": 438
     },
     {
       "url": "https://toolkit.climate.gov/case-study/climate-change-and-florida-keys",
@@ -296,7 +296,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 423
+      "elapsed_ms": 437
     },
     {
       "url": "https://toolkit.climate.gov/case-study/climate-modeling-and-partnerships-freshwater-mussel-conservation-central-texas",
@@ -304,7 +304,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 423
+      "elapsed_ms": 389
     },
     {
       "url": "https://toolkit.climate.gov/case-study/climate-smart-adaptation-north-central-california-coast-and-ocean",
@@ -312,7 +312,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 340
+      "elapsed_ms": 298
     },
     {
       "url": "https://toolkit.climate.gov/case-study/climatic-variability-and-water-supply-planning-tampa-bay",
@@ -320,7 +320,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 341
+      "elapsed_ms": 293
     },
     {
       "url": "https://toolkit.climate.gov/case-study/coastal-adaptation-plan-town-groton-connecticut",
@@ -328,7 +328,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 247
+      "elapsed_ms": 378
     },
     {
       "url": "https://toolkit.climate.gov/case-study/coastal-community-resilience-maine",
@@ -336,7 +336,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 272
+      "elapsed_ms": 428
     },
     {
       "url": "https://toolkit.climate.gov/case-study/coastal-resilience-job-training-climate-housing-and-economic-development",
@@ -344,7 +344,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 253
+      "elapsed_ms": 429
     },
     {
       "url": "https://toolkit.climate.gov/case-study/community-effort-stems-runoff-safeguard-corals-puerto-rico",
@@ -352,7 +352,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 261
+      "elapsed_ms": 428
     },
     {
       "url": "https://toolkit.climate.gov/case-study/community-nonprofits-leverage-their-collective-experience-create-green-jobs-workforce",
@@ -360,7 +360,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 315
+      "elapsed_ms": 446
     },
     {
       "url": "https://toolkit.climate.gov/case-study/conservation-support-arizona-springsnails-and-talussnails",
@@ -368,7 +368,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 313
+      "elapsed_ms": 421
     },
     {
       "url": "https://toolkit.climate.gov/case-study/conserving-groundwater-ogallala-aquifer-water-rights-lease-agreements",
@@ -376,7 +376,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 388
+      "elapsed_ms": 309
     },
     {
       "url": "https://toolkit.climate.gov/case-study/considering-climate-change-tongass-national-forest-and-southeast-alaska-through-tongass",
@@ -384,7 +384,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 312
+      "elapsed_ms": 585
     },
     {
       "url": "https://toolkit.climate.gov/case-study/cr4hc-case-study-university-nebraska",
@@ -392,7 +392,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 290
+      "elapsed_ms": 384
     },
     {
       "url": "https://toolkit.climate.gov/case-study/developing-database-examine-environmental-flows-desert-rivers-united-states-and-mexico",
@@ -400,7 +400,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 305
+      "elapsed_ms": 324
     },
     {
       "url": "https://toolkit.climate.gov/case-study/developing-monitoring-programs-protected-lands-alaska",
@@ -408,7 +408,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 305
+      "elapsed_ms": 223
     },
     {
       "url": "https://toolkit.climate.gov/case-study/developing-outreach-heat-resilience-north-carolina%E2%80%99s-sandhills-region",
@@ -416,7 +416,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 236
+      "elapsed_ms": 517
     },
     {
       "url": "https://toolkit.climate.gov/case-study/documenting-traditional-ecological-knowledge-northwest-alaska",
@@ -424,7 +424,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 243
+      "elapsed_ms": 408
     },
     {
       "url": "https://toolkit.climate.gov/case-study/drought-response-and-recovery-project-water-utilities-castine-maine",
@@ -432,7 +432,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 184
+      "elapsed_ms": 335
     },
     {
       "url": "https://toolkit.climate.gov/case-study/drought-response-and-recovery-project-water-utilities-clinton-ok",
@@ -440,7 +440,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 301
+      "elapsed_ms": 375
     },
     {
       "url": "https://toolkit.climate.gov/case-study/drought-response-and-recovery-project-water-utilities-hays-and-russell-ks",
@@ -448,7 +448,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 398
+      "elapsed_ms": 428
     },
     {
       "url": "https://toolkit.climate.gov/case-study/drought-response-and-recovery-project-water-utilities-hogansville-ga",
@@ -456,7 +456,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 433
+      "elapsed_ms": 325
     },
     {
       "url": "https://toolkit.climate.gov/case-study/drought-response-and-recovery-project-water-utilities-las-vegas-nm",
@@ -464,7 +464,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 336
+      "elapsed_ms": 403
     },
     {
       "url": "https://toolkit.climate.gov/case-study/drought-response-and-recovery-project-water-utilities-north-marin-water-district-ca",
@@ -472,7 +472,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 310
+      "elapsed_ms": 403
     },
     {
       "url": "https://toolkit.climate.gov/case-study/drought-response-and-recovery-project-water-utilities-spicewood-beach-tx",
@@ -480,7 +480,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 323
+      "elapsed_ms": 294
     },
     {
       "url": "https://toolkit.climate.gov/case-study/drought-response-and-recovery-project-water-utilities-tuolumne-utilities-district-ca",
@@ -488,7 +488,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 261
+      "elapsed_ms": 352
     },
     {
       "url": "https://toolkit.climate.gov/case-study/eighth-graders-and-emergency-preparedness-oklahoma",
@@ -496,7 +496,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 311
+      "elapsed_ms": 319
     },
     {
       "url": "https://toolkit.climate.gov/case-study/evaluation-sustainable-water-availability-drought-prone-watersheds-southeastern-oklahoma",
@@ -504,7 +504,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 423
+      "elapsed_ms": 359
     },
     {
       "url": "https://toolkit.climate.gov/case-study/expanding-indigenous-environmental-monitoring-network-community-driven-stewardship-land",
@@ -512,7 +512,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 297
+      "elapsed_ms": 346
     },
     {
       "url": "https://toolkit.climate.gov/case-study/floridas-community-resiliency-initiative",
@@ -520,7 +520,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 271
+      "elapsed_ms": 423
     },
     {
       "url": "https://toolkit.climate.gov/case-study/forest-thinning-restore-fire-resilience-lassen-volcanic-national-park",
@@ -528,7 +528,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 459
+      "elapsed_ms": 422
     },
     {
       "url": "https://toolkit.climate.gov/case-study/freeze-drying-crops-increased-climate-change-resilience-new-mexico",
@@ -536,7 +536,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 325
+      "elapsed_ms": 474
     },
     {
       "url": "https://toolkit.climate.gov/case-study/grand-isle-louisianas-first-line-defense-coastal-flooding",
@@ -544,7 +544,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 345
+      "elapsed_ms": 312
     },
     {
       "url": "https://toolkit.climate.gov/case-study/great-lakes-restoration-initiative-pollinator-task-force",
@@ -552,7 +552,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 356
+      "elapsed_ms": 345
     },
     {
       "url": "https://toolkit.climate.gov/case-study/habitat-along-gulf-coast-louisiana-and-texas-sea-level-rise-urbanization-and-mottled",
@@ -560,7 +560,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 305
+      "elapsed_ms": 344
     },
     {
       "url": "https://toolkit.climate.gov/case-study/homer-alaska-climate-action-plan",
@@ -568,7 +568,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 293
+      "elapsed_ms": 355
     },
     {
       "url": "https://toolkit.climate.gov/case-study/how-new-battery-capacity-helped-california-avoid-another-blackout",
@@ -576,7 +576,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 428
+      "elapsed_ms": 305
     },
     {
       "url": "https://toolkit.climate.gov/case-study/i%C3%B1upiat-work-preserve-food-and-traditions-alaskas-north-slope",
@@ -584,7 +584,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 296
+      "elapsed_ms": 371
     },
     {
       "url": "https://toolkit.climate.gov/case-study/identifying-areas-high-salinity-pecos-river-basin",
@@ -592,7 +592,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 327
+      "elapsed_ms": 398
     },
     {
       "url": "https://toolkit.climate.gov/case-study/identifying-mesquite-canopy-restoration-opportunities",
@@ -600,7 +600,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 181
+      "elapsed_ms": 523
     },
     {
       "url": "https://toolkit.climate.gov/case-study/identifying-opportunities-climate-adaptation-delaware-estuary",
@@ -608,7 +608,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 381
+      "elapsed_ms": 424
     },
     {
       "url": "https://toolkit.climate.gov/case-study/impacts-herbicide-brush-management-hydrology-sedimentation-walnut-gulch-experimental",
@@ -616,7 +616,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 386
+      "elapsed_ms": 503
     },
     {
       "url": "https://toolkit.climate.gov/case-study/implementing-interventions-heat-related-illness-and-wildfire-smoke-exposure-north",
@@ -624,7 +624,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 328
+      "elapsed_ms": 356
     },
     {
       "url": "https://toolkit.climate.gov/case-study/improving-pollinator-habitat-mcconnell-air-force-base",
@@ -632,7 +632,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 374
+      "elapsed_ms": 390
     },
     {
       "url": "https://toolkit.climate.gov/case-study/incorporating-climate-change-casco-bay-estuary-partnership",
@@ -640,7 +640,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 433
+      "elapsed_ms": 261
     },
     {
       "url": "https://toolkit.climate.gov/case-study/integrating-climate-change-plan-revisions-el-yunque-national-forest",
@@ -648,7 +648,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 452
+      "elapsed_ms": 260
     },
     {
       "url": "https://toolkit.climate.gov/case-study/integrating-climate-change-planning-and-operations-apostle-islands-national-lakeshore-wi",
@@ -656,7 +656,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 361
+      "elapsed_ms": 261
     },
     {
       "url": "https://toolkit.climate.gov/case-study/kailua-beach-and-dune-management-plan",
@@ -664,7 +664,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 307
+      "elapsed_ms": 362
     },
     {
       "url": "https://toolkit.climate.gov/case-study/land-treatment-exploration-tool-and-adaptive-management-planning-examples-post-fire",
@@ -672,7 +672,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 268
+      "elapsed_ms": 294
     },
     {
       "url": "https://toolkit.climate.gov/case-study/looking-future-alaska%E2%80%99s-north-slope",
@@ -680,7 +680,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 252
+      "elapsed_ms": 377
     },
     {
       "url": "https://toolkit.climate.gov/case-study/maines-lobster-fishing-community-confronts-their-changing-climate",
@@ -688,7 +688,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 396
+      "elapsed_ms": 428
     },
     {
       "url": "https://toolkit.climate.gov/case-study/managed-retreat-surfer%E2%80%99s-point-california",
@@ -696,7 +696,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 373
+      "elapsed_ms": 426
     },
     {
       "url": "https://toolkit.climate.gov/case-study/managing-water-irrigated-agriculture-central-arizona-desert",
@@ -704,7 +704,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 415
+      "elapsed_ms": 363
     },
     {
       "url": "https://toolkit.climate.gov/case-study/mandeville-louisiana-city-stays-afloat-promoting-elevations",
@@ -712,7 +712,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 428
+      "elapsed_ms": 410
     },
     {
       "url": "https://toolkit.climate.gov/case-study/mapping-urban-heat-island-oklahoma-city",
@@ -720,7 +720,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 398
+      "elapsed_ms": 557
     },
     {
       "url": "https://toolkit.climate.gov/case-study/matching-regional-hiring-trends-climate-action-plans-creates-training-career",
@@ -728,7 +728,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 313
+      "elapsed_ms": 310
     },
     {
       "url": "https://toolkit.climate.gov/case-study/meeting-employer-needs-through-three-tiered-approach-curriculum-design",
@@ -736,7 +736,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 482
+      "elapsed_ms": 528
     },
     {
       "url": "https://toolkit.climate.gov/case-study/modeling-species%E2%80%90specific-and-scale%E2%80%90dependent-bird-responses-drought",
@@ -744,7 +744,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 403
+      "elapsed_ms": 315
     },
     {
       "url": "https://toolkit.climate.gov/case-study/national-estuarine-research-reserve%E2%80%99s-%E2%80%9Cplanning-climate-change%E2%80%9D-workshop-cake",
@@ -752,7 +752,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 502
+      "elapsed_ms": 290
     },
     {
       "url": "https://toolkit.climate.gov/case-study/national-stormsmart-coasts-network-linking-coastal-decision-makers-resources",
@@ -760,7 +760,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 341
+      "elapsed_ms": 387
     },
     {
       "url": "https://toolkit.climate.gov/case-study/new-earth-project-pilot-climate-change-mitigation-through-food-waste-reduction",
@@ -768,7 +768,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 354
+      "elapsed_ms": 400
     },
     {
       "url": "https://toolkit.climate.gov/case-study/new-generation-water-planners-confronts-change-along-colorado-river",
@@ -776,7 +776,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 387
+      "elapsed_ms": 420
     },
     {
       "url": "https://toolkit.climate.gov/case-study/polar-bear-designation-under-us-endangered-species-act",
@@ -784,7 +784,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 387
+      "elapsed_ms": 520
     },
     {
       "url": "https://toolkit.climate.gov/case-study/preparing-sea-level-rise-estuaries-along-oregon-coast",
@@ -792,7 +792,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 376
+      "elapsed_ms": 337
     },
     {
       "url": "https://toolkit.climate.gov/case-study/promoting-ecotourism-conserve-watershed-virginia",
@@ -800,7 +800,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 445
+      "elapsed_ms": 535
     },
     {
       "url": "https://toolkit.climate.gov/case-study/recertifying-utility-workers-small-remote-community",
@@ -808,7 +808,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 544
+      "elapsed_ms": 409
     },
     {
       "url": "https://toolkit.climate.gov/case-study/recognizing-coral-adaptations-environmental-stressors-national-park-american-samoa",
@@ -816,7 +816,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 467
+      "elapsed_ms": 327
     },
     {
       "url": "https://toolkit.climate.gov/case-study/regenerative-agriculture-arid-southwest-oatman-flats-ranch",
@@ -824,7 +824,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 379
+      "elapsed_ms": 273
     },
     {
       "url": "https://toolkit.climate.gov/case-study/relocating-native-village-shishmaref-alaska-due-coastal-erosion",
@@ -832,7 +832,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 387
+      "elapsed_ms": 223
     },
     {
       "url": "https://toolkit.climate.gov/case-study/relocating-village-kivalina-alaska-due-coastal-erosion",
@@ -840,7 +840,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 213
+      "elapsed_ms": 364
     },
     {
       "url": "https://toolkit.climate.gov/case-study/relocating-village-newtok-alaska-due-coastal-erosion",
@@ -848,7 +848,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 392
+      "elapsed_ms": 395
     },
     {
       "url": "https://toolkit.climate.gov/case-study/resiliencia-y-adaptaci%C3%B3n-inclusi%C3%B3n-en-preparaci%C3%B3n-para-emergencias-en-puerto-rico-tras",
@@ -856,7 +856,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 359
+      "elapsed_ms": 362
     },
     {
       "url": "https://toolkit.climate.gov/case-study/response-florida-shelf-ecosystems-climate-change-flash-project",
@@ -864,7 +864,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 330
+      "elapsed_ms": 426
     },
     {
       "url": "https://toolkit.climate.gov/case-study/restore-america%E2%80%99s-estuaries-climate-action-plan",
@@ -872,7 +872,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 386
+      "elapsed_ms": 482
     },
     {
       "url": "https://toolkit.climate.gov/case-study/restorenet-collaboration-improve-success-seed-based-restoration-colorado-plateau",
@@ -880,7 +880,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 376
+      "elapsed_ms": 422
     },
     {
       "url": "https://toolkit.climate.gov/case-study/restoring-rangelands-northern-new-mexico-keyline-design",
@@ -888,7 +888,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 456
+      "elapsed_ms": 356
     },
     {
       "url": "https://toolkit.climate.gov/case-study/rhode-island-coastal-resources-management-council",
@@ -896,7 +896,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 420
+      "elapsed_ms": 326
     },
     {
       "url": "https://toolkit.climate.gov/case-study/road-flooding-fix-california-state-park",
@@ -904,7 +904,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 350
+      "elapsed_ms": 210
     },
     {
       "url": "https://toolkit.climate.gov/case-study/sentinel-monitoring-salt-marshes-north-carolina-national-estuarine-research-reserve",
@@ -912,7 +912,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 281
+      "elapsed_ms": 323
     },
     {
       "url": "https://toolkit.climate.gov/case-study/south-carolina%E2%80%99s-lowcountry-prepares-changing-global-conditions",
@@ -920,7 +920,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 255
+      "elapsed_ms": 370
     },
     {
       "url": "https://toolkit.climate.gov/case-study/teaching-water-wise-landscape-design-conserve-water-intermountain-west",
@@ -928,7 +928,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 342
+      "elapsed_ms": 394
     },
     {
       "url": "https://toolkit.climate.gov/case-study/trade-association-initiative-expanding-critical-workforce-skills-multiple-states",
@@ -936,7 +936,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 277
+      "elapsed_ms": 345
     },
     {
       "url": "https://toolkit.climate.gov/case-study/training-workforce-bring-nature-based-solutions-every-project",
@@ -944,7 +944,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 298
+      "elapsed_ms": 375
     },
     {
       "url": "https://toolkit.climate.gov/case-study/using-precautionary-approach-manage-north-pacific-fisheries-under-uncertainty",
@@ -952,7 +952,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 425
+      "elapsed_ms": 343
     },
     {
       "url": "https://toolkit.climate.gov/case-study/uvm-students-offer-real-world-climate-recommendations-vermont-town",
@@ -960,7 +960,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 370
+      "elapsed_ms": 398
     },
     {
       "url": "https://toolkit.climate.gov/case-study/virginia-beach-becomes-sea-level-wise",
@@ -968,7 +968,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 501
+      "elapsed_ms": 339
     },
     {
       "url": "https://toolkit.climate.gov/case-study/water-recycling-clayton-county-georgia",
@@ -976,7 +976,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 451
+      "elapsed_ms": 430
     },
     {
       "url": "https://toolkit.climate.gov/case-study/west-wide-climate-risk-assessments-irrigation-demand-and-reservoir-evaporation",
@@ -984,7 +984,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 504
+      "elapsed_ms": 429
     },
     {
       "url": "https://toolkit.climate.gov/case-study/when-weather-becomes-problem-motivating-resilience-action-texas",
@@ -992,7 +992,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 422
+      "elapsed_ms": 249
     },
     {
       "url": "https://toolkit.climate.gov/case-study/wind-river-reservation-drought-preparedness",
@@ -1000,7 +1000,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 491
+      "elapsed_ms": 319
     },
     {
       "url": "https://toolkit.climate.gov/case-study/wood-life-collaborative-partnership-provide-wood-navajo-nation-and-hopi-tribe",
@@ -1008,7 +1008,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 409
+      "elapsed_ms": 363
     },
     {
       "url": "https://toolkit.climate.gov/case-study/working-together-keep-lights-new-york-city",
@@ -1016,7 +1016,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 356
+      "elapsed_ms": 699
     },
     {
       "url": "https://www.epa.gov/brownfields/aberdeen-sd-continuing-legacy-learning",
@@ -1024,7 +1024,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 456
+      "elapsed_ms": 385
     },
     {
       "url": "https://www.epa.gov/brownfields/ambler-pa-repowering-historic-landmark",
@@ -1032,7 +1032,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 356
+      "elapsed_ms": 363
     },
     {
       "url": "https://www.epa.gov/brownfields/aurora-co-flying-high-again",
@@ -1040,7 +1040,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 356
+      "elapsed_ms": 321
     },
     {
       "url": "https://www.epa.gov/brownfields/austin-tx-festival-beach-food-forest",
@@ -1048,7 +1048,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 597
+      "elapsed_ms": 300
     },
     {
       "url": "https://www.epa.gov/brownfields/beech-bottom-wv-forging-new-future-steel-country",
@@ -1056,7 +1056,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 425
+      "elapsed_ms": 263
     },
     {
       "url": "https://www.epa.gov/brownfields/boat-house-city-point",
@@ -1064,7 +1064,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 369
+      "elapsed_ms": 336
     },
     {
       "url": "https://www.epa.gov/brownfields/brownfields-success-story-common-success-cooper-commons-llc",
@@ -1072,7 +1072,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 425
+      "elapsed_ms": 372
     },
     {
       "url": "https://www.epa.gov/brownfields/ceredo-wv-community-its-heart-right-place",
@@ -1080,7 +1080,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 415
+      "elapsed_ms": 340
     },
     {
       "url": "https://www.epa.gov/brownfields/chester-wv-dishing-new-business-park",
@@ -1088,7 +1088,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 393
+      "elapsed_ms": 323
     },
     {
       "url": "https://www.epa.gov/brownfields/chicago-il-strong-roots-professional-growth",
@@ -1096,7 +1096,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 300
+      "elapsed_ms": 321
     },
     {
       "url": "https://www.epa.gov/brownfields/coventry-ri-attracting-wildlife-former-dumping-ground",
@@ -1104,7 +1104,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 420
+      "elapsed_ms": 431
     },
     {
       "url": "https://www.epa.gov/brownfields/great-falls-mt-taking-back-downtown-one-brownfield-time",
@@ -1112,7 +1112,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 168
+      "elapsed_ms": 449
     },
     {
       "url": "https://www.epa.gov/brownfields/greensboro-ga-bringing-affordable-housing-historic-cotton-mill",
@@ -1120,7 +1120,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 383
+      "elapsed_ms": 394
     },
     {
       "url": "https://www.epa.gov/brownfields/hickory-nc-refashioning-hickorys-historic-textile-mills",
@@ -1128,7 +1128,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 414
+      "elapsed_ms": 291
     },
     {
       "url": "https://www.epa.gov/brownfields/hillsboro-or-navigating-new-river-launch",
@@ -1136,7 +1136,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 414
+      "elapsed_ms": 426
     },
     {
       "url": "https://www.epa.gov/brownfields/indianapolis-lending-helping-hand-veterans-need",
@@ -1144,7 +1144,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 549
+      "elapsed_ms": 261
     },
     {
       "url": "https://www.epa.gov/brownfields/janesville-wi-locally-driven-revitalization-plan-turns-riverfront-brownfields-downtown",
@@ -1152,7 +1152,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 382
+      "elapsed_ms": 307
     },
     {
       "url": "https://www.epa.gov/brownfields/lexington-ky-revitalization-docket",
@@ -1160,7 +1160,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 321
+      "elapsed_ms": 342
     },
     {
       "url": "https://www.epa.gov/brownfields/lincoln-ne-heyday-west-haymarket",
@@ -1168,7 +1168,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 292
+      "elapsed_ms": 384
     },
     {
       "url": "https://www.epa.gov/brownfields/minot-nd-after-flood-redevelopment-blooms",
@@ -1176,7 +1176,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 662
+      "elapsed_ms": 665
     },
     {
       "url": "https://www.epa.gov/brownfields/new-home-affordable-health-care-hilltop",
@@ -1184,7 +1184,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 210
+      "elapsed_ms": 446
     },
     {
       "url": "https://www.epa.gov/brownfields/newell-wv-former-football-field-scores-victory-home",
@@ -1192,7 +1192,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 345
+      "elapsed_ms": 320
     },
     {
       "url": "https://www.epa.gov/brownfields/norristown-pa-redevelopment-gets-fired",
@@ -1200,7 +1200,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 145
+      "elapsed_ms": 350
     },
     {
       "url": "https://www.epa.gov/brownfields/pittsburgh-pa-luxury-living-industrial-legacy",
@@ -1208,7 +1208,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 370
+      "elapsed_ms": 383
     },
     {
       "url": "https://www.epa.gov/brownfields/poplar-mt-making-things-right-former-airfield",
@@ -1216,7 +1216,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 565
+      "elapsed_ms": 365
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-25-southgate-street-worcester-mass",
@@ -1224,7 +1224,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 397
+      "elapsed_ms": 301
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-250-birge-st-brattleboro-vt",
@@ -1232,7 +1232,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 469
+      "elapsed_ms": 254
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-639-main-street-east-hartford-conn",
@@ -1240,7 +1240,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 397
+      "elapsed_ms": 261
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-870-western-ave-lynn-mass",
@@ -1248,7 +1248,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 499
+      "elapsed_ms": 283
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-albany-general-store-albany-vt",
@@ -1256,7 +1256,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 406
+      "elapsed_ms": 353
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-bartlett-station-boston-mass",
@@ -1264,7 +1264,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 420
+      "elapsed_ms": 282
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-belle-isle-salt-marsh-boston-mass",
@@ -1272,7 +1272,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 331
+      "elapsed_ms": 398
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-branch-street-pawtucket-ri",
@@ -1280,7 +1280,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 340
+      "elapsed_ms": 552
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-charles-tartaglia-park-brockton-mass",
@@ -1288,7 +1288,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 486
+      "elapsed_ms": 552
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-childrens-museum-theatre-maine-portland-maine",
@@ -1296,7 +1296,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 360
+      "elapsed_ms": 430
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-city-market-south-end-onion-river-co-op-burlington-vt",
@@ -1304,7 +1304,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 474
+      "elapsed_ms": 551
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-creative-paper-and-packaging-co-worcester-mass",
@@ -1312,7 +1312,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 465
+      "elapsed_ms": 425
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-farnum-center-manchester-nh",
@@ -1320,7 +1320,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 403
+      "elapsed_ms": 518
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-ferrous-site-lawrence-mass",
@@ -1328,7 +1328,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 288
+      "elapsed_ms": 398
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-festival-pier-state-pier-pawtucket-ri",
@@ -1336,7 +1336,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 258
+      "elapsed_ms": 271
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-franconia-paper-mill-riverwalk-resort-lincoln-nh",
@@ -1344,7 +1344,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 314
+      "elapsed_ms": 299
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-goodyear-industrial-campus-windsor-vt",
@@ -1352,7 +1352,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 306
+      "elapsed_ms": 364
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-hilltop-school-somersworth-nh",
@@ -1360,7 +1360,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 199
+      "elapsed_ms": 331
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-hiram-school-hiram-maine",
@@ -1368,7 +1368,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 412
+      "elapsed_ms": 344
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-homestead-nursing-home-kittery-maine",
@@ -1376,7 +1376,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 379
+      "elapsed_ms": 602
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-howard-street-apartments-new-london-conn",
@@ -1384,7 +1384,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 641
+      "elapsed_ms": 312
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-job-training-dads-rhode-island",
@@ -1392,7 +1392,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 370
+      "elapsed_ms": 535
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-ludlow-mills-ludlow-mass",
@@ -1400,7 +1400,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 328
+      "elapsed_ms": 334
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-mayo-mill-dover-foxcroft-maine",
@@ -1408,7 +1408,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 417
+      "elapsed_ms": 345
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-meeting-street-providence-ri",
@@ -1416,7 +1416,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 469
+      "elapsed_ms": 409
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-meriden-green-meriden-conn",
@@ -1424,7 +1424,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 416
+      "elapsed_ms": 293
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-monroe-bridge-overlook-monroe-mass",
@@ -1432,7 +1432,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 415
+      "elapsed_ms": 232
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-old-town-paper-mill-old-town-maine",
@@ -1440,7 +1440,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 317
+      "elapsed_ms": 202
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-park-theatre-jaffrey-nh",
@@ -1448,7 +1448,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 320
+      "elapsed_ms": 317
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-polar-park-worcester-mass",
@@ -1456,7 +1456,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 439
+      "elapsed_ms": 356
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-pownal-dam-pownal-vt",
@@ -1464,7 +1464,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 410
+      "elapsed_ms": 456
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-richmond-creamery-richmond-vt",
@@ -1472,7 +1472,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 380
+      "elapsed_ms": 445
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-robertson-paper-mill-bellows-falls-vt",
@@ -1480,7 +1480,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 546
+      "elapsed_ms": 380
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-ryan-park-norwalk-conn",
@@ -1488,7 +1488,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 321
+      "elapsed_ms": 317
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-soilshop-portland-maine",
@@ -1496,7 +1496,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 336
+      "elapsed_ms": 316
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-st-johnsbury-glove-factory-st-johnsbury-vt",
@@ -1504,7 +1504,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 473
+      "elapsed_ms": 522
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-st-johnsbury-hardware-store-site-st-johnsbury-vt",
@@ -1512,7 +1512,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 266
+      "elapsed_ms": 332
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-stone-house-boston-mass",
@@ -1520,7 +1520,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 346
+      "elapsed_ms": 246
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-swift-factory-hartford-conn",
@@ -1528,7 +1528,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 304
+      "elapsed_ms": 231
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-thornton-heights-common-south-portland-maine",
@@ -1536,7 +1536,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 493
+      "elapsed_ms": 496
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-three-rivers-trailhead-st-johnsbury-vt",
@@ -1544,7 +1544,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 495
+      "elapsed_ms": 565
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-torin-site-torrington-conn",
@@ -1552,7 +1552,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 608
+      "elapsed_ms": 698
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-tw-dick-gardiner-maine",
@@ -1560,7 +1560,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 600
+      "elapsed_ms": 511
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-union-station-springfield-mass",
@@ -1568,7 +1568,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 601
+      "elapsed_ms": 504
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-united-community-family-services-griswold-conn",
@@ -1576,7 +1576,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 726
+      "elapsed_ms": 502
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-verso-paper-mill-bucksport-maine",
@@ -1584,7 +1584,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 430
+      "elapsed_ms": 502
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-waterfire-arts-center-providence-ri",
@@ -1592,7 +1592,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 463
+      "elapsed_ms": 414
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-well-site-passamaquoddy-tribe-pleasant-point-maine",
@@ -1600,7 +1600,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 448
+      "elapsed_ms": 373
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-willimantic-whitewater-willimantic-conn",
@@ -1608,7 +1608,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 587
+      "elapsed_ms": 556
     },
     {
       "url": "https://www.epa.gov/brownfields/r1-success-story-wood-island-life-saving-station-kittery-maine",
@@ -1616,7 +1616,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 335
+      "elapsed_ms": 374
     },
     {
       "url": "https://www.epa.gov/brownfields/richmond-va-cheers-revitalized-neighborhood",
@@ -1624,7 +1624,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 302
+      "elapsed_ms": 337
     },
     {
       "url": "https://www.epa.gov/brownfields/roanoke-va-giving-credit-where-its-due",
@@ -1632,7 +1632,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 458
+      "elapsed_ms": 435
     },
     {
       "url": "https://www.epa.gov/brownfields/roanoke-va-renovated-building-gets-back-its-roots",
@@ -1640,7 +1640,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 425
+      "elapsed_ms": 384
     },
     {
       "url": "https://www.epa.gov/brownfields/seattle-wa-redevelopment-yields-much-needed-affordable-housing",
@@ -1648,7 +1648,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 367
+      "elapsed_ms": 351
     },
     {
       "url": "https://www.epa.gov/brownfields/service-pumps-commercial-hub-greene-county-pa",
@@ -1656,7 +1656,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 626
+      "elapsed_ms": 680
     },
     {
       "url": "https://www.epa.gov/brownfields/shubuta-ms-strengthening-shubuta",
@@ -1664,7 +1664,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 366
+      "elapsed_ms": 382
     },
     {
       "url": "https://www.epa.gov/brownfields/silver-city-nm-silver-lining-abandoned-hospital",
@@ -1672,7 +1672,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 288
+      "elapsed_ms": 521
     },
     {
       "url": "https://www.epa.gov/brownfields/tillamook-or-going-flow-prevent-flooding",
@@ -1680,7 +1680,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 414
+      "elapsed_ms": 249
     },
     {
       "url": "https://www.epa.gov/brownfields/waterloo-ia-brownfields-revitalized-downtown",
@@ -1688,7 +1688,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 299
+      "elapsed_ms": 359
     },
     {
       "url": "https://www.epa.gov/brownfields/weirton-wv-abandoned-school-main-event",
@@ -1696,7 +1696,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 272
+      "elapsed_ms": 344
     },
     {
       "url": "https://www.epa.gov/brownfields/weirton-wv-former-coal-mine-springs-life",
@@ -1704,7 +1704,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 228
+      "elapsed_ms": 304
     },
     {
       "url": "https://www.epa.gov/brownfields/wellsburg-wv-local-manufacturing-expansion-takes-flight",
@@ -1712,7 +1712,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 303
+      "elapsed_ms": 494
     },
     {
       "url": "https://www.epa.gov/brownfields/woodbridge-township-nj-bringing-clean-energy-abandoned-waterfront",
@@ -1720,7 +1720,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 353
+      "elapsed_ms": 330
     },
     {
       "url": "https://www.epa.gov/brownfields/yorklyn-de-clean-water-funds-brownfield-redevelopment",
@@ -1728,7 +1728,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 319
+      "elapsed_ms": 339
     },
     {
       "url": "https://www.epa.gov/sites/default/files/2015-09/documents/epa_oblr_successstory_earth_conservancy_v4_508.pdf",
@@ -1736,7 +1736,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 296
+      "elapsed_ms": 338
     },
     {
       "url": "https://www.epa.gov/sites/default/files/2015-09/documents/lakewood_co.pdf",
@@ -1744,7 +1744,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 368
+      "elapsed_ms": 338
     },
     {
       "url": "https://www.epa.gov/sites/default/files/2015-11/documents/allentown_waterfront_success_story_by_jennifer_hill_082615_r2.pdf",
@@ -1752,7 +1752,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 295
+      "elapsed_ms": 277
     },
     {
       "url": "https://www.epa.gov/sites/default/files/2015-11/documents/shepherdstown_success_story.pdf",
@@ -1760,7 +1760,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 280
+      "elapsed_ms": 350
     },
     {
       "url": "https://www.epa.gov/sites/default/files/2015-11/documents/slate_belt_ymca_by_jennifere_hill_101615.pdf",
@@ -1768,15 +1768,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 418
-    },
-    {
-      "url": "https://www.epa.gov/sites/default/files/2016-01/documents/lflp_summary_report_jun2015.pdf",
-      "final_url": "https://www.epa.gov/sites/default/files/2016-01/documents/lflp_summary_report_jun2015.pdf",
-      "http_status": 200,
-      "result": "reachable",
-      "error": "",
-      "elapsed_ms": 300
+      "elapsed_ms": 317
     },
     {
       "url": "https://www.epa.gov/sites/default/files/2017-03/documents/the_adamston_commons_clarksburg.pdf",
@@ -1784,31 +1776,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 325
-    },
-    {
-      "url": "https://www.epa.gov/sites/default/files/2017-04/documents/lflp_partners_report_2017.pdf",
-      "final_url": "https://www.epa.gov/sites/default/files/2017-04/documents/lflp_partners_report_2017.pdf",
-      "http_status": 200,
-      "result": "reachable",
-      "error": "",
-      "elapsed_ms": 331
-    },
-    {
-      "url": "https://www.epa.gov/sites/default/files/2017-04/documents/lflp_summary_report_update_2016-17.pdf",
-      "final_url": "https://www.epa.gov/sites/default/files/2017-04/documents/lflp_summary_report_update_2016-17.pdf",
-      "http_status": 200,
-      "result": "reachable",
-      "error": "",
-      "elapsed_ms": 351
-    },
-    {
-      "url": "https://www.epa.gov/sites/default/files/2018-05/documents/2018_summary_report_05-21-18-508.pdf",
-      "final_url": "https://www.epa.gov/sites/default/files/2018-05/documents/2018_summary_report_05-21-18-508.pdf",
-      "http_status": 200,
-      "result": "reachable",
-      "error": "",
-      "elapsed_ms": 383
+      "elapsed_ms": 316
     },
     {
       "url": "https://www.epa.gov/sites/default/files/2018-09/documents/carlisle_goes_vertical_091818.pdf",
@@ -1816,7 +1784,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 382
+      "elapsed_ms": 428
     },
     {
       "url": "https://www.epa.gov/sites/default/files/2018-09/documents/roanoke_railway_to_reuse_091818.pdf",
@@ -1824,7 +1792,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 542
+      "elapsed_ms": 394
     },
     {
       "url": "https://www.epa.gov/sites/default/files/2018-10/documents/empowered_by_innovation_pennovations.pdf",
@@ -1832,7 +1800,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 382
+      "elapsed_ms": 387
     },
     {
       "url": "https://www.epa.gov/sites/default/files/2018-10/documents/pulaski_success_story.pdf",
@@ -1840,7 +1808,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 281
+      "elapsed_ms": 355
     },
     {
       "url": "https://www.epa.gov/sites/default/files/2019-03/documents/brownfields_to_brewery.pdf",
@@ -1848,15 +1816,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 249
-    },
-    {
-      "url": "https://www.epa.gov/sites/default/files/2019-04/documents/lflp5_summary_report.pdf",
-      "final_url": "https://www.epa.gov/sites/default/files/2019-04/documents/lflp5_summary_report.pdf",
-      "http_status": 200,
-      "result": "reachable",
-      "error": "",
-      "elapsed_ms": 316
+      "elapsed_ms": 385
     },
     {
       "url": "https://www.epa.gov/sites/default/files/2019-10/documents/westmoreland_success_story.pdf",
@@ -1864,15 +1824,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 450
-    },
-    {
-      "url": "https://www.epa.gov/sites/default/files/2020-05/documents/2020_lflp6_summary_report.pdf",
-      "final_url": "https://www.epa.gov/sites/default/files/2020-05/documents/2020_lflp6_summary_report.pdf",
-      "http_status": 200,
-      "result": "reachable",
-      "error": "",
-      "elapsed_ms": 226
+      "elapsed_ms": 309
     },
     {
       "url": "https://www.epa.gov/sites/default/files/2020-10/documents/epa_bf_successstory_steelworks_0.pdf",
@@ -1880,7 +1832,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 284
+      "elapsed_ms": 263
     },
     {
       "url": "https://www.epa.gov/sites/default/files/2020-10/documents/newcastleparefractories_successstory.pdf",
@@ -1888,7 +1840,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 274
+      "elapsed_ms": 203
     },
     {
       "url": "https://www.epa.gov/sites/default/files/2020-11/documents/epa_brownfields_success_story_-_former_alcoa_research_park.pdf",
@@ -1896,7 +1848,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 389
+      "elapsed_ms": 374
     },
     {
       "url": "https://www.epa.gov/sites/default/files/2020-11/documents/epa_brownfields_success_story_-_homewood_senior_housing_and_cafe.pdf",
@@ -1904,7 +1856,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 392
+      "elapsed_ms": 360
     },
     {
       "url": "https://www.epa.gov/sites/default/files/2020-11/documents/epa_brownfields_success_story_-_lawrenceville_foundry.pdf",
@@ -1912,7 +1864,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 463
+      "elapsed_ms": 427
     },
     {
       "url": "https://www.epa.gov/sites/default/files/2020-11/documents/epa_brownfields_success_story_-_shell_distribution_facility.pdf",
@@ -1920,7 +1872,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 362
+      "elapsed_ms": 433
     },
     {
       "url": "https://www.epa.gov/smartgrowth/atlantic-station-atlantic-steel-site-redevelopment-project",
@@ -1928,7 +1880,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 308
+      "elapsed_ms": 481
     },
     {
       "url": "https://www.epa.gov/smartgrowth/cool-connected-lakeville-indiana",
@@ -1936,7 +1888,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 232
+      "elapsed_ms": 431
     },
     {
       "url": "https://www.epa.gov/smartgrowth/cool-connected-millinocket-maine",
@@ -1944,7 +1896,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 232
+      "elapsed_ms": 653
     },
     {
       "url": "https://www.epa.gov/smartgrowth/create-range-housing-choices-case-study-benedict-commons-aspen-colorado",
@@ -1952,7 +1904,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 372
+      "elapsed_ms": 431
     },
     {
       "url": "https://www.epa.gov/smartgrowth/create-range-housing-choices-case-study-hismen-hin-nu-terrace-oakland-california",
@@ -1960,7 +1912,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 345
+      "elapsed_ms": 447
     },
     {
       "url": "https://www.epa.gov/smartgrowth/create-walkable-neighborhoods-bethesda-row-bethesda-maryland",
@@ -1968,7 +1920,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 286
+      "elapsed_ms": 431
     },
     {
       "url": "https://www.epa.gov/smartgrowth/create-walkable-neighborhoods-northwest-landing-dupont-washington",
@@ -1976,7 +1928,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 392
+      "elapsed_ms": 536
     },
     {
       "url": "https://www.epa.gov/smartgrowth/direct-development-towards-existing-communities-mizner-park-boca-raton-florida",
@@ -1984,7 +1936,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 363
+      "elapsed_ms": 260
     },
     {
       "url": "https://www.epa.gov/smartgrowth/direct-development-towards-existing-communities-uptown-district-san-diego-california",
@@ -1992,7 +1944,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 300
+      "elapsed_ms": 454
     },
     {
       "url": "https://www.epa.gov/smartgrowth/encourage-community-and-stakeholder-collaboration-barrio-logan-san-diego-california",
@@ -2000,7 +1952,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 336
+      "elapsed_ms": 509
     },
     {
       "url": "https://www.epa.gov/smartgrowth/encourage-community-and-stakeholder-collaboration-east-russell-partnership-louisville",
@@ -2008,7 +1960,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 333
+      "elapsed_ms": 447
     },
     {
       "url": "https://www.epa.gov/smartgrowth/foster-distinctive-communities-can-company-baltimore-maryland",
@@ -2016,7 +1968,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 332
+      "elapsed_ms": 420
     },
     {
       "url": "https://www.epa.gov/smartgrowth/foster-distinctive-communities-downtown-brea-brea-california",
@@ -2024,7 +1976,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 318
+      "elapsed_ms": 501
     },
     {
       "url": "https://www.epa.gov/smartgrowth/gonzales-louisiana-explores-transportation-electrification-opportunities",
@@ -2032,7 +1984,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 417
+      "elapsed_ms": 499
     },
     {
       "url": "https://www.epa.gov/smartgrowth/make-development-decisions-predictable-and-fair-compact-development-endorsement-program",
@@ -2040,7 +1992,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 384
+      "elapsed_ms": 777
     },
     {
       "url": "https://www.epa.gov/smartgrowth/make-development-decisions-predictable-and-fair-green-tape-program-silver-spring",
@@ -2048,7 +2000,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 349
+      "elapsed_ms": 451
     },
     {
       "url": "https://www.epa.gov/smartgrowth/mix-land-uses-eighth-pearl-boulder-colorado",
@@ -2056,7 +2008,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 421
+      "elapsed_ms": 163
     },
     {
       "url": "https://www.epa.gov/smartgrowth/mix-land-uses-legacy-town-center-plano-texas",
@@ -2064,7 +2016,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 472
+      "elapsed_ms": 500
     },
     {
       "url": "https://www.epa.gov/smartgrowth/old-north-st-louis-sustainably-developing-historic-district",
@@ -2072,7 +2024,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 425
+      "elapsed_ms": 723
     },
     {
       "url": "https://www.epa.gov/smartgrowth/preserve-open-space-and-farmland-abacoa-jupiter-florida",
@@ -2080,7 +2032,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 425
+      "elapsed_ms": 690
     },
     {
       "url": "https://www.epa.gov/smartgrowth/preserve-open-space-and-farmland-east-lake-commons-decatur-georgia",
@@ -2088,7 +2040,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 595
+      "elapsed_ms": 854
     },
     {
       "url": "https://www.epa.gov/smartgrowth/provide-transportation-choices-crossings-mountain-view-california",
@@ -2096,7 +2048,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 536
+      "elapsed_ms": 889
     },
     {
       "url": "https://www.epa.gov/smartgrowth/provide-transportation-choices-king-farm-rockville-maryland",
@@ -2104,15 +2056,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 309
-    },
-    {
-      "url": "https://www.epa.gov/smartgrowth/recreation-economy-rural-communities",
-      "final_url": "https://www.epa.gov/smartgrowth/recreation-economy-rural-communities",
-      "http_status": 200,
-      "result": "reachable",
-      "error": "",
-      "elapsed_ms": 257
+      "elapsed_ms": 608
     },
     {
       "url": "https://www.epa.gov/smartgrowth/take-advantage-compact-building-design-belmont-dairy-portland-oregon",
@@ -2120,7 +2064,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 414
+      "elapsed_ms": 606
     },
     {
       "url": "https://www.epa.gov/smartgrowth/take-advantage-compact-building-design-highlands-garden-village-denver-colorado",
@@ -2128,7 +2072,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 375
+      "elapsed_ms": 805
     },
     {
       "url": "https://www.epa.gov/system/files/documents/2022-12/R3%20BF%20Erie%20County%20PA%20Success%20Story.pdf",
@@ -2136,7 +2080,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 409
+      "elapsed_ms": 850
     },
     {
       "url": "https://www.epa.gov/system/files/documents/2022-12/R3%20BF%20Northampton%20County%20VA%20Success%20Story.pdf",
@@ -2144,7 +2088,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 437
+      "elapsed_ms": 597
     },
     {
       "url": "https://www.epa.gov/system/files/documents/2024-04/epa_oblr_successstory_taylor_colliery.pdf",
@@ -2152,7 +2096,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 319
+      "elapsed_ms": 581
     },
     {
       "url": "https://www.epa.gov/system/files/documents/2024-12/overbrook-environmental-education-center-becomes-community-hub-philadelphia-pa.pdf",
@@ -2160,7 +2104,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 466
+      "elapsed_ms": 644
     },
     {
       "url": "https://www.epa.gov/system/files/documents/2024-12/the-edge-of-something-special-williamsburg-va.pdf",
@@ -2168,7 +2112,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 351
+      "elapsed_ms": 724
     },
     {
       "url": "https://www.epa.gov/system/files/documents/2025-03/epa_oblr_successstory_ranson.pdf",
@@ -2176,7 +2120,7 @@
       "http_status": 200,
       "result": "reachable",
       "error": "",
-      "elapsed_ms": 303
+      "elapsed_ms": 624
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/building-healthier-future-allen-parish-through-rural-development-community-facilities-programs",
@@ -2184,7 +2128,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 413
+      "elapsed_ms": 724
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/carter-countys-new-equipment-tackle-winter-roads",
@@ -2192,7 +2136,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 396
+      "elapsed_ms": 915
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/cheesemaking-distilling-spirits-usda-loan-helps-minnesota-creamery-venture-new-industry",
@@ -2200,7 +2144,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 428
+      "elapsed_ms": 678
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/clean-water-stronger-coasts-how-two-rural-development-investments-support-healthier-casco-bay",
@@ -2208,7 +2152,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 459
+      "elapsed_ms": 851
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/community-outreach-leads-enhanced-safety-reliability-rural-police-department",
@@ -2216,7 +2160,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 310
+      "elapsed_ms": 625
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/cooperative-partnership-increases-equitable-access-healthy-foods-western-pennsylvania",
@@ -2224,7 +2168,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 248
+      "elapsed_ms": 861
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/disaster-grant-gets-northern-neck-firefighters-breathing-easier",
@@ -2232,7 +2176,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 379
+      "elapsed_ms": 609
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/energy-grant-helps-keep-dinner-plates-fresh-and-full-year-round",
@@ -2240,7 +2184,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 332
+      "elapsed_ms": 660
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/expanded-healthcare-will-increase-access-care-and-create-jobs-bethany-missouri",
@@ -2248,7 +2192,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 332
+      "elapsed_ms": 641
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/finding-solutions-through-distance-learning-technology",
@@ -2256,7 +2200,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 296
+      "elapsed_ms": 768
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/high-efficiency-grain-dryer-proves-transformational-green-thumb-farms",
@@ -2264,7 +2208,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 285
+      "elapsed_ms": 767
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/iconic-maine-farm-returns-its-roots-reap",
@@ -2272,7 +2216,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 443
+      "elapsed_ms": 833
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/k9-unit-supports-northeast-iowa-community-help-usda-grant",
@@ -2280,7 +2224,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 349
+      "elapsed_ms": 832
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/minnkota-power-cooperatives-60-million-infrastructure-upgrade-stronger-future",
@@ -2288,7 +2232,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 288
+      "elapsed_ms": 832
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/native-homeownership-coalition-builds-tribal-opportunities",
@@ -2296,7 +2240,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 317
+      "elapsed_ms": 1011
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/new-police-station-strengthens-safety-and-community-partnerships",
@@ -2304,7 +2248,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 374
+      "elapsed_ms": 1010
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/new-pumper-truck-enhances-firefighting-efforts-and-community-safety",
@@ -2312,7 +2256,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 405
+      "elapsed_ms": 775
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/oglethorpe-powers-acquisition-walton-county-power-strengthens-reliability-and-affordability-rural",
@@ -2320,7 +2264,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 438
+      "elapsed_ms": 1205
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/ohio-celebrates-opening-new-independent-living-facility",
@@ -2328,7 +2272,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 437
+      "elapsed_ms": 1298
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/ohio-feed-mill-modernizes-usda-lending-partnership",
@@ -2336,7 +2280,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 341
+      "elapsed_ms": 1021
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/ralls-county-electrics-vision-stronger-smarter-grid",
@@ -2344,7 +2288,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 356
+      "elapsed_ms": 1021
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/river-town-raises-bar-emergency-response",
@@ -2352,7 +2296,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 334
+      "elapsed_ms": 1033
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/rural-minnesota-town-breaks-ground-long-awaited-wastewater-treatment-facility",
@@ -2360,7 +2304,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 422
+      "elapsed_ms": 1033
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/solar-project-provides-big-opportunities-rural-utah-farmer-businessman-and-community-leader",
@@ -2368,7 +2312,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 348
+      "elapsed_ms": 923
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/south-dakota-governors-house-program-providing-affordable-housing-30-years",
@@ -2376,7 +2320,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 335
+      "elapsed_ms": 776
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/teaming-keep-water-losses-down-aging-southwest-virginia-system",
@@ -2384,7 +2328,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 319
+      "elapsed_ms": 870
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/transforming-lives-quality-healthcare-services-rural-alabama",
@@ -2392,7 +2336,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 286
+      "elapsed_ms": 651
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/universal-product",
@@ -2400,7 +2344,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 346
+      "elapsed_ms": 472
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/usda-invests-protek-fiber-project-provide-direct-fiber-home-service-southern-illinois",
@@ -2408,7 +2352,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 345
+      "elapsed_ms": 447
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/usda-rural-development-grant-helps-wisconsin-agricultural-entrepreneurs-expand-and-grow",
@@ -2416,7 +2360,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 334
+      "elapsed_ms": 452
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/usda-rural-development-loan-and-grant-helps-fund-couderay-volunteer-fire-department-new-fire",
@@ -2424,7 +2368,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 298
+      "elapsed_ms": 512
     },
     {
       "url": "https://www.rd.usda.gov/newsroom/success-stories/usda-rural-development-provides-funding-construct-new-water-tank-village-burnt-prairie",
@@ -2432,7 +2376,7 @@
       "http_status": 200,
       "result": "restricted_but_present",
       "error": "Automated access is inconsistently blocked by the publisher; manual review required.",
-      "elapsed_ms": 287
+      "elapsed_ms": 465
     }
   ]
 }

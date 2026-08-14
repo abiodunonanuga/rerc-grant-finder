@@ -17,6 +17,13 @@ PROGRAMS = {
     "USDA Rural Development Success Stories",
 }
 
+# Program rosters and annual planning-assistance summaries remain in Protos, but
+# they are not public case studies until a project-specific implementation source exists.
+EXCLUDED_PUBLIC_PROGRAMS = {
+    "Recreation Economy for Rural Communities",
+    "Local Foods, Local Places",
+}
+
 SOURCE_TYPES = {
     "epa_rerc_partner_page",
     "epa_lflp_summary_report_pdf",
@@ -516,6 +523,8 @@ def build_record(case_path: Path, checked_on: str) -> dict | None:
     program = (case.get("programs") or [{}])[0]
     program_name = compact(program.get("program_name"))
     if program_name not in PROGRAMS:
+        return None
+    if program_name in EXCLUDED_PUBLIC_PROGRAMS:
         return None
 
     geography = case.get("geography") or {}

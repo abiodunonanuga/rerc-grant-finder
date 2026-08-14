@@ -57,19 +57,16 @@ def main() -> int:
     assert not any(item["case_place"] == item["case_state"] for item in items)
     assert all(item["case_place_type"] in {"town_or_city", "county_or_region", "tribal_community", "statewide_or_multi_community"} for item in items)
     assert Counter(item["case_place_type"] for item in items) == {
-        "town_or_city": 359,
-        "county_or_region": 48,
-        "statewide_or_multi_community": 56,
-        "tribal_community": 14,
+        "town_or_city": 194,
+        "county_or_region": 36,
+        "statewide_or_multi_community": 55,
+        "tribal_community": 11,
     }
     assert sum(item["case_place_type"] == "tribal_community" for item in items) >= 10
     expected_place_types = {
         "A Successful Transformation: From Wasted Lot to Reading Hot\u2010Spot": "town_or_city",
         "Richmond Creamery, Richmond, Vt.": "town_or_city",
         "South Dakota Governor's House Program - Providing Affordable Housing for 30 Years": "statewide_or_multi_community",
-        "Lapwai, Idaho Local Foods, Local Places Summary Report": "tribal_community",
-        "Mission, South Dakota Local Foods, Local Places Summary Report": "tribal_community",
-        "Akwesasne, New York (2022)": "tribal_community",
         "Buffelgrass Removal, Fire, and Climate Adaptation": "county_or_region",
         "Forest Thinning to Restore Fire Resilience at Lassen Volcanic National Park": "county_or_region",
         "Great Lakes Restoration Initiative Pollinator Task Force": "county_or_region",
@@ -105,13 +102,8 @@ def main() -> int:
     assert "St. Paul Island" in st_paul and "[E]mpowering" not in st_paul and "ISN History" not in st_paul
     great_lakes = by_title["Great Lakes Restoration Initiative Pollinator Task Force"]["summary"]
     assert not great_lakes.endswith('".') and '".' not in great_lakes
-    planning = [item for item in items if item["case_program"] in {"Recreation Economy for Rural Communities", "Local Foods, Local Places"}]
-    assert len({item["summary"] for item in planning}) == len(planning)
-    assert all(item["case_place"].lower() in item["summary"].lower() or item["case_place"] == "Multiple communities" for item in planning)
-    assert all(
-        item["case_place"] == "Forest County" or item["case_place_type"] in {"town_or_city", "tribal_community"}
-        for item in items if item["case_program"] == "Local Foods, Local Places"
-    )
+    assert not any(item["case_program"] in {"Recreation Economy for Rural Communities", "Local Foods, Local Places"} for item in items)
+    assert len({item["source_url"] for item in items}) == len(items)
 
     health = json.loads(HEALTH.read_text(encoding="utf-8"))
     unique_urls = len({item["source_url"] for item in items})

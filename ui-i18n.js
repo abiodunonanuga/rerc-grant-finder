@@ -211,6 +211,7 @@
     "Business and jobs": "Empresas y empleos",
     "Transportation and safe access": "Transporte y acceso seguro",
     "Water and resilience": "Agua y resiliencia",
+    "River access": "Acceso a ríos",
     "Conservation and public lands": "Conservación y tierras públicas",
     "History, arts, and culture": "Historia, arte y cultura",
     "Community services": "Servicios comunitarios",

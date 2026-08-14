@@ -98,6 +98,18 @@ async function main() {
     };
     await page.locator('[data-choice-next="applicantOptions"]').click();
     checks.priorityPager.secondPage = await applicantChoices.evaluateAll((nodes) => nodes.filter((node) => !node.hidden).map((node) => node.textContent.trim()));
+    const topicChoices = page.locator("#topicOptions > label");
+    checks.topicPager = {
+      firstPage: await topicChoices.evaluateAll((nodes) => nodes.filter((node) => !node.hidden).map((node) => node.textContent.trim())),
+      nextEnabled: await page.locator('[data-choice-next="topicOptions"]').isEnabled()
+    };
+    await page.locator('[data-choice-next="topicOptions"]').click();
+    checks.topicPager.secondPage = await topicChoices.evaluateAll((nodes) => nodes.filter((node) => !node.hidden).map((node) => node.textContent.trim()));
+    checks.riverAccess = await page.evaluate(() => ({
+      positive: window.RERCExplorer.matchesAny("new public boat launch and river access", ["river-access"]),
+      negative: !window.RERCExplorer.matchesAny("watershed habitat conservation plan", ["river-access"]),
+      optionVisible: [...document.querySelectorAll("#topicOptions label")].some((label) => !label.hidden && /River access/.test(label.textContent))
+    }));
     await page.locator('#workflowSteps [data-wizard-step="3"]').click();
     await page.waitForSelector(".result-card");
     checks.phase3 = await page.locator("#matchesWorkspace").isVisible();
@@ -105,7 +117,9 @@ async function main() {
       && checks.initial.stateOptions === 57 && checks.initial.obsoleteLocalityControls.length === 0
       && checks.initial.futureLocked && checks.initial.resultsHidden && checks.blankBlocked && checks.unlocked
       && checks.phase2 && checks.phase3 && checks.priorityPager.firstPage.length <= 6
-      && checks.priorityPager.nextEnabled && checks.priorityPager.secondPage.join("|") !== checks.priorityPager.firstPage.join("|"));
+      && checks.priorityPager.nextEnabled && checks.priorityPager.secondPage.join("|") !== checks.priorityPager.firstPage.join("|")
+      && checks.topicPager.nextEnabled && checks.topicPager.secondPage.join("|") !== checks.topicPager.firstPage.join("|")
+      && Object.values(checks.riverAccess).every(Boolean));
 
     checks.counts = await page.evaluate(() => ["fundingCount", "resourceCount", "caseStudyCount"].map((id) => Number(document.getElementById(id).textContent)));
     checks.expectedCounts = await page.evaluate(() => [

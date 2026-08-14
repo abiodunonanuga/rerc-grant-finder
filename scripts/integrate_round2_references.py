@@ -10,7 +10,7 @@ from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit
 
 
-CHECKED_DATE = "2026-07-20"
+CHECKED_DATE = "2026-08-14"
 
 TITLE_OVERRIDES = {
     "R2REF-003": "Indigenous-Led Tourism Partnership Toolkit",
@@ -217,7 +217,11 @@ GEOGRAPHY_OVERRIDES = {
 }
 
 REPLACEMENTS = {
-    "R2REF-003": {
+    "R2REF-007": {
+        "source_url": "https://www.inclusiveoutdoors.org/",
+        "summary": "Provides an inclusive outdoor recreation resource library developed with Together Outdoors and the Recreate Responsibly Coalition.",
+        "support_type": "Resource hub",
+    },    "R2REF-003": {
         "source_url": "https://americanindigenoustourism.org/destinations-international-toolkit/",
         "summary": "Helps destination organizations build respectful tourism partnerships that are led and governed by Indigenous communities.",
         "support_type": "Toolkit",
@@ -232,12 +236,25 @@ REPLACEMENTS = {
         "summary": "Offers searchable conservation project examples, including work that protects outdoor access and supports rural economies.",
         "support_type": "Case-study collection",
     },
-    "R2REF-038": {
+    "R2REF-019": {
+        "source_url": "https://www.tompkinscountyny.gov/All-Departments/Planning-and-Sustainability/Tourism/Tourism-Plans",
+        "summary": "Provides Tompkins County's adopted outdoor recreation tourism plan and related tourism planning resources.",
+        "support_type": "Plan",
+    },
+    "R2REF-027": {
+        "source_url": "https://www.tpl.org/resource/field-guide-creative-placemaking-and-parks",
+        "summary": "Offers a field guide and eleven case studies showing how creative placemaking can strengthen parks and communities.",
+        "support_type": "Guide and case studies",
+    },    "R2REF-038": {
         "source_url": "https://www.democracycollaborative.org/community-wealth-building",
         "summary": "Explains community wealth building and provides an action guide, practical tools, and community examples.",
         "support_type": "Guide and case studies",
     },
-    "R2REF-074": {
+    "R2REF-042": {
+        "source_url": "https://www.eda.gov/resources/tools",
+        "summary": "Collects federal tools for economic development planning, data analysis, project development, and local capacity building.",
+        "support_type": "Resource hub",
+    },    "R2REF-074": {
         "source_url": "https://digitalcommons.usu.edu/extension_curall/1897/",
         "summary": "Reviews state outdoor recreation offices and offers lessons for governments, nonprofits, and recreation partners.",
         "support_type": "Report",
@@ -247,7 +264,21 @@ REPLACEMENTS = {
         "summary": "Summarizes participation trends and the economic activity supported by outdoor recreation on federal lands.",
         "support_type": "Research report",
     },
-    "R2REF-091": {
+    "R2REF-077": {
+        "source_url": "https://www.rd.usda.gov/sites/default/files/usdard_recreational_economy508.pdf",
+        "summary": "Explains USDA programs and practical steps for rural communities building recreation economies through planning, business support, infrastructure, and conservation.",
+        "support_type": "Guide",
+    },
+    "R2REF-080": {
+        "source_url": "https://www.americantrails.org/resource-library",
+        "summary": "Provides a searchable library for trail planning, design, conservation, funding, management, and maintenance.",
+        "support_type": "Resource library",
+    },
+    "R2REF-081": {
+        "source_url": "https://www.cdc.gov/physical-activity/php/community-design-visual-guide/index.html",
+        "summary": "Shows how communities can connect activity-friendly routes with everyday destinations such as parks, schools, shops, and transit.",
+        "support_type": "Visual guide",
+    },    "R2REF-091": {
         "source_url": "https://creativeplacemaking.t4america.org/our-eight-approaches/",
         "summary": "Shows eight ways to use arts and culture in transportation planning, with local examples and supporting resources.",
         "support_type": "Guide and case studies",
@@ -342,6 +373,19 @@ SECTION_TOPICS = {
     "Trails and Transportation": "trails; transportation; bike; pedestrian; mobility; planning; funding",
 }
 
+TOPIC_OVERRIDES = {
+    "R2REF-017": "outdoor recreation; conservation; parks; trails; planning; public lands",
+    "R2REF-018": "conservation; land; public access; outdoor recreation; case studies",
+    "R2REF-019": "outdoor recreation; tourism; planning; trails; economic development",
+    "R2REF-027": "parks; placemaking; arts; community engagement; conservation; case studies",
+    "R2REF-056": "land use; conservation; outdoor recreation; economic development; planning",
+    "R2REF-059": "river access; water access; paddling; outdoor recreation; planning; accessibility",
+    "R2REF-078": "national forests; conservation; outdoor recreation; economic data",
+    "R2REF-079": "gateway communities; public lands; conservation; planning; outdoor recreation",
+    "R2REF-077": "outdoor recreation; recreation economy; rural development; infrastructure; business; conservation; planning",
+    "R2REF-080": "trails; planning; design; conservation; funding; management; maintenance",
+    "R2REF-081": "transportation; bike; pedestrian; transit; parks; health; safe access",
+}
 KIND_SUPPORT = {
     "Organization or resource hub": "Resource hub",
     "Toolkit or guide": "Toolkit or guide",
@@ -365,7 +409,13 @@ def fix_mojibake(value: str) -> str:
 def normalized_url(value: str) -> str:
     parts = urlsplit(value.strip())
     path = parts.path.rstrip("/") or "/"
-    return urlunsplit((parts.scheme.lower(), parts.netloc.lower(), path, "", ""))
+    host = parts.netloc.lower()
+    if host in {"youtube.com", "www.youtube.com", "m.youtube.com"} and path == "/watch":
+        video_id = next((part.split("=", 1)[1] for part in parts.query.split("&") if part.startswith("v=")), "")
+        return f"https://www.youtube.com/watch?v={video_id}" if video_id else "https://www.youtube.com/watch"
+    if host == "youtu.be":
+        return f"https://www.youtube.com/watch?v={path.lstrip('/')}"
+    return urlunsplit((parts.scheme.lower(), host, path, "", ""))
 
 
 def load_catalog(path: Path) -> dict:
@@ -431,7 +481,7 @@ def record_to_item(record: dict) -> dict:
         "geography": geography,
         "eligible_users": "Local governments; Tribal governments and organizations; nonprofits; community groups; businesses; planners; economic development partners",
         "project_stage": "Planning",
-        "topic_tags": SECTION_TOPICS.get(record["section"], "outdoor recreation; planning; local capacity"),
+        "topic_tags": TOPIC_OVERRIDES.get(ref_id, SECTION_TOPICS.get(record["section"], "outdoor recreation; planning; local capacity")),
         "support_type": support_type,
         "amount_or_cost": "Free public resource",
         "match_or_cost": "None",
@@ -466,11 +516,11 @@ def main() -> int:
             held.append({"reference_id": ref_id, "reason": record["link_status"]})
 
     selected.extend(NEW_RESOURCES)
+    selected_ids = {item["item_id"] for item in selected}
     existing_items = [
         item
         for item in catalog["items"]
-        if not item["item_id"].startswith("RERC-RES-R2-")
-        and not item["item_id"].startswith("RERC-RES-NEW-2026-")
+        if item["item_id"] not in selected_ids
     ]
     existing_urls = {normalized_url(item["source_url"]) for item in existing_items}
     additions = []

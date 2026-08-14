@@ -1187,10 +1187,12 @@
     back.type = "button";
     back.dataset.choiceBack = rootId;
     back.textContent = t("back");
+    back.setAttribute("aria-label", t("back") + ": " + t(labelKey));
     const next = document.createElement("button");
     next.type = "button";
     next.dataset.choiceNext = rootId;
     next.textContent = t("next");
+    next.setAttribute("aria-label", t("next") + ": " + t(labelKey));
     controls.append(back, status, next);
     root.after(controls);
 
@@ -1969,8 +1971,8 @@
       const controls = root.nextElementSibling;
       if (!controls || !controls.classList.contains("choice-pager-controls")) return;
       const buttons = controls.querySelectorAll("button");
-      if (buttons[0]) buttons[0].textContent = t("back");
-      if (buttons[1]) buttons[1].textContent = t("next");
+      if (buttons[0]) { buttons[0].textContent = t("back"); buttons[0].setAttribute("aria-label", t("back") + ": " + t(root.dataset.choiceLabelKey)); }
+      if (buttons[1]) { buttons[1].textContent = t("next"); buttons[1].setAttribute("aria-label", t("next") + ": " + t(root.dataset.choiceLabelKey)); }
       const choices = choiceItems(root);
       const current = Number(root.dataset.choicePage || 0);
       const start = current * 6;

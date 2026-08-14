@@ -30,12 +30,16 @@ window.RERC_SITE_CONFIG = {
       ["business|entrepreneur|workforce|economic development", "Business and jobs"],
       ["transportation|street|bike|pedestrian|transit|mobility", "Transportation and safe access"],
       ["water|wastewater|stormwater|flood|coastal|resilience", "Water and resilience"],
+      ["river-access", "River access"],
       ["conservation|environment|environmental|habitat|forest|land|river|watershed", "Conservation and public lands"],
       ["historic|heritage|arts|culture|museum", "History, arts, and culture"],
       ["housing|community facility|community facilities|community services|public facilities|infrastructure|public safety|emergency services|education|health|food", "Community services"],
       ["energy|electric|electricity|power|grid|renewable|efficiency|climate|brownfield|cleanup", "Energy, climate, and cleanup"],
       ["planning|community development|data|mapping|capacity|technical assistance", "Planning and local capacity"]
     ],
+    topicMatchers: {
+      "river-access": "river access|water access|public water access|boat ramp|boat ramps|boat launch|boat launches|boating access|canoe access|kayak access|blueway|blueways|riverwalk|riverwalks|paddling access|water trail|water trails|lake access|fishing access|riverfront trail|riverfront park|river landing"
+    },
     stages: ["Any step", "Planning", "Early Design", "Engineering", "Construction", "Implementation", "Operations/Maintenance", "Capacity Building", "Acquisition", "Cleanup"],
     stageAliases: {
       "Planning": "planning|assessment|feasibility|application|idea|project screening",

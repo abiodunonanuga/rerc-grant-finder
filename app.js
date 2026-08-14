@@ -41,6 +41,7 @@ const defaultTopicOptions = [
   ["business|entrepreneur|workforce|economic development", "Business and jobs"],
   ["transportation|street|bike|pedestrian|transit|mobility", "Transportation and safe access"],
   ["water|wastewater|stormwater|flood|coastal|resilience", "Water and resilience"],
+  ["river-access", "River access"],
   ["conservation|environment|environmental|habitat|forest|land|river|watershed", "Conservation and public lands"],
   ["historic|heritage|arts|culture|museum", "History, arts, and culture"],
   ["housing|community facility|community facilities|community services|public facilities|infrastructure|public safety|emergency services|education|health|food", "Community services"],
@@ -58,6 +59,7 @@ const topicOptions = Array.isArray(filterConfig.topics) && filterConfig.topics.l
 const stages = Array.isArray(filterConfig.stages) && filterConfig.stages.length
   ? filterConfig.stages : defaultStages;
 const stageAliases = filterConfig.stageAliases || {};
+const topicMatchers = filterConfig.topicMatchers || {};
 const specificApplicantGroups = applicantOptions.filter(([value]) => value !== "__other__").map(([value]) => value);
 
 const elements = Object.fromEntries([
@@ -183,7 +185,7 @@ function selectedValues(container) {
 
 function matchesAny(text, groups) {
   if (!groups.length) return true;
-  return groups.some((group) => group.split("|").some((term) => {
+  return groups.some((group) => (topicMatchers[group] || group).split("|").some((term) => {
     const escaped = term.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\\\s+/g, "\\s+");
     return new RegExp(`(^|[^a-z0-9])${escaped}(?=$|[^a-z0-9])`, "i").test(text);
   }));
@@ -858,6 +860,7 @@ window.RERCExplorer = {
   matchesGeography,
   matchesStage,
   matchesApplicants,
+  matchesAny,
   isClosed
 };
 

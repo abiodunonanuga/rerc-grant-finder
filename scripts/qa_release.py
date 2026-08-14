@@ -103,7 +103,7 @@ def main() -> int:
     assert not any(re.search(r"potential rerc fit|purpose tags", item.get("why_it_matters", ""), re.I) for item in items)
     assert not any((item.get("summary") or "").strip() in {"", "-"} for item in items)
     reviewed_resources = [item for item in items if item["item_id"].startswith(("RERC-RES-R2-", "RERC-RES-NEW-2026-"))]
-    assert len(reviewed_resources) == 106
+    assert len(reviewed_resources) == 123
     assert all(len(item["summary"].strip()) >= 55 for item in reviewed_resources)
     assert not any(
         item["summary"].strip(". ").lower()
