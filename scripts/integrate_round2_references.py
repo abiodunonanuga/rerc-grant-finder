@@ -226,9 +226,9 @@ REPLACEMENTS = {
         "summary": "Provides an inclusive outdoor recreation resource library developed with Together Outdoors and the Recreate Responsibly Coalition.",
         "support_type": "Resource hub",
     },    "R2REF-003": {
-        "source_url": "https://americanindigenoustourism.org/destinations-international-toolkit/",
-        "summary": "Helps destination organizations build respectful tourism partnerships that are led and governed by Indigenous communities.",
-        "support_type": "Toolkit",
+        "source_url": "https://americanindigenoustourism.org/",
+        "summary": "Connects Native Nations, communities, and Indigenous-owned enterprises with cultural tourism training, technical assistance, and educational resources.",
+        "support_type": "Resource hub",
     },
     "R2REF-017": {
         "source_url": "https://cpw.state.co.us/conservation-plans",
@@ -283,7 +283,7 @@ REPLACEMENTS = {
         "summary": "Shows how communities can connect activity-friendly routes with everyday destinations such as parks, schools, shops, and transit.",
         "support_type": "Visual guide",
     },    "R2REF-091": {
-        "source_url": "https://creativeplacemaking.t4america.org/our-eight-approaches/",
+        "source_url": "https://transportation.art/",
         "summary": "Shows eight ways to use arts and culture in transportation planning, with local examples and supporting resources.",
         "support_type": "Guide and case studies",
     },

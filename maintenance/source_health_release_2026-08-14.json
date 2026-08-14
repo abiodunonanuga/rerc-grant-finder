@@ -1,0 +1,29 @@
+{
+  "status": "PASS_WITH_RESTRICTIONS",
+  "checked_at": "2026-08-14T20:03:41.879708+00:00",
+  "release_rule": "No hard source failures. Publisher bot blocks are retained as restricted-but-present checks and do not imply that a program or resource is inactive.",
+  "unique_urls_checked": 806,
+  "hard_failures": 0,
+  "publisher_or_network_restrictions": 90,
+  "bot_blocked_urls": 89,
+  "non_bot_manual_review_urls": 1,
+  "monitoring_signals": {
+    "changed": 68,
+    "new": 0,
+    "removed": 0,
+    "note": "Header and metadata changes are review signals, not content failures."
+  },
+  "manual_corroboration": [
+    {
+      "url": "https://www.nga.org/issues/outdoor-recreation/",
+      "result": "Official page was active in independent web-index verification on 2026-08-14; local DNS lookup failed during the automated pass."
+    }
+  ],
+  "appendix_d": {
+    "status": "PASS",
+    "source_denominator": 91,
+    "standalone_resource_denominator": 90,
+    "missing": [],
+    "successors_without_evidence": []
+  }
+}
