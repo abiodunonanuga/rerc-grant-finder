@@ -163,6 +163,10 @@ ORGANIZATION_OVERRIDES = {
 }
 
 SUMMARY_OVERRIDES = {
+    "R2REF-011": "Explains how Pennsylvania communities can plan outdoor recreation systems that are sustainable, connected, and responsive to local needs.",
+    "R2REF-012": "Explains how outdoor recreation supports local economies and introduces funding and economic development considerations for Pennsylvania communities.",
+    "R2REF-013": "Continues the Pennsylvania webinar series with practical funding approaches and economic development strategies for outdoor recreation projects.",
+    "R2REF-014": "Concludes the Pennsylvania series with partnership, funding, and implementation considerations for community outdoor recreation work.",
     "R2REF-005": "Connects outdoor groups led by people of color, LGBTQIA+ people, people with disabilities, and other groups that have often been left out.",
     "R2REF-006": "Builds Black leadership and connections with nature through local programs and a national network.",
     "R2REF-008": "Offers guides and examples for planning outdoor recreation and tourism projects in Oregon.",
