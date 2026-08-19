@@ -22,7 +22,7 @@ No command line is needed. Open RERC-e from the Start Menu. The launcher can ope
 
 RERC-e 0.5.1 can also open a Community Explorer plan. Use **Open Community Explorer plan** inside RERC-e, or open an installed `.rercie` file from Windows. RERC-e checks the file before filling any fields and shows what it imported.
 
-RERC-e 0.5.1 passed package-bound and standalone source-bound local Gemma generation QA. Public installer distribution remains on hold until EPR, P.C. can apply an authorized Timberwing Systems publisher signature and the signed installer passes Windows security checks.
+RERC-e 0.5.1 passed source smoke, standalone source-bound local Gemma inference, browser, animation, reduced-motion, and native launcher compilation QA. Its unsigned package was blocked by Windows security before native package smoke, so installer distribution remains on hold until EPR, P.C. can apply an authorized Timberwing Systems publisher signature and the signed installer passes clean Windows security testing.
 
 ## What RERC-e Does
 

@@ -198,6 +198,7 @@
     "The first time you use RERC-e, it downloads Google Gemma (about 0.81 GB). Before you apply, verify dates and rules on the official funding page.": "La primera vez que use RERC-e, descargará Google Gemma (aproximadamente 0.81 GB). Antes de solicitar, confirme las fechas y reglas en la página oficial del programa.",
     "Download RERC-e": "Descargar RERC-e",
     "Download RERC-e for Windows": "Descargar RERC-e para Windows",
+    "Download current RERC-e 0.4.0": "Descargar RERC-e actual 0.4.0",
     "Windows 10 or 11, 64-bit. No command line.": "Windows 10 u 11, 64 bits. Sin línea de comandos.",
     "Download the latest public RERC-e installer. It is not code-signed. Windows may warn that the publisher is unknown.": "Descargue el instalador público más reciente de RERC-e. No tiene firma de código. Windows puede avisar que el editor es desconocido.",
     "Read the Timberwing Systems license": "Leer la licencia de Timberwing Systems",

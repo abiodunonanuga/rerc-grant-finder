@@ -1238,7 +1238,7 @@ HTML_PAGE = r'''<!doctype html>
     header .mascot-wing { position:absolute; z-index:2; top:39px; right:-9px; width:42px; height:58px; transform-origin:20% 82%; animation:rercie-wave 2.4s ease-in-out infinite; border:2px solid #4e3927; border-radius:75% 20% 70% 30%; background:#7a5738; box-shadow:inset -8px -6px 0 rgba(48,31,20,.18); }
     header .mascot-wing::before,header .mascot-wing::after { content:""; position:absolute; right:3px; width:28px; height:11px; border-radius:70% 30% 70% 30%; background:#9a7049; transform:rotate(16deg); }
     header .mascot-wing::before { top:12px; } header .mascot-wing::after { top:29px; right:1px; }
-    @keyframes rercie-bob { 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-4px) rotate(-1deg)} }
+    @keyframes rercie-bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
     @keyframes rercie-wave { 0%,100%{transform:rotate(7deg)} 18%{transform:rotate(-24deg)} 34%{transform:rotate(12deg)} 50%{transform:rotate(-18deg)} 68%{transform:rotate(7deg)} }
     header h1 { margin:12px 0 6px; font-size:2.25rem; line-height:1.05; }
     header p { max-width:760px; margin:0; color:#e4f1eb; }
