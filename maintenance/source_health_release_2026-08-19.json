@@ -1,6 +1,6 @@
 {
   "status": "PASS_WITH_RESTRICTIONS",
-  "checked_at": "2026-08-19T21:43:16.346633+00:00",
+  "checked_at": "2026-08-19T17:43:16.346633-04:00",
   "release_rule": "No hard source failures. Publisher bot blocks and local TLS or disconnect errors are retained as manual-review checks and do not imply that a program or resource is inactive.",
   "unique_urls_checked": 921,
   "hard_failures": 0,
@@ -25,9 +25,14 @@
   ],
   "resilience_transportation_expansion": {
     "status": "PASS",
-    "integrated_records": 115,
     "hazard_mitigation_coverage": "50 states, District of Columbia, and five U.S. territories",
     "roadway_safety_coverage": "50 states, District of Columbia, and Puerto Rico, plus the four smaller territories through the FHWA Territorial Highway Program",
-    "hard_source_failures": 0
-  }
+    "hard_source_failures": 0,
+    "added_or_updated_records": 115,
+    "retained_existing_records": [
+      "RERC-FND-WA-2026-008"
+    ],
+    "coverage_evidence_records": 116
+  },
+  "substantive_currency_note": "Automated reachability and bot-block evidence do not by themselves prove that every deadline, intake route, or program status is current; record-level status language remains deliberately cautious where current cycles were not established."
 }

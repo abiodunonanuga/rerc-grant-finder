@@ -1,28 +1,359 @@
 {
   "schema_version": 1,
-  "reviewed_on": "2026-08-10",
+  "reviewed_on": "2026-08-19",
   "policy": "Multi-State records match only the listed U.S. states and territories. Local service-area limits still apply.",
   "records": [
-    {"item_id":"RERC-FND-0271","covered_states":["Kentucky","North Carolina","Ohio","Tennessee","Virginia","West Virginia"],"coverage_note":"Available in the Opportunity Appalachia service area; local and project rules still apply.","coverage_source_url":"https://appalachiancommunitycapitalcdfi.org/opportunity-appalachia/"},
-    {"item_id":"RERC-FND-0259","covered_states":["Alabama","Arkansas","Louisiana","Mississippi","Oklahoma","Tennessee","Texas"],"coverage_note":"Shown for Communities Unlimited's verified seven-state core service area. Product availability can vary by location.","coverage_source_url":"https://communitiesu.org/lending/"},
-    {"item_id":"RERC-FND-0255","covered_states":["Oregon","Washington"],"coverage_note":"Craft3 serves borrowers in Oregon and Washington; product and underwriting rules apply.","coverage_source_url":"https://www.craft3.org/business-loans/business"},
-    {"item_id":"RERC-FND-0263","covered_states":["Florida","Indiana","Kentucky","North Carolina","Ohio","South Carolina"],"coverage_note":"Foundation opportunities vary by cycle and by Duke Energy service area. Check the current grant page before applying.","coverage_source_url":"https://news.duke-energy.com/releases/duke-energy-foundation-launches-america250-grant-opportunity-for-nonprofits-in-six-states"},
-    {"item_id":"RERC-FND-0260","covered_states":["Connecticut","Massachusetts","New Hampshire"],"coverage_note":"Support is limited to communities in Eversource's service area within these states.","coverage_source_url":"https://www.eversource.com/residential/about/community/supporting-the-community/charitable-contributions-volunteerism"},
-    {"item_id":"RERC-FND-0256","covered_states":["Idaho","Oregon"],"coverage_note":"Incentives are for eligible Idaho Power business customers in its Idaho and Oregon service areas.","coverage_source_url":"https://www.idahopower.com/energy-environment/ways-to-save/savings-for-your-business/retrofits/"},
-    {"item_id":"RERC-FND-0266","covered_states":["Kentucky","North Carolina","Ohio","Tennessee","Virginia","West Virginia"],"coverage_note":"Limited to the Invest Appalachia region, generally eligible Appalachian Regional Commission counties in these states.","coverage_source_url":"https://investappalachia.org/faq/"},
-    {"item_id":"RERC-FND-0268","covered_states":["Alabama","American Samoa","California","Connecticut","Delaware","Florida","Georgia","Guam","Hawaii","Illinois","Indiana","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","New Hampshire","New Jersey","New York","North Carolina","Northern Mariana Islands","Ohio","Oregon","Pennsylvania","Puerto Rico","Rhode Island","South Carolina","Texas","U.S. Virgin Islands","Virginia","Washington","Wisconsin"],"coverage_note":"Limited to participating coastal and Great Lakes state and territorial programs; many programs apply only inside defined coastal zones.","coverage_source_url":"https://coast.noaa.gov/czm/mystate/"},
-    {"item_id":"RERC-FND-0261","covered_states":["American Samoa","Florida","Guam","Hawaii","Northern Mariana Islands","Puerto Rico","U.S. Virgin Islands"],"coverage_note":"Projects must be in a U.S. coral jurisdiction; each cycle may identify narrower priority places.","coverage_source_url":"https://www.nfwf.org/programs/coral-reef-stewardship-fund/coral-reef-stewardship-fund-2026-request-proposals"},
-    {"item_id":"RERC-FND-0270","covered_states":["Maine","New Hampshire","Vermont"],"coverage_note":"Focused on Coos County, New Hampshire, and nearby border communities in Maine and Vermont; benefit-to-region rules apply.","coverage_source_url":"https://www.nhcf.org/how-can-we-help-you/apply-for-a-grant/neil-and-louise-tillotson-fund-large-grants-program/"},
-    {"item_id":"RERC-FND-0258","covered_states":["Minnesota","North Dakota","South Dakota"],"coverage_note":"Rebates are limited to eligible Otter Tail Power customers in its three-state service area.","coverage_source_url":"https://www.otpco.com/about-us/communities-we-serve/"},
-    {"item_id":"RERC-FND-0264","covered_states":["Pennsylvania","Rhode Island"],"coverage_note":"Empowering Community Grants serve eligible nonprofits in PPL's Pennsylvania and Rhode Island communities; local utility-area rules apply.","coverage_source_url":"https://www.pplweb.com/communities/ppl-foundation/"},
-    {"item_id":"RERC-FND-0269","covered_states":["New Jersey","New York"],"coverage_note":"Limited to eligible nonprofits in New Jersey and Long Island, New York, within PSEG's service or operating territory.","coverage_source_url":"https://corporate.pseg.com/corporatecitizenship/nonprofit-grants/neighborhoodpartnersprogram"},
-    {"item_id":"RERC-FND-0272","covered_states":["Georgia","Kentucky","Maryland","North Carolina","Ohio","South Carolina","Tennessee","Virginia","West Virginia"],"coverage_note":"Serves North Carolina statewide and eligible businesses and nonprofits in Partner Community Capital's Central Appalachian and Southeast region.","coverage_source_url":"https://partnercap.org/what-we-do/"},
-    {"item_id":"RERC-FND-0257","covered_states":["American Samoa","Guam","Northern Mariana Islands","U.S. Virgin Islands"],"coverage_note":"For eligible U.S. insular areas served by the Office of Insular Affairs; program-specific rules apply.","coverage_source_url":"https://www.doi.gov/oia/other-oia-programs"},
-    {"item_id":"RERC-FND-0262","covered_states":["American Samoa","Guam","Northern Mariana Islands","U.S. Virgin Islands"],"coverage_note":"For eligible U.S. insular areas served by the Office of Insular Affairs; program-specific rules apply.","coverage_source_url":"https://www.doi.gov/oia/oia-discretionary-grant-program"},
-    {"item_id":"RERC-FND-0265","covered_states":["American Samoa","Guam","Northern Mariana Islands","U.S. Virgin Islands"],"coverage_note":"For eligible U.S. insular areas served by the Office of Insular Affairs; program-specific rules apply.","coverage_source_url":"https://www.doi.gov/oia/oia-discretionary-grant-program"},
-    {"item_id":"RERC-FND-0267","covered_states":["American Samoa","Guam","Northern Mariana Islands","U.S. Virgin Islands"],"coverage_note":"For eligible U.S. insular areas served by the Office of Insular Affairs; program-specific rules apply.","coverage_source_url":"https://www.doi.gov/oia/oia-discretionary-grant-program"},
-    {"item_id":"RERC-FND-0648","covered_states":["American Samoa","Guam","Northern Mariana Islands","U.S. Virgin Islands"],"coverage_note":"For eligible U.S. insular areas served by the Office of Insular Affairs; program-specific rules apply.","coverage_source_url":"https://www.doi.gov/oia/oia-discretionary-grant-program"},
-    {"item_id":"RERC-RES-0029","covered_states":["Alabama","Arkansas","Louisiana","Mississippi","Oklahoma","Tennessee","Texas"],"coverage_note":"Communities Unlimited provides lending and technical assistance across its seven-state service area; services vary by location.","coverage_source_url":"https://communitiesu.org/lending/"},
-    {"item_id":"RERC-FND-RCAC-2026-001","covered_states":["Alaska","Arizona","California","Colorado","Hawaii","Idaho","Montana","Nevada","New Mexico","Oregon","Utah","Washington","Wyoming","American Samoa","Guam","Northern Mariana Islands"],"coverage_note":"RCAC environmental loans serve the rural West and listed Pacific jurisdictions.","coverage_source_url":"https://www.rcac.org/lending/environmental-loans/"}
+    {
+      "item_id": "RERC-FND-0271",
+      "covered_states": [
+        "Kentucky",
+        "North Carolina",
+        "Ohio",
+        "Tennessee",
+        "Virginia",
+        "West Virginia"
+      ],
+      "coverage_note": "Available in the Opportunity Appalachia service area; local and project rules still apply.",
+      "coverage_source_url": "https://appalachiancommunitycapitalcdfi.org/opportunity-appalachia/"
+    },
+    {
+      "item_id": "RERC-FND-0259",
+      "covered_states": [
+        "Alabama",
+        "Arkansas",
+        "Louisiana",
+        "Mississippi",
+        "Oklahoma",
+        "Tennessee",
+        "Texas"
+      ],
+      "coverage_note": "Shown for Communities Unlimited's verified seven-state core service area. Product availability can vary by location.",
+      "coverage_source_url": "https://communitiesu.org/lending/"
+    },
+    {
+      "item_id": "RERC-FND-0255",
+      "covered_states": [
+        "Oregon",
+        "Washington"
+      ],
+      "coverage_note": "Craft3 serves borrowers in Oregon and Washington; product and underwriting rules apply.",
+      "coverage_source_url": "https://www.craft3.org/business-loans/business"
+    },
+    {
+      "item_id": "RERC-FND-0263",
+      "covered_states": [
+        "Florida",
+        "Indiana",
+        "Kentucky",
+        "North Carolina",
+        "Ohio",
+        "South Carolina"
+      ],
+      "coverage_note": "Foundation opportunities vary by cycle and by Duke Energy service area. Check the current grant page before applying.",
+      "coverage_source_url": "https://news.duke-energy.com/releases/duke-energy-foundation-launches-america250-grant-opportunity-for-nonprofits-in-six-states"
+    },
+    {
+      "item_id": "RERC-FND-0260",
+      "covered_states": [
+        "Connecticut",
+        "Massachusetts",
+        "New Hampshire"
+      ],
+      "coverage_note": "Support is limited to communities in Eversource's service area within these states.",
+      "coverage_source_url": "https://www.eversource.com/residential/about/community/supporting-the-community/charitable-contributions-volunteerism"
+    },
+    {
+      "item_id": "RERC-FND-0256",
+      "covered_states": [
+        "Idaho",
+        "Oregon"
+      ],
+      "coverage_note": "Incentives are for eligible Idaho Power business customers in its Idaho and Oregon service areas.",
+      "coverage_source_url": "https://www.idahopower.com/energy-environment/ways-to-save/savings-for-your-business/retrofits/"
+    },
+    {
+      "item_id": "RERC-FND-0266",
+      "covered_states": [
+        "Kentucky",
+        "North Carolina",
+        "Ohio",
+        "Tennessee",
+        "Virginia",
+        "West Virginia"
+      ],
+      "coverage_note": "Limited to the Invest Appalachia region, generally eligible Appalachian Regional Commission counties in these states.",
+      "coverage_source_url": "https://investappalachia.org/faq/"
+    },
+    {
+      "item_id": "RERC-FND-0268",
+      "covered_states": [
+        "Alabama",
+        "American Samoa",
+        "California",
+        "Connecticut",
+        "Delaware",
+        "Florida",
+        "Georgia",
+        "Guam",
+        "Hawaii",
+        "Illinois",
+        "Indiana",
+        "Louisiana",
+        "Maine",
+        "Maryland",
+        "Massachusetts",
+        "Michigan",
+        "Minnesota",
+        "Mississippi",
+        "New Hampshire",
+        "New Jersey",
+        "New York",
+        "North Carolina",
+        "Northern Mariana Islands",
+        "Ohio",
+        "Oregon",
+        "Pennsylvania",
+        "Puerto Rico",
+        "Rhode Island",
+        "South Carolina",
+        "Texas",
+        "U.S. Virgin Islands",
+        "Virginia",
+        "Washington",
+        "Wisconsin"
+      ],
+      "coverage_note": "Limited to participating coastal and Great Lakes state and territorial programs; many programs apply only inside defined coastal zones.",
+      "coverage_source_url": "https://coast.noaa.gov/czm/mystate/"
+    },
+    {
+      "item_id": "RERC-FND-0261",
+      "covered_states": [
+        "American Samoa",
+        "Florida",
+        "Guam",
+        "Hawaii",
+        "Northern Mariana Islands",
+        "Puerto Rico",
+        "U.S. Virgin Islands"
+      ],
+      "coverage_note": "Projects must be in a U.S. coral jurisdiction; each cycle may identify narrower priority places.",
+      "coverage_source_url": "https://www.nfwf.org/programs/coral-reef-stewardship-fund/coral-reef-stewardship-fund-2026-request-proposals"
+    },
+    {
+      "item_id": "RERC-FND-0270",
+      "covered_states": [
+        "Maine",
+        "New Hampshire",
+        "Vermont"
+      ],
+      "coverage_note": "Focused on Coos County, New Hampshire, and nearby border communities in Maine and Vermont; benefit-to-region rules apply.",
+      "coverage_source_url": "https://www.nhcf.org/how-can-we-help-you/apply-for-a-grant/neil-and-louise-tillotson-fund-large-grants-program/"
+    },
+    {
+      "item_id": "RERC-FND-0258",
+      "covered_states": [
+        "Minnesota",
+        "North Dakota",
+        "South Dakota"
+      ],
+      "coverage_note": "Rebates are limited to eligible Otter Tail Power customers in its three-state service area.",
+      "coverage_source_url": "https://www.otpco.com/about-us/communities-we-serve/"
+    },
+    {
+      "item_id": "RERC-FND-0264",
+      "covered_states": [
+        "Pennsylvania",
+        "Rhode Island"
+      ],
+      "coverage_note": "Empowering Community Grants serve eligible nonprofits in PPL's Pennsylvania and Rhode Island communities; local utility-area rules apply.",
+      "coverage_source_url": "https://www.pplweb.com/communities/ppl-foundation/"
+    },
+    {
+      "item_id": "RERC-FND-0269",
+      "covered_states": [
+        "New Jersey",
+        "New York"
+      ],
+      "coverage_note": "Limited to eligible nonprofits in New Jersey and Long Island, New York, within PSEG's service or operating territory.",
+      "coverage_source_url": "https://corporate.pseg.com/corporatecitizenship/nonprofit-grants/neighborhoodpartnersprogram"
+    },
+    {
+      "item_id": "RERC-FND-0272",
+      "covered_states": [
+        "Georgia",
+        "Kentucky",
+        "Maryland",
+        "North Carolina",
+        "Ohio",
+        "South Carolina",
+        "Tennessee",
+        "Virginia",
+        "West Virginia"
+      ],
+      "coverage_note": "Serves North Carolina statewide and eligible businesses and nonprofits in Partner Community Capital's Central Appalachian and Southeast region.",
+      "coverage_source_url": "https://partnercap.org/what-we-do/"
+    },
+    {
+      "item_id": "RERC-FND-0257",
+      "covered_states": [
+        "American Samoa",
+        "Guam",
+        "Northern Mariana Islands",
+        "U.S. Virgin Islands"
+      ],
+      "coverage_note": "For eligible U.S. insular areas served by the Office of Insular Affairs; program-specific rules apply.",
+      "coverage_source_url": "https://www.doi.gov/oia/other-oia-programs"
+    },
+    {
+      "item_id": "RERC-FND-0262",
+      "covered_states": [
+        "American Samoa",
+        "Guam",
+        "Northern Mariana Islands",
+        "U.S. Virgin Islands"
+      ],
+      "coverage_note": "For eligible U.S. insular areas served by the Office of Insular Affairs; program-specific rules apply.",
+      "coverage_source_url": "https://www.doi.gov/oia/oia-discretionary-grant-program"
+    },
+    {
+      "item_id": "RERC-FND-0265",
+      "covered_states": [
+        "American Samoa",
+        "Guam",
+        "Northern Mariana Islands",
+        "U.S. Virgin Islands"
+      ],
+      "coverage_note": "For eligible U.S. insular areas served by the Office of Insular Affairs; program-specific rules apply.",
+      "coverage_source_url": "https://www.doi.gov/oia/oia-discretionary-grant-program"
+    },
+    {
+      "item_id": "RERC-FND-0267",
+      "covered_states": [
+        "American Samoa",
+        "Guam",
+        "Northern Mariana Islands",
+        "U.S. Virgin Islands"
+      ],
+      "coverage_note": "For eligible U.S. insular areas served by the Office of Insular Affairs; program-specific rules apply.",
+      "coverage_source_url": "https://www.doi.gov/oia/oia-discretionary-grant-program"
+    },
+    {
+      "item_id": "RERC-FND-0648",
+      "covered_states": [
+        "American Samoa",
+        "Guam",
+        "Northern Mariana Islands",
+        "U.S. Virgin Islands"
+      ],
+      "coverage_note": "For eligible U.S. insular areas served by the Office of Insular Affairs; program-specific rules apply.",
+      "coverage_source_url": "https://www.doi.gov/oia/oia-discretionary-grant-program"
+    },
+    {
+      "item_id": "RERC-RES-0029",
+      "covered_states": [
+        "Alabama",
+        "Arkansas",
+        "Louisiana",
+        "Mississippi",
+        "Oklahoma",
+        "Tennessee",
+        "Texas"
+      ],
+      "coverage_note": "Communities Unlimited provides lending and technical assistance across its seven-state service area; services vary by location.",
+      "coverage_source_url": "https://communitiesu.org/lending/"
+    },
+    {
+      "item_id": "RERC-FND-RCAC-2026-001",
+      "covered_states": [
+        "Alaska",
+        "Arizona",
+        "California",
+        "Colorado",
+        "Hawaii",
+        "Idaho",
+        "Montana",
+        "Nevada",
+        "New Mexico",
+        "Oregon",
+        "Utah",
+        "Washington",
+        "Wyoming",
+        "American Samoa",
+        "Guam",
+        "Northern Mariana Islands"
+      ],
+      "coverage_note": "RCAC environmental loans serve the rural West and listed Pacific jurisdictions.",
+      "coverage_source_url": "https://www.rcac.org/lending/environmental-loans/"
+    },
+    {
+      "item_id": "RERC-FND-2026-NAT-PROTECT",
+      "covered_states": [
+        "Alabama",
+        "Alaska",
+        "Arizona",
+        "Arkansas",
+        "California",
+        "Colorado",
+        "Connecticut",
+        "Delaware",
+        "District of Columbia",
+        "Florida",
+        "Georgia",
+        "Hawaii",
+        "Idaho",
+        "Illinois",
+        "Indiana",
+        "Iowa",
+        "Kansas",
+        "Kentucky",
+        "Louisiana",
+        "Maine",
+        "Maryland",
+        "Massachusetts",
+        "Michigan",
+        "Minnesota",
+        "Mississippi",
+        "Missouri",
+        "Montana",
+        "Nebraska",
+        "Nevada",
+        "New Hampshire",
+        "New Jersey",
+        "New Mexico",
+        "New York",
+        "North Carolina",
+        "North Dakota",
+        "Ohio",
+        "Oklahoma",
+        "Oregon",
+        "Pennsylvania",
+        "Puerto Rico",
+        "Rhode Island",
+        "South Carolina",
+        "South Dakota",
+        "Tennessee",
+        "Texas",
+        "Utah",
+        "Vermont",
+        "Virginia",
+        "Washington",
+        "West Virginia",
+        "Wisconsin",
+        "Wyoming"
+      ],
+      "coverage_note": "PROTECT formula funding is apportioned to the 50 states, District of Columbia, and Puerto Rico.",
+      "coverage_source_url": "https://www.fhwa.dot.gov/infrastructure-investment-and-jobs-act/protect_formula.cfm"
+    },
+    {
+      "item_id": "RERC-FND-2026-NAT-THP",
+      "covered_states": [
+        "American Samoa",
+        "Guam",
+        "Northern Mariana Islands",
+        "U.S. Virgin Islands"
+      ],
+      "coverage_note": "The Territorial Highway Program serves the four listed territories.",
+      "coverage_source_url": "https://www.fhwa.dot.gov/pgc/index.cfm?ddisc=84&dsub=969"
+    }
   ]
 }

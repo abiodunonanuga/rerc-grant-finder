@@ -24,6 +24,15 @@ MIDWEST_SOURCE = ROOT / "maintenance" / "resilience_transportation_midwest_2026-
 PREFIX = "window.RERC_CATALOG = "
 CHECKED = "2026-08-17"
 NATIONAL = "Nationwide and U.S. territories"
+PROTECT_PLACES = [
+    "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware",
+    "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
+    "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+    "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico",
+    "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico",
+    "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia",
+    "Washington", "West Virginia", "Wisconsin", "Wyoming",
+]
 
 
 def parse_rows(raw: str) -> list[dict[str, str]]:
@@ -36,8 +45,8 @@ FMA,Disaster Resilience,Flood Mitigation Assistance Grant Program,Federal Emerge
 POSTFIRE,Disaster Resilience,Hazard Mitigation Grant Program Post Fire,Federal Emergency Management Agency,Fire-declaration-triggered,"States, territories, and federally recognized Tribes affected by a qualifying Fire Management Assistance Grant declaration; local entities apply through them",Grant,Generally 75% federal and 25% nonfederal,"The application period opens with the first qualifying declaration of the fiscal year and generally closes six months after that fiscal year ends",https://www.fema.gov/grants/mitigation/post-fire,Conditional,"Road, culvert, drainage, and slope projects may fit when they reduce documented post-wildfire hazard risk."
 STORM,Disaster Resilience,Safeguarding Tomorrow Revolving Loan Fund,Federal Emergency Management Agency,Recurring,"States, eligible territories, the District of Columbia, and federally recognized Tribes establish revolving funds that make loans to local governments",Capitalization grant and local low-interest loan,Applicant and loan terms vary,"FEMA capitalization-grant cycles and local revolving-loan availability vary",https://www.fema.gov/grants/mitigation/storm-rlf,Conditional,"Local projects must reduce natural-hazard and disaster risk under an approved loan-fund project list."
 HSIP,Roadway Safety,Highway Safety Improvement Program,Federal Highway Administration,Ongoing formula program,"State and territorial transportation agencies; local and Tribal projects generally enter through the applicable state or territorial process",Formula funding and project delivery,"Generally 90% federal; certain safety devices and treatments may qualify for 100% federal share",Continuous state programming with state-specific calls where offered,https://highways.dot.gov/safety/hsip,Yes - conditional,"Guardrails, barriers, end treatments, and related roadside work can qualify when crash or risk analysis supports a fatal- or serious-injury reduction benefit."
-PROTECT,Roadway and Disaster Resilience,PROTECT Formula Program,Federal Highway Administration,Ongoing formula program,"States, the District of Columbia, Puerto Rico, and eligible transportation partners through state programming",Formula funding,"Generally 80% federal, with planning and incentive exceptions",Continuous state transportation programming,https://www.fhwa.dot.gov/infrastructure-investment-and-jobs-act/protect_formula.cfm,Conditional,"Supports transportation resilience planning and improvements for natural hazards, evacuation routes, and vulnerable infrastructure."
-ER,Roadway and Disaster Recovery,Emergency Relief Program,Federal Highway Administration,Disaster-triggered,"State transportation departments and federal land-management agencies; local road agencies coordinate through the state",Reimbursement and repair funding,"Normal federal-aid share generally applies; qualifying emergency work may receive a higher share",Available after qualifying natural disasters or catastrophic failures and an approved request,https://www.fhwa.dot.gov/programadmin/erelief.cfm,Conditional,"Restores eligible Federal-aid and federal-lands highways after serious damage; resilience improvements must meet Emergency Relief rules."
+PROTECT,Transportation Resilience,PROTECT Formula Program,Federal Highway Administration,Ongoing formula program,"States, the District of Columbia, Puerto Rico, and eligible transportation partners through state programming",Formula funding,"Generally 80% federal, with planning and incentive exceptions",Continuous state transportation programming,https://www.fhwa.dot.gov/infrastructure-investment-and-jobs-act/protect_formula.cfm,Conditional,"Supports transportation resilience planning and improvements for natural hazards, evacuation routes, and vulnerable infrastructure."
+ER,Disaster Recovery,Emergency Relief Program,Federal Highway Administration,Disaster-triggered,"State transportation departments and federal land-management agencies; local road agencies coordinate through the state",Reimbursement and repair funding,"Normal federal-aid share generally applies; qualifying emergency work may receive a higher share",Available after qualifying natural disasters or catastrophic failures and an approved request,https://www.fhwa.dot.gov/programadmin/erelief.cfm,Conditional,"Restores eligible Federal-aid and federal-lands highways after serious damage; resilience improvements must meet Emergency Relief rules."
 THP,Roadway Safety,Territorial Highway Program,Federal Highway Administration,Ongoing formula program,"American Samoa, Guam, Northern Mariana Islands, and U.S. Virgin Islands transportation agencies",Formula funding and project delivery,Program-specific federal share,Continuous territorial transportation programming,https://www.fhwa.dot.gov/pgc/index.cfm?ddisc=84&dsub=969,Yes - conditional,"Territories program eligible highway and safety projects; this is not a direct grant application for individuals."
 ''')
 
@@ -98,16 +107,16 @@ Arkansas,Arkansas Department of Transportation,Current local HSIP intake uncerta
 California,California Department of Transportation,Cycle 13 open,"Due 2026-11-02",https://dot.ca.gov/programs/local-assistance/fed-and-state-programs/highway-safety-improvement-program/apply-now,"Eligible local agencies apply through Caltrans Local Assistance; an LRSP is required",Yes - conditional,"Projects must meet the active call's safety and eligibility criteria."
 Colorado,Colorado Department of Transportation,FY2029 review complete; next cycle upcoming,"FY2030 local-agency cycle expected to begin in December 2026",https://www.codot.gov/safety/traffic-safety/data-analysis/hsip,"Eligible local and Tribal public-road agencies submit under CDOT's call",Yes - conditional,"The current program page covers all public roads and announces the next local-agency cycle."
 Connecticut,Connecticut Department of Transportation,Active FFY2026 program,"Continuous programming; no statewide call located",https://portal.ct.gov/dot/traffic-engineering/traffic-and-safety-engineering,"Municipalities coordinate with CTDOT Safety Engineering and may request a road-safety audit",Yes - conditional,"CTDOT selects projects on state and local public roads."
-Delaware,Delaware Department of Transportation,Active annual identification program,"Annual internal programming",https://projectdevelopmentmanualtest.deldot.gov/index.php/Chapter_2_-_Project_Origination_and_Planning,"DelDOT Traffic Engineering screens and programs projects",Yes,"The official manual expressly lists guardrail installation or enhancement."
+Delaware,Delaware Department of Transportation,Program documented; current cycle uncertain,"Annual internal programming",https://projectdevelopmentmanualtest.deldot.gov/index.php/Chapter_2_-_Project_Origination_and_Planning,"DelDOT Traffic Engineering screens and programs projects",Yes,"The official manual expressly lists guardrail installation or enhancement."
 District of Columbia,District Department of Transportation,Active internal capital program,"Continuous internal programming",https://ddot.dc.gov/page/traffic-safety-ddot,"DDOT identifies and programs projects; public safety reports are not grant applications",Yes - conditional,"No direct external infrastructure-grant path was found."
 Florida,Florida Department of Transportation,Active through Florida GAP,"District and program cycles vary",https://www.fdot.gov/fpo/lp/flgap/home,"Eligible local agencies register and apply through Florida GAP",Yes - conditional,"Guardrail needs crash or risk support and district coordination."
 Georgia,Georgia Department of Transportation,Ongoing subject to annual availability,"Timing varies",https://www.dot.ga.gov/PartnerSmart/Public/Documents/LocalGovernmentManual.pdf,"Local governments coordinate with GDOT district Off-System Coordinators",Yes - conditional,"GDOT invests HSIP funds on local roads through state-local agreements."
 Hawaii,Hawaii Department of Transportation,Ongoing state program,"Continuous STIP programming",https://hidot.hawaii.gov/highways/shsp/,"HDOT programs safety improvements on public roads",Yes - conditional,"Guardrail projects appear in state programming, but no direct local grant call was found."
-Idaho,Idaho Transportation Department,Ongoing state and local programming,"Continuous ITIP programming",https://apps.itd.idaho.gov/Apps/Fund/itip2024/FY24-ITIP.pdf,"Local agencies coordinate through ITD and Local Highway Technical Assistance Council",Yes,"Official programming includes local HSIP and guardrail projects."
+Idaho,Idaho Transportation Department,Program documented; current cycle uncertain,"Continuous ITIP programming",https://apps.itd.idaho.gov/Apps/Fund/itip2024/FY24-ITIP.pdf,"Local agencies coordinate through ITD and Local Highway Technical Assistance Council",Yes,"Official programming includes local HSIP and guardrail projects."
 Kentucky,Kentucky Transportation Cabinet,Ongoing state program,"Continuous programming",https://transportation.ky.gov/TrafficOperations/Pages/Highway-Safety-Improvement-Program.aspx,"Local agencies coordinate with KYTC districts and Traffic Operations",Yes - conditional,"Roadway departure is an explicit HSIP investment category."
 Louisiana,Louisiana Department of Transportation and Development,Active program,"Ongoing as funding becomes available",https://dotd.la.gov/about/office-of-project-delivery/planning/highway-safety/highway-safety-improvement-program/,"Local agencies initiate proposals through DOTD districts or Regional Safety Coalitions",Yes - conditional,"Lane departure is an explicit emphasis area."
 Maine,Maine Department of Transportation,Ongoing through STIP,"Project-specific availability",https://www.maine.gov/dot/sites/maine.gov.dot/files/inline-files/2024-2027%20Statewide%20Transportation%20Improvement%20Program.pdf,"Projects are programmed through MaineDOT and regional or local transportation processes",Yes,"The official STIP includes obsolete cable guardrail replacement with HSIP funds."
-Maryland,Maryland Department of Transportation State Highway Administration,Active local fund program; current solicitation date uncertain,"Historically annual; confirm current date",https://roads.maryland.gov/mdotsha/pages/pressreleasedetails.aspx?PageId=818&newsId=4157,"Counties with a Local Road Safety Plan submit systemic projects to MDOT SHA",Yes - conditional,"The located state notice is older, so current timing requires confirmation."
+Maryland,Maryland Department of Transportation State Highway Administration,Local fund documented; current 2026 solicitation uncertain,"Historically annual; confirm current date",https://roads.maryland.gov/mdotsha/pages/pressreleasedetails.aspx?PageId=818&newsId=4157,"Counties with a Local Road Safety Plan submit systemic projects to MDOT SHA",Yes - conditional,"The located state notice is older, so current timing requires confirmation."
 Massachusetts,Massachusetts Department of Transportation,Active and programmed,"Continuous TIP and STIP programming",https://www.mass.gov/info-details/highway-safety-improvement-program,"Municipal projects advance through MPO prioritization and MassDOT safety review",Yes - conditional,"Routine replacement alone may not meet HSIP's data-driven criteria."
 Mississippi,Mississippi Department of Transportation,Current application path uncertain,"No verified current deadline",https://mdot.ms.gov/documents/Planning/Manuals/LTAP/Highway%20Safety%20Improvement%20Program.pdf,"Local agencies should confirm the current route with MDOT Planning or Traffic Engineering",Conditional,"The official manual is older and does not prove a current local call."
 Montana,Montana Department of Transportation,Ongoing state and local program,"Continuous programming",https://www.mdt.mt.gov/pubinvolve/us191/docs/US191-Appendix5-Funding.pdf,"Local road agencies coordinate applications with MDT",Yes,"Official guidance identifies HSIP on any public road and includes guardrail."
@@ -122,7 +131,7 @@ Oregon,Oregon Department of Transportation,Active All Roads Transportation Safet
 Pennsylvania,Pennsylvania Department of Transportation,Active; approximately $132 million annually,"Annual and continuous regional programming",https://www.pa.gov/agencies/penndot/about-penndot/strategic-planning-and-operations/safety-infrastructure-improvement-programs,"Projects originate through PennDOT districts and MPO/RPO planning partners",Yes,"PennDOT specifically funds cable median barriers and other roadway-departure countermeasures."
 Puerto Rico,Puerto Rico Highways and Transportation Authority,Ongoing federally aided safety programming,"Continuous STIP programming",https://act.dtop.pr.gov/oficinas/ingenieria-de-transito/plan-estrategico-de-seguridad-vial,"PRHTA programs islandwide safety projects through the STIP",Yes - conditional,"This is state-programmed funding, not a direct public grant."
 Rhode Island,Rhode Island Department of Transportation,Active state program,"Ongoing programming",https://www.dot.ri.gov/safety/reports/docs/Highway_Safety_Improvement_Program.pdf,"RIDOT identifies and programs projects; local governments coordinate with the Office of Safety",Yes,"The current report expressly lists guardrail among safety countermeasures."
-South Carolina,South Carolina Department of Transportation,Active state program; current local intake uncertain,"No verified current local deadline",https://www.scdot.org/content/dam/scdot-legacy/business/pdf/roadway/2017_SCDOT_Roadway_Design_Manual.pdf,"Projects are developed through SCDOT Traffic Engineering",Yes,"The official manual includes obsolete guardrail and bridge-rail work, but the application route is uncertain."
+South Carolina,South Carolina Department of Transportation,Program documented; current local intake uncertain,"No verified current local deadline",https://www.scdot.org/content/dam/scdot-legacy/business/pdf/roadway/2017_SCDOT_Roadway_Design_Manual.pdf,"Projects are developed through SCDOT Traffic Engineering",Yes,"The official manual includes obsolete guardrail and bridge-rail work, but the application route is uncertain."
 Tennessee,Tennessee Department of Transportation,Program available to local governments,"Current solicitation timing not stated",https://www.tn.gov/content/dam/tn/tdot/programdevelopment/LGG_Manual.pdf,"Local governments coordinate through TDOT Local Programs and planning channels",Yes,"TDOT guidance says qualifying guardrail installation may receive 100% federal funding."
 Texas,Texas Department of Transportation,2026 call complete,"2027 call planned but not issued",https://www.txdot.gov/about/programs/highway-safety-engineering.html,"TxDOT districts, MPOs, and local governments submit during the annual call",Yes,"TxDOT identifies barriers, fixed-object treatment, and off-system improvements as uses."
 Utah,Utah Department of Transportation,Active all-public-roads program,"Continuous programming",https://connect.udot.utah.gov/docs/highway-safety-improvement-program-manual/,"Local and Tribal road agencies coordinate through UDOT's HSIP process",Yes,"UDOT materials include barrier and guardrail safety work."
@@ -154,7 +163,7 @@ def national_item(row: dict[str, str]) -> dict:
     tags = "disaster resilience; hazard mitigation; emergency preparedness; infrastructure"
     if "Roadway" in category:
         tags += "; transportation; roadway safety; guardrails; barriers"
-    return {
+    item = {
         "item_id": f"RERC-FND-2026-NAT-{row['program_key']}",
         "item_type": "Funding",
         "title": row["title"],
@@ -173,6 +182,17 @@ def national_item(row: dict[str, str]) -> dict:
         "why_it_matters": row["evidence_note"],
         "source_url": row["source_url"],
     }
+    if row["program_key"] == "PROTECT":
+        item["geography"] = "Multi-State"
+        item["covered_states"] = PROTECT_PLACES
+        item["coverage_note"] = "PROTECT formula funding is apportioned to the 50 states, District of Columbia, and Puerto Rico."
+        item["coverage_source_url"] = row["source_url"]
+    elif row["program_key"] == "THP":
+        item["geography"] = "Multi-State"
+        item["covered_states"] = ["American Samoa", "Guam", "Northern Mariana Islands", "U.S. Virgin Islands"]
+        item["coverage_note"] = "The Territorial Highway Program serves the four listed territories."
+        item["coverage_source_url"] = row["source_url"]
+    return item
 
 
 def state_item(row: dict[str, str], category: str) -> dict:
@@ -265,11 +285,13 @@ def main() -> int:
 
     catalog_by_id = {item["item_id"]: item for item in catalog["items"]}
     integrated_items = [catalog_by_id[item["item_id"]] for item in candidates if item["item_id"] in catalog_by_id]
+    retained_existing_ids = ["RERC-FND-WA-2026-008"]
+    integrated_items.extend(catalog_by_id[item_id] for item_id in retained_existing_ids if item_id in catalog_by_id)
 
     EVIDENCE.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = [
         "item_id", "jurisdiction", "category", "status", "deadline_or_availability",
-        "source_url", "application_path", "guardrail_fit", "evidence_note",
+        "source_url", "application_path", "support_type", "guardrail_fit", "evidence_note",
     ]
     with EVIDENCE.open("w", encoding="utf-8-sig", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
@@ -284,6 +306,7 @@ def main() -> int:
                 "deadline_or_availability": item["deadline_or_availability"],
                 "source_url": item["source_url"],
                 "application_path": item["eligible_users"],
+                "support_type": item["support_type"],
                 "guardrail_fit": "Conditional" if roadway else "Natural-hazard nexus required",
                 "evidence_note": item["summary"],
             })
@@ -294,7 +317,9 @@ def main() -> int:
         "added_this_run": len(additions),
         "updated_this_run": len(updates),
         "updated_item_ids": updates,
-        "integrated_records": len(integrated_items),
+        "added_or_updated_records": len(candidates),
+        "retained_existing_records": retained_existing_ids,
+        "coverage_evidence_records": len(integrated_items),
         "skipped_duplicate_urls": skipped_duplicate_urls,
         "catalog_counts": catalog["counts"],
         "hazard_jurisdictions": sorted({item["geography"] for item in integrated_items if "-HMA-" in item["item_id"]} | {"Washington"}),

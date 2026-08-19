@@ -4,7 +4,11 @@
   "added_this_run": 0,
   "updated_this_run": 0,
   "updated_item_ids": [],
-  "integrated_records": 115,
+  "added_or_updated_records": 115,
+  "retained_existing_records": [
+    "RERC-FND-WA-2026-008"
+  ],
+  "coverage_evidence_records": 116,
   "skipped_duplicate_urls": [],
   "catalog_counts": {
     "combined": 1021,
