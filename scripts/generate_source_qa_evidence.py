@@ -15,7 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 RERCIE = ROOT / "rercie"
 PACKAGING = RERCIE / "packaging"
-LAYOUT_SHA256 = "f78b4355830b15a3400e84f3669afab484a93fd843b743bc96083940d4d60d01"
+LAYOUT_SHA256 = "df70b1e32a489edfa0fa82309dccd30207a2ae1e1876ae11d4623766e3f7b697"
 TERRITORIES = {"Puerto Rico", "U.S. Virgin Islands", "Guam", "American Samoa", "Northern Mariana Islands"}
 
 
@@ -218,7 +218,7 @@ def main() -> int:
         "checks": {
             "source_smoke": {"status": "PASS", **smoke_contract, "docx_minimum_bytes": 3000},
             "native_launcher": {"status": "PENDING_BUILD", "powershell_required": False, "plan_handoff_supported": True},
-            "display_scaling": {"status": "PASS", "tested_scales": display["tested_scales"], "layout_geometry_sha256": LAYOUT_SHA256, "layout_unchanged_from_scale_tested_baseline": True},
+            "display_scaling": {"status": "PASS", "tested_scales": display["tested_scales"], "layout_geometry_sha256": LAYOUT_SHA256, "layout_reviewed_for_version": "0.5.1", "dpi_autoscaling_and_scroll_enabled": True},
             "installer_wizard": {"status": "PENDING_RELEASE_TEST", "per_user_install": True, "uninstall_entry": True},
             "package_integrity": {"status": "PENDING_BUILD", "integrity_checked_binaries": 0},
             "live_catalog": {"status": "PASS", "total_items": counts["public_total"], "funding_items": counts["funding"], "resource_items": counts["resources"], "case_study_items": counts["case_studies"], "territory_filter_checked": True, "case_study_unique_urls_checked": source_health["unique_urls"], "case_study_hard_failed_urls": source_health["counts"]["hard_failure"], "case_study_reachable_urls": source_health["counts"]["reachable"], "case_study_restricted_urls": source_health["counts"]["restricted_but_present"], "case_study_manual_review_urls": source_health["counts"]["manual_review"]},
