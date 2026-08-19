@@ -85,7 +85,8 @@ const resourceTypeOptions = [
   ["data", "Data, maps, and calculators"],
   ["training", "Training and webinars"],
   ["directory", "Directories and resource hubs"],
-  ["report", "Reports and research"]
+  ["report", "Reports and research"],
+  ["other", "Other resources"]
 ];
 const caseStudyPhaseOptions = [["Plan", "Plan"], ["Design", "Design"], ["Build", "Build"], ["Operate", "Operate"]];
 
@@ -280,7 +281,7 @@ function selectedMatchFactors() {
 }
 
 function resourceTypeLabels(item) {
-  const text = `${cleanText(item.title)} ${cleanText(item.support_type)}`.toLowerCase();
+  const text = `${cleanText(item.title)} ${cleanText(item.support_type)} ${cleanText(item.topic_tags)} ${cleanText(item.summary)} ${cleanText(item.why_it_matters)}`.toLowerCase();
   const labels = [];
   if (/technical assistance|business support|workshop|coaching/.test(text)) labels.push("technical");
   if (/training|webinar|video|curriculum|instructor/.test(text)) labels.push("training");
@@ -288,7 +289,7 @@ function resourceTypeLabels(item) {
   if (/directory|hub|library|network|collection|contacts/.test(text)) labels.push("directory");
   if (/report|research|methodology|plan and data/.test(text)) labels.push("report");
   if (/guide|toolkit|framework|worksheet|checklist|planning menu|tactics|reference/.test(text)) labels.push("guide");
-  if (!labels.length) labels.push("guide");
+  if (!labels.length) labels.push("other");
   return [...new Set(labels)];
 }
 
@@ -304,9 +305,14 @@ function fundingFilterLabels(item) {
 }
 
 function caseStudyPhase(item) {
-  const text = `${cleanText(item.project_stage)} ${cleanText(item.topic_tags)}`.toLowerCase();
+  const stage = cleanText(item.project_stage).toLowerCase();
+  if (/^(early design|design|engineering|predevelopment)$/.test(stage)) return "Design";
+  if (/^(construction|implementation|acquisition|cleanup)$/.test(stage)) return "Build";
+  if (/^(operations\/maintenance|operations|maintenance|capacity building)$/.test(stage)) return "Operate";
+  if (stage === "planning") return "Plan";
+  const text = cleanText(item.topic_tags).toLowerCase();
   if (/design|engineer|predevelopment/.test(text)) return "Design";
-  if (/build|construct|implement|acquisition|capital/.test(text)) return "Build";
+  if (/build|construct|implement|acquisition|capital|cleanup/.test(text)) return "Build";
   if (/operat|maint|capacity|business/.test(text)) return "Operate";
   return "Plan";
 }
@@ -510,7 +516,7 @@ function renderCard(item, headingLevel = 3) {
         ${item.coverage_note ? `<p class="details"><strong>Coverage note:</strong> ${escapeHtml(item.coverage_note)}</p>` : ""}
         <p class="details"><strong>${item.item_type === "Funding" ? "Application timing" : "Availability"}:</strong> ${timingInfo ? `<span class="timing-class ${escapeHtml(timingInfo.type)}">${escapeHtml(timingInfo.label)}</span><br>` : ""}<span class="timing-detail">${escapeHtml(timing)}</span> &nbsp; <strong>Last checked:</strong> ${escapeHtml(item.last_checked)}</p>
       </details>
-      ${renderSourceLink(item, "Program Website")}
+      ${renderSourceLink(item, item.item_type === "Resource" ? "Open resource" : "Program Website")}
     </div>
     <div class="score" aria-label="${escapeHtml(scoreLabel)}"><strong>${escapeHtml(scoreLabel)}</strong><span>${hasSubstantiveAnswers() ? "match level" : "add details to rank"}</span></div>
   </article>`;
@@ -552,7 +558,7 @@ function render() {
   const fundingResults = currentMatches.filter((item) => item.item_type === "Funding");
   const resourceResults = currentMatches.filter((item) => item.item_type === "Resource");
   const caseResults = currentMatches.filter((item) => item.item_type === "Case Study");
-  const caseStudyView = elements.caseStudyViewSelect?.value || "featured";
+  const caseStudyLimit = Math.max(24, Math.min(120, Number(elements.caseStudyViewSelect?.value) || 24));
   let visible = currentMatches.slice(0, limit);
   if (mode === "All") {
     const each = limitValue === "all" ? Number.MAX_SAFE_INTEGER : Math.max(1, Math.floor(limit / 3));
@@ -561,8 +567,8 @@ function render() {
       ...resourceResults.slice(0, each),
       ...caseResults.slice(0, Math.min(each, 12))
     ];
-  } else if (mode === "Case Study" && caseStudyView === "featured") {
-    visible = caseResults.slice(0, Math.min(limit, 24));
+  } else if (mode === "Case Study") {
+    visible = caseResults.slice(0, Math.min(limit, caseStudyLimit));
   }
   if (elements.caseStudyViewControl) elements.caseStudyViewControl.hidden = mode !== "Case Study";
   if (elements.caseStudyCollections) elements.caseStudyCollections.hidden = mode !== "Case Study";
@@ -646,6 +652,7 @@ function exportCsv() {
 
 function xmlEscape(value) {
   return cleanText(value)
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -814,7 +821,7 @@ function reset() {
   elements.includeClosed.checked = false;
   elements.sortSelect.value = "score";
   elements.limitSelect.value = "all";
-  if (elements.caseStudyViewSelect) elements.caseStudyViewSelect.value = "featured";
+  if (elements.caseStudyViewSelect) elements.caseStudyViewSelect.value = "24";
   document.querySelectorAll(".filters input[type=checkbox]").forEach((input) => { input.checked = false; });
   mode = "All";
   document.querySelectorAll("[data-mode]").forEach((button) => {
@@ -840,7 +847,7 @@ function initialize() {
   elements.resourceCount.textContent = fundingResources.filter((item) => item.item_type === "Resource").length.toLocaleString();
   elements.caseStudyCount.textContent = caseStudies.length.toLocaleString();
   populateStateOptions();
-  elements.stageSelect.innerHTML = stages.map((stage) => `<option>${escapeHtml(stage)}</option>`).join("");
+  elements.stageSelect.innerHTML = stages.map((stage) => `<option value="${escapeHtml(stage)}">${escapeHtml(stage)}</option>`).join("");
   buildCheckList(elements.applicantOptions, applicantOptions, "applicant");
   buildCheckList(elements.topicOptions, topicOptions, "topic");
   buildCheckList(elements.fundingTypeOptions, fundingFilterOptions, "funding-filter");
@@ -894,6 +901,7 @@ window.RERCExplorer = {
   matchesApplicants,
   matchesAny,
   resourceTypeLabels,
+  caseStudyPhase,
   isClosed
 };
 

@@ -50,24 +50,24 @@ def update_planner() -> None:
       body.push(docxParagraph(row.label + ": " + row.value));
     });
     if (model.notes) {
-      body.push(docxParagraph("Project notes", "Heading1"));
+      body.push(docxParagraph(t("projectNotesHeading"), "Heading1"));
       model.notes.split(/\\r?\\n/).forEach(function (line) { body.push(docxParagraph(line || " ")); });
     }
     body.push(docxParagraph(t("roadmap"), "Heading1"));
 '''
     intro_new = '''    body.push(docxParagraph(model.title, "Title"));
     body.push(docxParagraph("Recreation Economy for Rural Communities", "Subtitle"));
-    body.push(docxParagraph("Prepared " + new Date().toLocaleDateString(), "Metadata"));
+    body.push(docxParagraph(t("prepared", { date: new Date().toLocaleDateString(state.language === "es" ? "es-US" : "en-US") }), "Metadata"));
     body.push(docxParagraph(t("communitySnapshot"), "Heading1"));
     profileRows(model.profile).forEach(function (row) {
       body.push(docxKeyValue(row.label, row.value));
     });
     if (model.notes) {
-      body.push(docxParagraph("Project notes", "Heading1"));
+      body.push(docxParagraph(t("projectNotesHeading"), "Heading1"));
       model.notes.split(/\\r?\\n/).forEach(function (line) { body.push(docxParagraph(line || " ", "BodyText")); });
     }
     body.push(docxParagraph(t("roadmap"), "Heading1"));
-    body.push(docxParagraph(model.items.length + " selected item" + (model.items.length === 1 ? "" : "s") + ", organized by project phase.", "Metadata"));
+    body.push(docxParagraph(t(model.items.length === 1 ? "selectedItemSummary" : "selectedItemsSummary", { count: model.items.length }), "Metadata"));
 '''
     if 'body.push(docxParagraph("Recreation Economy for Rural Communities", "Subtitle"));' not in text:
         intro_start = text.index('    body.push(docxParagraph(model.title, "Title"));')
@@ -99,8 +99,8 @@ def update_planner() -> None:
         }
 '''
     item_new = '''        body.push(docxPageBreak());
-        body.push(docxParagraph(textValue(item.item_type, 80).toUpperCase(), "Category"));
-        body.push(docxParagraph(t(phase.toLowerCase()) + " phase", "PhaseLabel"));
+        body.push(docxParagraph(t(item.item_type === "Funding" ? "fundingCategory" : item.item_type === "Resource" ? "resourceCategory" : "caseStudyCategory").toUpperCase(), "Category"));
+        body.push(docxParagraph(t("phaseLabel", { phase: t(phase.toLowerCase()) }), "PhaseLabel"));
         body.push(docxParagraph(textValue(item.title, 500), "Heading2"));
         [
           [t("organization"), item.organization],
@@ -114,7 +114,7 @@ def update_planner() -> None:
         ].forEach(function (row) {
           if (row[1]) body.push(docxKeyValue(row[0], row[1]));
         });
-        body.push(docxParagraph("Overview", "Heading3"));
+        body.push(docxParagraph(t("overviewHeading"), "Heading3"));
         body.push(docxParagraph(summaryFor(item), "BodyText"));
         const source = safeHttpUrl(item.source_url);
         if (source) {
@@ -123,36 +123,37 @@ def update_planner() -> None:
           body.push(docxParagraph(t("openSource"), "SourceLink", relationshipId));
         }
 '''
-    if 'body.push(docxParagraph(textValue(item.item_type, 80).toUpperCase(), "Category"));' not in text:
+    if 'body.push(docxParagraph(t(item.item_type === "Funding" ? "fundingCategory" : item.item_type === "Resource" ? "resourceCategory" : "caseStudyCategory").toUpperCase(), "Category"));' not in text:
         item_start = text.index('        body.push(docxPageBreak());')
         item_end = text.index('      });\n    });', item_start)
         text = text[:item_start] + item_new + text[item_end:]
     text = replace_once(
         text,
         '    body.push(docxParagraph(t("officialEnglish")));',
-        '    body.push(docxParagraph(t("officialEnglish"), "FooterNote"));',
+        '    body.push(docxParagraph(t("officialEnglish"), "ClosingNote"));',
         "DOCX footer",
     )
 
-    style_start = text.index("    const stylesXml =")
+    style_start = text.index('    const documentLanguage = state.language === "es" ? "es-ES" : "en-US";\n    const stylesXml =')
     style_end = text.index("    const zip = new window.JSZip();", style_start)
-    styles = '''    const stylesXml =
+    styles = '''    const documentLanguage = state.language === "es" ? "es-ES" : "en-US";
+    const stylesXml =
       '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
       '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
       '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/>' +
-      '<w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="21"/><w:color w:val="24352F"/></w:rPr></w:style>' +
+      '<w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="21"/><w:color w:val="24352F"/><w:lang w:val="' + documentLanguage + '"/></w:rPr></w:style>' +
       '<w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/>' +
       '<w:pPr><w:spacing w:after="120"/></w:pPr><w:rPr><w:b/><w:color w:val="175641"/><w:sz w:val="38"/></w:rPr></w:style>' +
       '<w:style w:type="paragraph" w:styleId="Subtitle"><w:name w:val="Subtitle"/><w:basedOn w:val="Normal"/>' +
       '<w:rPr><w:i/><w:color w:val="4D6159"/><w:sz w:val="24"/></w:rPr></w:style>' +
       '<w:style w:type="paragraph" w:styleId="Metadata"><w:name w:val="Metadata"/><w:basedOn w:val="Normal"/>' +
       '<w:rPr><w:color w:val="61736C"/><w:sz w:val="19"/></w:rPr></w:style>' +
-      '<w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/>' +
-      '<w:pPr><w:keepNext/><w:spacing w:before="240" w:after="100"/><w:pBdr><w:bottom w:val="single" w:sz="12" w:color="D6A525"/></w:pBdr></w:pPr><w:rPr><w:b/><w:color w:val="175641"/><w:sz w:val="28"/></w:rPr></w:style>' +
-      '<w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/>' +
-      '<w:pPr><w:keepNext/><w:spacing w:before="160" w:after="100"/></w:pPr><w:rPr><w:b/><w:color w:val="175641"/><w:sz w:val="28"/></w:rPr></w:style>' +
-      '<w:style w:type="paragraph" w:styleId="Heading3"><w:name w:val="heading 3"/><w:basedOn w:val="Normal"/>' +
-      '<w:pPr><w:keepNext/><w:spacing w:before="160" w:after="60"/></w:pPr><w:rPr><w:b/><w:color w:val="314A41"/><w:sz w:val="22"/></w:rPr></w:style>' +
+      '<w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:qFormat/>' +
+      '<w:pPr><w:keepNext/><w:outlineLvl w:val="0"/><w:spacing w:before="240" w:after="100"/><w:pBdr><w:bottom w:val="single" w:sz="12" w:color="D6A525"/></w:pBdr></w:pPr><w:rPr><w:b/><w:color w:val="175641"/><w:sz w:val="28"/></w:rPr></w:style>' +
+      '<w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:qFormat/>' +
+      '<w:pPr><w:keepNext/><w:outlineLvl w:val="1"/><w:spacing w:before="160" w:after="100"/></w:pPr><w:rPr><w:b/><w:color w:val="175641"/><w:sz w:val="28"/></w:rPr></w:style>' +
+      '<w:style w:type="paragraph" w:styleId="Heading3"><w:name w:val="heading 3"/><w:basedOn w:val="Normal"/><w:qFormat/>' +
+      '<w:pPr><w:keepNext/><w:outlineLvl w:val="2"/><w:spacing w:before="160" w:after="60"/></w:pPr><w:rPr><w:b/><w:color w:val="314A41"/><w:sz w:val="22"/></w:rPr></w:style>' +
       '<w:style w:type="paragraph" w:styleId="Category"><w:name w:val="Category"/><w:basedOn w:val="Normal"/>' +
       '<w:pPr><w:shd w:val="clear" w:color="auto" w:fill="175641"/><w:spacing w:after="80"/><w:ind w:left="120"/></w:pPr><w:rPr><w:b/><w:color w:val="FFFFFF"/><w:sz w:val="20"/></w:rPr></w:style>' +
       '<w:style w:type="paragraph" w:styleId="PhaseLabel"><w:name w:val="Phase Label"/><w:basedOn w:val="Normal"/>' +
@@ -163,7 +164,7 @@ def update_planner() -> None:
       '<w:pPr><w:spacing w:after="160"/></w:pPr></w:style>' +
       '<w:style w:type="paragraph" w:styleId="SourceLink"><w:name w:val="Source Link"/><w:basedOn w:val="Normal"/>' +
       '<w:pPr><w:spacing w:before="120"/></w:pPr></w:style>' +
-      '<w:style w:type="paragraph" w:styleId="FooterNote"><w:name w:val="Footer Note"/><w:basedOn w:val="Normal"/>' +
+      '<w:style w:type="paragraph" w:styleId="ClosingNote"><w:name w:val="Closing Note"/><w:basedOn w:val="Normal"/>' +
       '<w:rPr><w:i/><w:color w:val="61736C"/><w:sz w:val="18"/></w:rPr></w:style>' +
       '<w:style w:type="character" w:styleId="Hyperlink"><w:name w:val="Hyperlink"/>' +
       '<w:rPr><w:color w:val="1B6A8F"/><w:u w:val="single"/></w:rPr></w:style></w:styles>';
@@ -185,7 +186,13 @@ def update_translation() -> None:
     "Reports and research": "Informes e investigación",
     "Case studies shown": "Casos prácticos mostrados",
     "Featured matches (24)": "Opciones destacadas (24)",
-    "All case studies": "Todos los casos prácticos",
+    "More matches (60)": "Más opciones (60)",
+    "Expanded matches (120)": "Opciones ampliadas (120)",
+    "Other resources": "Otros recursos",
+    "Disaster, water, and resilience": "Desastres, agua y resiliencia",
+    "Featured community examples": "Ejemplos comunitarios destacados",
+    "Open the Case studies tab for more ranked examples and links to complete source libraries.": "Abra la pestaña Casos prácticos para ver más ejemplos clasificados y enlaces a bibliotecas completas.",
+    "Open resource": "Abrir recurso",
     "Case study libraries": "Bibliotecas de casos prácticos",
     "Browse full case study collections": "Explore colecciones completas de casos prácticos",
     "Use the ranked examples below, or search a complete source library.": "Use los ejemplos clasificados a continuación o busque en una biblioteca completa.",
