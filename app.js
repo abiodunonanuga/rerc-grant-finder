@@ -39,8 +39,8 @@ const defaultTopicOptions = [
   ["downtown|main street|gateway|placemaking", "Downtown and Main Street"],
   ["tourism|visitor|recreation economy", "Tourism and visitor economy"],
   ["business|entrepreneur|workforce|economic development", "Business and jobs"],
-  ["transportation|street|bike|pedestrian|transit|mobility", "Transportation and safe access"],
-  ["water|wastewater|stormwater|flood|coastal|resilience", "Water and resilience"],
+  ["transportation|street|road|roadway|highway|guardrail|barrier|traffic safety|hsip|bike|pedestrian|transit|mobility", "Transportation and safe access"],
+  ["water|wastewater|stormwater|flood|coastal|resilience|disaster|hazard|mitigation|emergency|wildfire|drought|earthquake|storm", "Disaster, water, and resilience"],
   ["river-access", "River access"],
   ["conservation|environment|environmental|habitat|forest|land|river|watershed", "Conservation and public lands"],
   ["historic|heritage|arts|culture|museum", "History, arts, and culture"],
@@ -63,8 +63,8 @@ const topicMatchers = filterConfig.topicMatchers || {};
 const specificApplicantGroups = applicantOptions.filter(([value]) => value !== "__other__").map(([value]) => value);
 
 const elements = Object.fromEntries([
-  "stateSelect","keywordSearch","applicantOptions","topicOptions","fundingTypeOptions","caseStudyPhaseOptions","stageSelect",
-  "includeClosed","toggleFilters","resetButton","sortSelect","limitSelect","exportWord","exportCsv","communityTitle","communitySummary",
+  "stateSelect","keywordSearch","applicantOptions","topicOptions","fundingTypeOptions","resourceTypeOptions","caseStudyPhaseOptions","stageSelect",
+  "includeClosed","toggleFilters","resetButton","sortSelect","limitSelect","caseStudyViewSelect","caseStudyViewControl","caseStudyCollections","exportWord","exportCsv","communityTitle","communitySummary",
   "matchCount","fundingMatchCount","resourceMatchCount","caseStudyMatchCount","activeFilters","results","matchAnnouncement",
   "fundingCount","resourceCount","caseStudyCount","showFunding","showResources","showCases",
   "nextDeadlinePanel","nextDeadlineDate","nextDeadlineMeta","nextDeadlineLink","profileStatus",
@@ -78,6 +78,14 @@ const fundingFilterOptions = [
   ["loan", "Loan or financing"],
   ["match", "Match or cost share required"],
   ["amount", "Award amount listed"]
+];
+const resourceTypeOptions = [
+  ["technical", "Technical assistance"],
+  ["guide", "Guides and toolkits"],
+  ["data", "Data, maps, and calculators"],
+  ["training", "Training and webinars"],
+  ["directory", "Directories and resource hubs"],
+  ["report", "Reports and research"]
 ];
 const caseStudyPhaseOptions = [["Plan", "Plan"], ["Design", "Design"], ["Build", "Build"], ["Operate", "Operate"]];
 
@@ -265,9 +273,23 @@ function selectedMatchFactors() {
     applicants: selectedValues(elements.applicantOptions),
     topics: selectedValues(elements.topicOptions),
     fundingFilters: selectedValues(elements.fundingTypeOptions),
+    resourceTypes: selectedValues(elements.resourceTypeOptions),
     caseStudyPhases: selectedValues(elements.caseStudyPhaseOptions),
     selectedStage: elements.stageSelect.value
   };
+}
+
+function resourceTypeLabels(item) {
+  const text = `${cleanText(item.title)} ${cleanText(item.support_type)}`.toLowerCase();
+  const labels = [];
+  if (/technical assistance|business support|workshop|coaching/.test(text)) labels.push("technical");
+  if (/training|webinar|video|curriculum|instructor/.test(text)) labels.push("training");
+  if (/data|map|gis|calculator|analysis|software|viewer|database|benchmark/.test(text)) labels.push("data");
+  if (/directory|hub|library|network|collection|contacts/.test(text)) labels.push("directory");
+  if (/report|research|methodology|plan and data/.test(text)) labels.push("report");
+  if (/guide|toolkit|framework|worksheet|checklist|planning menu|tactics|reference/.test(text)) labels.push("guide");
+  if (!labels.length) labels.push("guide");
+  return [...new Set(labels)];
 }
 
 function fundingFilterLabels(item) {
@@ -319,7 +341,7 @@ function scoreItem(item, text, factors) {
 function getMatches() {
   const factors = selectedMatchFactors();
   const {
-    selectedPlace, applicants, topics, fundingFilters, caseStudyPhases, selectedStage
+    selectedPlace, applicants, topics, fundingFilters, resourceTypes, caseStudyPhases, selectedStage
   } = factors;
   const keyword = elements.keywordSearch.value.trim().toLowerCase();
 
@@ -332,6 +354,7 @@ function getMatches() {
     if (item.item_type !== "Case Study" && !matchesApplicants(cleanText(item.eligible_users).toLowerCase(), applicants)) return false;
     if (!matchesAny(topicCorpus(item), topics)) return false;
     if (item.item_type === "Funding" && fundingFilters.length && !fundingFilters.some((filter) => fundingFilterLabels(item).includes(filter))) return false;
+    if (item.item_type === "Resource" && resourceTypes.length && !resourceTypes.some((filter) => resourceTypeLabels(item).includes(filter))) return false;
     if (item.item_type === "Case Study" && caseStudyPhases.length && !caseStudyPhases.includes(caseStudyPhase(item))) return false;
     const stageText = cleanText(item.project_stage).toLowerCase();
     if (selectedStage !== "Any step") {
@@ -502,8 +525,10 @@ function activeFilterSummary() {
   if (applicants.length) values.push(`${applicants.length} applicant choice${applicants.length === 1 ? "" : "s"}`);
   if (topics.length) values.push(`${topics.length} topic${topics.length === 1 ? "" : "s"}`);
   const fundingFilters = selectedValues(elements.fundingTypeOptions);
+  const resourceTypes = selectedValues(elements.resourceTypeOptions);
   const caseStudyPhases = selectedValues(elements.caseStudyPhaseOptions);
   if (fundingFilters.length) values.push(`${fundingFilters.length} funding filter${fundingFilters.length === 1 ? "" : "s"}`);
+  if (resourceTypes.length) values.push(`${resourceTypes.length} resource type${resourceTypes.length === 1 ? "" : "s"}`);
   if (caseStudyPhases.length) values.push(`${caseStudyPhases.join(", ")} case studies`);
   if (elements.stageSelect.value !== "Any step") values.push(elements.stageSelect.value);
   if (elements.includeClosed.checked) values.push("Closed rounds shown");
@@ -527,15 +552,20 @@ function render() {
   const fundingResults = currentMatches.filter((item) => item.item_type === "Funding");
   const resourceResults = currentMatches.filter((item) => item.item_type === "Resource");
   const caseResults = currentMatches.filter((item) => item.item_type === "Case Study");
+  const caseStudyView = elements.caseStudyViewSelect?.value || "featured";
   let visible = currentMatches.slice(0, limit);
   if (mode === "All") {
     const each = limitValue === "all" ? Number.MAX_SAFE_INTEGER : Math.max(1, Math.floor(limit / 3));
     visible = [
       ...fundingResults.slice(0, each),
       ...resourceResults.slice(0, each),
-      ...caseResults.slice(0, each)
+      ...caseResults.slice(0, Math.min(each, 12))
     ];
+  } else if (mode === "Case Study" && caseStudyView === "featured") {
+    visible = caseResults.slice(0, Math.min(limit, 24));
   }
+  if (elements.caseStudyViewControl) elements.caseStudyViewControl.hidden = mode !== "Case Study";
+  if (elements.caseStudyCollections) elements.caseStudyCollections.hidden = mode !== "Case Study";
   const place = elements.stateSelect.value;
   const label = place || "rural communities";
   const fundingMatches = fundingResults.length;
@@ -574,7 +604,7 @@ function render() {
     elements.results.innerHTML = [
       renderGroup("Funding", "Ways to pay for the work", "Grants, loans, tax credits, and other funding options.", shownFunding, fundingMatches, "funding-group"),
       renderGroup("Resources", "Tools and technical help", "Guides, data, training, and hands-on support.", shownResources, resourceMatches, "resource-group"),
-      renderGroup("Case studies", "Examples from communities across the country", "Use your topic choices to find useful ideas. An example may come from another state.", shownCases, caseMatches, "case-group")
+      renderGroup("Case studies", "Featured community examples", "Open the Case studies tab for more ranked examples and links to complete source libraries.", shownCases, caseMatches, "case-group")
     ].join("");
   } else {
     elements.results.innerHTML = visible.map((item) => renderCard(item, 3)).join("");
@@ -784,6 +814,7 @@ function reset() {
   elements.includeClosed.checked = false;
   elements.sortSelect.value = "score";
   elements.limitSelect.value = "all";
+  if (elements.caseStudyViewSelect) elements.caseStudyViewSelect.value = "featured";
   document.querySelectorAll(".filters input[type=checkbox]").forEach((input) => { input.checked = false; });
   mode = "All";
   document.querySelectorAll("[data-mode]").forEach((button) => {
@@ -813,6 +844,7 @@ function initialize() {
   buildCheckList(elements.applicantOptions, applicantOptions, "applicant");
   buildCheckList(elements.topicOptions, topicOptions, "topic");
   buildCheckList(elements.fundingTypeOptions, fundingFilterOptions, "funding-filter");
+  buildCheckList(elements.resourceTypeOptions, resourceTypeOptions, "resource-type");
   buildCheckList(elements.caseStudyPhaseOptions, caseStudyPhaseOptions, "case-study-phase");
   if (!elements.sortSelect.querySelector('option[value="deadline"]')) {
     const deadlineOption = document.createElement("option");
@@ -861,6 +893,7 @@ window.RERCExplorer = {
   matchesStage,
   matchesApplicants,
   matchesAny,
+  resourceTypeLabels,
   isClosed
 };
 

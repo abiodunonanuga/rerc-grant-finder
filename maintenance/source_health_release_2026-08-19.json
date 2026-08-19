@@ -1,0 +1,33 @@
+{
+  "status": "PASS_WITH_RESTRICTIONS",
+  "checked_at": "2026-08-19T21:43:16.346633+00:00",
+  "release_rule": "No hard source failures. Publisher bot blocks and local TLS or disconnect errors are retained as manual-review checks and do not imply that a program or resource is inactive.",
+  "unique_urls_checked": 921,
+  "hard_failures": 0,
+  "publisher_or_network_restrictions": 109,
+  "bot_blocked_urls": 107,
+  "non_bot_manual_review_urls": 2,
+  "monitoring_signals": {
+    "changed": 60,
+    "new": 1,
+    "removed": 1,
+    "note": "Header and metadata changes are monitoring signals, not content failures. The new and removed URL represent the corrected Oregon grant-directory link."
+  },
+  "manual_corroboration": [
+    {
+      "url": "https://dot.alaska.gov/stwddes/dcstraffic/hsip.shtml",
+      "result": "The official Alaska DOT Highway Safety Improvement Program page was active in independent web-index verification on 2026-08-19. The automated probe could not validate the site's local certificate chain."
+    },
+    {
+      "url": "https://www.fdot.gov/fpo/lp/flgap/home",
+      "result": "The official Florida GAP page was active in independent web verification on 2026-08-19 and expressly listed HSIP. The automated probe received a remote disconnect."
+    }
+  ],
+  "resilience_transportation_expansion": {
+    "status": "PASS",
+    "integrated_records": 115,
+    "hazard_mitigation_coverage": "50 states, District of Columbia, and five U.S. territories",
+    "roadway_safety_coverage": "50 states, District of Columbia, and Puerto Rico, plus the four smaller territories through the FHWA Territorial Highway Program",
+    "hard_source_failures": 0
+  }
+}

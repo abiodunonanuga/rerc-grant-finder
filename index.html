@@ -79,6 +79,7 @@
           </div>
           <div class="question-grid supplemental-filters">
             <fieldset><legend>Funding details</legend><div id="fundingTypeOptions" class="check-list"></div></fieldset>
+            <fieldset><legend>Resource type</legend><div id="resourceTypeOptions" class="check-list"></div></fieldset>
             <fieldset><legend>Case study phase</legend><div id="caseStudyPhaseOptions" class="check-list"></div></fieldset>
           </div>
           <div class="field-grid compact-fields">
@@ -123,8 +124,18 @@
         <div id="resultsToolbar" class="results-toolbar">
           <label for="sortSelect"><span>Sort</span><select id="sortSelect"><option value="score">Most relevant</option><option value="title">Name</option><option value="status">Status</option><option value="type">Type</option></select></label>
           <label for="limitSelect"><span>Show</span><select id="limitSelect"><option value="all" selected>All results</option><option value="30">30 results</option><option value="60">60 results</option><option value="120">120 results</option></select></label>
+          <label id="caseStudyViewControl" for="caseStudyViewSelect" hidden><span>Case studies shown</span><select id="caseStudyViewSelect"><option value="featured" selected>Featured matches (24)</option><option value="all">All case studies</option></select></label>
           <div class="legacy-exports" aria-label="Quick match exports"><button id="exportWord" type="button"><i data-lucide="file-text" aria-hidden="true"></i>Word</button><button id="exportCsv" type="button"><i data-lucide="sheet" aria-hidden="true"></i>CSV</button></div>
         </div>
+        <section id="caseStudyCollections" class="case-study-collections" aria-labelledby="caseStudyCollectionsTitle" hidden>
+          <div><p class="eyebrow">Case study libraries</p><h3 id="caseStudyCollectionsTitle">Browse full case study collections</h3><p>Use the ranked examples below, or search a complete source library.</p></div>
+          <ul>
+            <li><a href="https://www.epa.gov/smartgrowth/examples-smart-growth-communities-and-projects" target="_blank" rel="noopener">EPA Smart Growth examples</a></li>
+            <li><a href="https://www.epa.gov/brownfields/success-stories" target="_blank" rel="noopener">EPA Brownfields success stories</a></li>
+            <li><a href="https://toolkit.climate.gov/case-studies" target="_blank" rel="noopener">U.S. Climate Resilience Toolkit case studies</a></li>
+            <li><a href="https://www.rd.usda.gov/newsroom/success-stories" target="_blank" rel="noopener">USDA Rural Development success stories</a></li>
+          </ul>
+        </section>
         <div id="activeFilters" class="active-filters"></div>
         <section id="results" class="results" aria-label="Matching catalog records"></section>
       </section>
@@ -172,9 +183,9 @@
   <section id="catalogDownloads" class="download-band" aria-labelledby="downloadsTitle">
     <div><p class="eyebrow">Full collection</p><h2 id="downloadsTitle">Download every catalog record.</h2><p>These files include all funding opportunities, resources, and community examples with official links.</p></div>
     <div class="download-actions">
-      <a href="downloads/RERC_Community_Explorer_Appendix_2026-08-14.docx" download><i data-lucide="file-text" aria-hidden="true"></i>Word appendix</a>
-      <a href="downloads/RERC_Community_Explorer_Master_2026-08-14.xlsx" download><i data-lucide="sheet" aria-hidden="true"></i>Excel workbook</a>
-      <a href="downloads/RERC_Community_Explorer_Master_2026-08-14.csv" download><i data-lucide="table" aria-hidden="true"></i>CSV file</a>
+      <a href="downloads/RERC_Community_Explorer_Appendix_2026-08-19.docx" download><i data-lucide="file-text" aria-hidden="true"></i>Word appendix</a>
+      <a href="downloads/RERC_Community_Explorer_Master_2026-08-19.xlsx" download><i data-lucide="sheet" aria-hidden="true"></i>Excel workbook</a>
+      <a href="downloads/RERC_Community_Explorer_Master_2026-08-19.csv" download><i data-lucide="table" aria-hidden="true"></i>CSV file</a>
     </div>
   </section>
 

@@ -1661,6 +1661,22 @@
     return "<w:p>" + styleXml + content + "</w:p>";
   }
 
+  function docxRichParagraph(parts, style) {
+    const styleXml = style ? '<w:pPr><w:pStyle w:val="' + xmlEscape(style) + '"/></w:pPr>' : "";
+    const runs = parts.map(function (part) {
+      const properties = [];
+      if (part.bold) properties.push("<w:b/>");
+      if (part.italic) properties.push("<w:i/>");
+      return "<w:r>" + (properties.length ? "<w:rPr>" + properties.join("") + "</w:rPr>" : "") +
+        '<w:t xml:space="preserve">' + xmlEscape(part.text) + "</w:t></w:r>";
+    }).join("");
+    return "<w:p>" + styleXml + runs + "</w:p>";
+  }
+
+  function docxKeyValue(label, value) {
+    return docxRichParagraph([{ text: label + ": ", bold: true }, { text: value }], "KeyValue");
+  }
+
   function docxPageBreak() {
     return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
   }
@@ -1675,26 +1691,29 @@
     const relationships = [];
     const body = [];
     body.push(docxParagraph(model.title, "Title"));
+    body.push(docxParagraph("Recreation Economy for Rural Communities", "Subtitle"));
+    body.push(docxParagraph("Prepared " + new Date().toLocaleDateString(), "Metadata"));
     body.push(docxParagraph(t("communitySnapshot"), "Heading1"));
     profileRows(model.profile).forEach(function (row) {
-      body.push(docxParagraph(row.label + ": " + row.value));
+      body.push(docxKeyValue(row.label, row.value));
     });
     if (model.notes) {
       body.push(docxParagraph("Project notes", "Heading1"));
-      model.notes.split(/\r?\n/).forEach(function (line) { body.push(docxParagraph(line || " ")); });
+      model.notes.split(/\r?\n/).forEach(function (line) { body.push(docxParagraph(line || " ", "BodyText")); });
     }
     body.push(docxParagraph(t("roadmap"), "Heading1"));
+    body.push(docxParagraph(model.items.length + " selected item" + (model.items.length === 1 ? "" : "s") + ", organized by project phase.", "Metadata"));
     PHASES.forEach(function (phase) {
       const entries = model.items.filter(function (entry) { return entry.phase === phase; });
       if (!entries.length) return;
       entries.forEach(function (entry) {
         const item = entry.item;
         body.push(docxPageBreak());
-        body.push(docxParagraph(t(phase.toLowerCase()), "Heading2"));
-        body.push(docxParagraph(textValue(item.title, 500), "Heading3"));
+        body.push(docxParagraph(textValue(item.item_type, 80).toUpperCase(), "Category"));
+        body.push(docxParagraph(t(phase.toLowerCase()) + " phase", "PhaseLabel"));
+        body.push(docxParagraph(textValue(item.title, 500), "Heading2"));
         [
           [t("organization"), item.organization],
-          [t("type"), item.item_type],
           [t("status"), item.status],
           [t("applicant"), item.eligible_users],
           [t("geography"), item.geography],
@@ -1703,18 +1722,19 @@
           [t("match"), item.match_or_cost],
           [t("deadline"), item.deadline_or_availability],
         ].forEach(function (row) {
-          if (row[1]) body.push(docxParagraph(row[0] + ": " + row[1]));
+          if (row[1]) body.push(docxKeyValue(row[0], row[1]));
         });
-        body.push(docxParagraph(summaryFor(item)));
+        body.push(docxParagraph("Overview", "Heading3"));
+        body.push(docxParagraph(summaryFor(item), "BodyText"));
         const source = safeHttpUrl(item.source_url);
         if (source) {
           const relationshipId = "rId" + (relationships.length + 1);
           relationships.push({ id: relationshipId, url: source });
-          body.push(docxParagraph(t("openSource"), "", relationshipId));
+          body.push(docxParagraph(t("openSource"), "SourceLink", relationshipId));
         }
       });
     });
-    body.push(docxParagraph(t("officialEnglish")));
+    body.push(docxParagraph(t("officialEnglish"), "FooterNote"));
 
     const documentXml =
       '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
@@ -1736,17 +1756,34 @@
     const stylesXml =
       '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
       '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
-      '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style>' +
+      '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/>' +
+      '<w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="21"/><w:color w:val="24352F"/></w:rPr></w:style>' +
       '<w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/>' +
-      '<w:rPr><w:b/><w:sz w:val="36"/></w:rPr></w:style>' +
+      '<w:pPr><w:spacing w:after="120"/></w:pPr><w:rPr><w:b/><w:color w:val="175641"/><w:sz w:val="38"/></w:rPr></w:style>' +
+      '<w:style w:type="paragraph" w:styleId="Subtitle"><w:name w:val="Subtitle"/><w:basedOn w:val="Normal"/>' +
+      '<w:rPr><w:i/><w:color w:val="4D6159"/><w:sz w:val="24"/></w:rPr></w:style>' +
+      '<w:style w:type="paragraph" w:styleId="Metadata"><w:name w:val="Metadata"/><w:basedOn w:val="Normal"/>' +
+      '<w:rPr><w:color w:val="61736C"/><w:sz w:val="19"/></w:rPr></w:style>' +
       '<w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/>' +
-      '<w:rPr><w:b/><w:sz w:val="28"/></w:rPr></w:style>' +
+      '<w:pPr><w:keepNext/><w:spacing w:before="240" w:after="100"/><w:pBdr><w:bottom w:val="single" w:sz="12" w:color="D6A525"/></w:pBdr></w:pPr><w:rPr><w:b/><w:color w:val="175641"/><w:sz w:val="28"/></w:rPr></w:style>' +
       '<w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/>' +
-      '<w:rPr><w:b/><w:sz w:val="24"/></w:rPr></w:style>' +
+      '<w:pPr><w:keepNext/><w:spacing w:before="160" w:after="100"/></w:pPr><w:rPr><w:b/><w:color w:val="175641"/><w:sz w:val="28"/></w:rPr></w:style>' +
       '<w:style w:type="paragraph" w:styleId="Heading3"><w:name w:val="heading 3"/><w:basedOn w:val="Normal"/>' +
-      '<w:rPr><w:b/><w:sz w:val="22"/></w:rPr></w:style>' +
+      '<w:pPr><w:keepNext/><w:spacing w:before="160" w:after="60"/></w:pPr><w:rPr><w:b/><w:color w:val="314A41"/><w:sz w:val="22"/></w:rPr></w:style>' +
+      '<w:style w:type="paragraph" w:styleId="Category"><w:name w:val="Category"/><w:basedOn w:val="Normal"/>' +
+      '<w:pPr><w:shd w:val="clear" w:color="auto" w:fill="175641"/><w:spacing w:after="80"/><w:ind w:left="120"/></w:pPr><w:rPr><w:b/><w:color w:val="FFFFFF"/><w:sz w:val="20"/></w:rPr></w:style>' +
+      '<w:style w:type="paragraph" w:styleId="PhaseLabel"><w:name w:val="Phase Label"/><w:basedOn w:val="Normal"/>' +
+      '<w:rPr><w:b/><w:color w:val="8A6B16"/><w:sz w:val="19"/></w:rPr></w:style>' +
+      '<w:style w:type="paragraph" w:styleId="KeyValue"><w:name w:val="Key Value"/><w:basedOn w:val="Normal"/>' +
+      '<w:pPr><w:spacing w:after="60"/></w:pPr></w:style>' +
+      '<w:style w:type="paragraph" w:styleId="BodyText"><w:name w:val="Body Text"/><w:basedOn w:val="Normal"/>' +
+      '<w:pPr><w:spacing w:after="160"/></w:pPr></w:style>' +
+      '<w:style w:type="paragraph" w:styleId="SourceLink"><w:name w:val="Source Link"/><w:basedOn w:val="Normal"/>' +
+      '<w:pPr><w:spacing w:before="120"/></w:pPr></w:style>' +
+      '<w:style w:type="paragraph" w:styleId="FooterNote"><w:name w:val="Footer Note"/><w:basedOn w:val="Normal"/>' +
+      '<w:rPr><w:i/><w:color w:val="61736C"/><w:sz w:val="18"/></w:rPr></w:style>' +
       '<w:style w:type="character" w:styleId="Hyperlink"><w:name w:val="Hyperlink"/>' +
-      '<w:rPr><w:color w:val="0563C1"/><w:u w:val="single"/></w:rPr></w:style></w:styles>';
+      '<w:rPr><w:color w:val="1B6A8F"/><w:u w:val="single"/></w:rPr></w:style></w:styles>';
     const zip = new window.JSZip();
     zip.file("[Content_Types].xml",
       '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
