@@ -14,7 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DATE_TAG = date.today().isoformat()
 PREFIX = "window.RERC_CATALOG = "
-EXPECTED_RERCIE_VERSION = "0.5.0"
+EXPECTED_RERCIE_VERSION = "0.5.1"
 EXPECTED_REFERRER_POLICY = "strict-origin-when-cross-origin"
 EXPECTED_CSP = (
     "default-src 'self'; script-src 'self'; style-src 'self'; "
@@ -378,9 +378,9 @@ def main() -> int:
     installer_script = (ROOT / "rercie" / "packaging" / "RERCie.iss").read_text(encoding="utf-8")
     assert '[InstallDelete]' not in installer_script
     assert 'Name: "{app}\\models"' in installer_script  # Uninstall cleanup remains intentional.
-    assert '#define AppVersion "0.5.0"' in installer_script
+    assert '#define AppVersion "0.5.1"' in installer_script
     build_script = (ROOT / "rercie" / "build_installer.ps1").read_text(encoding="utf-8")
-    assert '$Version = "0.5.0"' in build_script
+    assert '$Version = "0.5.1"' in build_script
     installer_manifest = json.loads(
         (ROOT / "rercie" / "packaging" / "installer_manifest.json").read_text(
             encoding="utf-8"
@@ -494,7 +494,7 @@ def main() -> int:
             "regional_coverage",
             "case_studies",
             "downloads",
-            "rerc_e_0.5.0",
+            "rerc_e_0.5.1",
             "privacy_and_grounding",
         ],
     }

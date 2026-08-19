@@ -20,7 +20,7 @@ namespace RERCieDesktop
 {
     internal static class Config
     {
-        public const string Version = "0.5.0";
+        public const string Version = "0.5.1";
         public const string AppUrl = "http://127.0.0.1:8789";
         public const string AppHealthUrl = AppUrl + "/health";
         public const string ModelHealthUrl = "http://127.0.0.1:8788/health";
@@ -330,7 +330,20 @@ namespace RERCieDesktop
             Process.Start(info);
         }
 
-        public static async Task DownloadAsync(string url, string destination, Action<long, long> progress)
+        public static void EnsureDownloadSpace(string destination, long expectedBytes)
+        {
+            string partial = destination + ".partial";
+            long existing = File.Exists(partial) ? new FileInfo(partial).Length : 0L;
+            long remaining = Math.Max(0L, expectedBytes - existing);
+            string root = Path.GetPathRoot(Path.GetFullPath(destination));
+            DriveInfo drive = new DriveInfo(root);
+            long reserve = 200L * 1024L * 1024L;
+            if (drive.AvailableFreeSpace < remaining + reserve)
+                throw new InvalidOperationException("RERC-e needs about " + ((remaining + reserve) / 1048576L).ToString("N0") + " MB of free space before downloading.");
+        }
+
+
+        public static async Task DownloadAsync(string url, string destination, Action<long, long> progress, CancellationToken cancellationToken)
         {
             bool isModelDownload = string.Equals(url, Config.ModelUrl, StringComparison.OrdinalIgnoreCase);
             string downloadName = isModelDownload ? "Google Gemma" : "the required Microsoft Windows component";
@@ -362,7 +375,7 @@ namespace RERCieDesktop
                             request.Headers.UserAgent.ParseAdd("RERC-e/" + Config.Version + " (Windows; local grant-writing guide)");
                             request.Headers.Accept.ParseAdd("application/octet-stream");
                             if (existing > 0) request.Headers.Range = new RangeHeaderValue(existing, null);
-                            using (HttpResponseMessage response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
+                            using (HttpResponseMessage response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
                             {
                                 if (response.StatusCode == HttpStatusCode.RequestedRangeNotSatisfiable)
                                 {
@@ -382,9 +395,9 @@ namespace RERCieDesktop
                                     long done = offset;
                                     if (progress != null) progress(done, total);
                                     int read;
-                                    while ((read = await input.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                                    while ((read = await input.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
                                     {
-                                        await output.WriteAsync(buffer, 0, read);
+                                        await output.WriteAsync(buffer, 0, read, cancellationToken);
                                         done += read;
                                         if (progress != null) progress(done, total);
                                     }
@@ -396,11 +409,15 @@ namespace RERCieDesktop
                     File.Move(partial, destination);
                     return;
                 }
+                catch (OperationCanceledException)
+                {
+                    throw new InvalidOperationException("The download was canceled. The saved partial download can resume later.");
+                }
                 catch (Exception error)
                 {
                     lastError = error;
                 }
-                if (attempt < 4) await Task.Delay(attempt * 1500);
+                if (attempt < 4) await Task.Delay(attempt * 1500, cancellationToken);
             }
             string detail = lastError == null ? "Unknown network error." : RootMessage(lastError);
             throw new InvalidOperationException("RERC-e could not download " + downloadName + ". Check your internet connection and try again. The saved partial download will resume. Details: " + detail, lastError);
@@ -433,9 +450,19 @@ namespace RERCieDesktop
                     using (HttpResponseMessage response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
                     {
                         response.EnsureSuccessStatusCode();
-                        byte[] body = await response.Content.ReadAsByteArrayAsync();
-                        if (body.Length != 1024) throw new InvalidOperationException("The Gemma endpoint returned an unexpected probe size.");
-                        return new { status = "PASS", http_status = (int)response.StatusCode, bytes = body.Length, model = Config.ModelName, source = Config.ModelPageUrl };
+                        byte[] body = new byte[1024];
+                        int totalRead = 0;
+                        using (Stream input = await response.Content.ReadAsStreamAsync())
+                        {
+                            while (totalRead < body.Length)
+                            {
+                                int read = await input.ReadAsync(body, totalRead, body.Length - totalRead);
+                                if (read <= 0) break;
+                                totalRead += read;
+                            }
+                        }
+                        if (totalRead != 1024) throw new InvalidOperationException("The Gemma endpoint returned an unexpected probe size.");
+                        return new { status = "PASS", http_status = (int)response.StatusCode, bytes = totalRead, model = Config.ModelName, source = Config.ModelPageUrl };
                     }
                 }
             }
@@ -482,6 +509,7 @@ namespace RERCieDesktop
         private readonly Button stopButton = new Button();
         private readonly bool startupPlanStaged;
         private bool busy;
+        private CancellationTokenSource activeOperationCancellation;
 
         public MainForm(bool hasStartupPlan)
         {
@@ -490,6 +518,8 @@ namespace RERCieDesktop
             ClientSize = new Size(700, 520);
             MinimumSize = new Size(716, 559);
             StartPosition = FormStartPosition.CenterScreen;
+            AutoScaleMode = AutoScaleMode.Dpi;
+            AutoScroll = true;
             BackColor = Color.White;
             Font = new Font("Segoe UI", 9.5f);
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
@@ -546,24 +576,26 @@ namespace RERCieDesktop
             progressBar.AccessibleDescription = "Shows download and startup progress.";
             Controls.Add(progressBar);
 
-            startButton.Text = "Start RERC-e";
+            startButton.Text = "&Start RERC-e";
             startButton.Location = new Point(260, 448);
             startButton.Size = new Size(130, 38);
             StylePrimary(startButton);
             startButton.Click += StartClicked;
             Controls.Add(startButton);
 
-            openButton.Text = "Open RERC-e";
+            openButton.Text = "&Open RERC-e";
             openButton.Location = new Point(398, 448);
             openButton.Size = new Size(130, 38);
             openButton.Click += delegate { Runtime.OpenBrowser(Runtime.AppBrowserUrl()); };
             Controls.Add(openButton);
 
-            stopButton.Text = "Stop";
+            stopButton.Text = "&Stop";
             stopButton.Location = new Point(536, 448);
             stopButton.Size = new Size(90, 38);
             stopButton.Click += StopClicked;
             Controls.Add(stopButton);
+            AcceptButton = startButton;
+            CancelButton = stopButton;
 
             Shown += async delegate { await RefreshStateAsync(); };
         }
@@ -629,28 +661,31 @@ namespace RERCieDesktop
         {
             bool appReady = Runtime.AppReady();
             bool modelExists = File.Exists(Runtime.ModelPath) && new FileInfo(Runtime.ModelPath).Length == Config.ModelBytes;
-            startButton.Text = modelExists ? "Start RERC-e" : "Download and start";
+            startButton.Text = modelExists ? "&Start RERC-e" : "&Download and start";
             startButton.Enabled = !busy && !appReady;
             openButton.Enabled = !busy && appReady;
-            stopButton.Enabled = !busy && appReady;
+            stopButton.Text = busy ? "&Cancel" : "&Stop";
+            stopButton.Enabled = busy || appReady;
         }
 
         private async void StartClicked(object sender, EventArgs args)
         {
             busy = true;
+            activeOperationCancellation = new CancellationTokenSource();
             statusLabel.ForeColor = Color.FromArgb(70, 80, 75);
             RefreshButtons();
             try
             {
                 statusLabel.Text = "Checking the installed files...";
                 await Task.Run((Action)Runtime.VerifyPackage);
-                if (!Runtime.VcRuntimeReady()) await InstallWindowsRuntimeAsync();
+                if (!Runtime.VcRuntimeReady()) await InstallWindowsRuntimeAsync(activeOperationCancellation.Token);
                 bool modelReady = await Task.Run((Func<bool>)Runtime.ModelReady);
                 if (!modelReady)
                 {
 
+                    Runtime.EnsureDownloadSpace(Runtime.ModelPath, Config.ModelBytes);
                     statusLabel.Text = "Downloading the local model...";
-                    await Runtime.DownloadAsync(Config.ModelUrl, Runtime.ModelPath, UpdateDownloadProgress);
+                    await Runtime.DownloadAsync(Config.ModelUrl, Runtime.ModelPath, UpdateDownloadProgress, activeOperationCancellation.Token);
                     statusLabel.Text = "Checking the model file...";
                     modelReady = await Task.Run((Func<bool>)Runtime.ModelReady);
                     if (!modelReady)
@@ -673,6 +708,7 @@ namespace RERCieDesktop
             finally
             {
                 busy = false;
+                if (activeOperationCancellation != null) { activeOperationCancellation.Dispose(); activeOperationCancellation = null; }
                 RefreshButtons();
             }
         }
@@ -685,13 +721,13 @@ namespace RERCieDesktop
             statusLabel.Text = string.Format("Downloading the local model... {0}% ({1:0.0} of {2:0.0} MB)", percent, done / 1048576d, expected / 1048576d);
         }
 
-        private async Task InstallWindowsRuntimeAsync()
+        private async Task InstallWindowsRuntimeAsync(CancellationToken cancellationToken)
         {
             DialogResult choice = MessageBox.Show(this, "RERC-e needs a standard Microsoft Windows component. Windows may ask for permission while the official Microsoft installer runs.", "One Windows component is needed", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
             if (choice != DialogResult.OK) throw new InvalidOperationException("Setup stopped before the Windows component was installed.");
             string installer = Path.Combine(Path.GetTempPath(), "RERC-e-vc_redist.x64.exe");
             statusLabel.Text = "Downloading the Microsoft Windows component...";
-            await Runtime.DownloadAsync(Config.VcRuntimeUrl, installer, null);
+            await Runtime.DownloadAsync(Config.VcRuntimeUrl, installer, null, cancellationToken);
             if (!AuthenticodeVerifier.IsTrustedMicrosoftFile(installer))
             {
                 try { File.Delete(installer); } catch { }
@@ -738,14 +774,33 @@ namespace RERCieDesktop
 
         private async void StopClicked(object sender, EventArgs args)
         {
+            if (busy && activeOperationCancellation != null)
+            {
+                activeOperationCancellation.Cancel();
+                statusLabel.Text = "Canceling the current operation...";
+                return;
+            }
             busy = true;
+            statusLabel.ForeColor = Color.FromArgb(70, 80, 75);
             RefreshButtons();
-            int failures = 0;
-            int stopped = await Task.Run(() => Runtime.StopOwnedProcesses(out failures));
-            statusLabel.Text = failures > 0 ? "RERC-e could not stop every local process. Close RERC-e and try again." : stopped > 0 ? "RERC-e stopped." : "RERC-e was already stopped.";
-            progressBar.Value = 0;
-            busy = false;
-            RefreshButtons();
+            try
+            {
+                int failures = 0;
+                int stopped = await Task.Run(() => Runtime.StopOwnedProcesses(out failures));
+                statusLabel.Text = failures > 0 ? "RERC-e could not stop every local process. Close RERC-e and try again." : stopped > 0 ? "RERC-e stopped." : "RERC-e was already stopped.";
+                if (failures > 0) statusLabel.ForeColor = Color.FromArgb(139, 30, 30);
+            }
+            catch (Exception error)
+            {
+                statusLabel.Text = "RERC-e could not stop: " + error.Message;
+                statusLabel.ForeColor = Color.FromArgb(139, 30, 30);
+            }
+            finally
+            {
+                progressBar.Value = 0;
+                busy = false;
+                RefreshButtons();
+            }
         }
     }
 

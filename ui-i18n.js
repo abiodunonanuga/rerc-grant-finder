@@ -197,6 +197,7 @@
     "RERC-e is a community-built companion published by Timberwing Systems, an EPR, P.C. initiative. It is not an EPA grant program, does not determine eligibility, and does not submit applications.": "RERC-e es una herramienta comunitaria publicada por Timberwing Systems, una iniciativa de EPR, P.C. No es un programa de subvenciones de la EPA, no determina elegibilidad ni presenta solicitudes.",
     "The first time you use RERC-e, it downloads Google Gemma (about 0.81 GB). Before you apply, verify dates and rules on the official funding page.": "La primera vez que use RERC-e, descargará Google Gemma (aproximadamente 0.81 GB). Antes de solicitar, confirme las fechas y reglas en la página oficial del programa.",
     "Download RERC-e": "Descargar RERC-e",
+    "Download RERC-e for Windows": "Descargar RERC-e para Windows",
     "Windows 10 or 11, 64-bit. No command line.": "Windows 10 u 11, 64 bits. Sin línea de comandos.",
     "Download the latest public RERC-e installer. It is not code-signed. Windows may warn that the publisher is unknown.": "Descargue el instalador público más reciente de RERC-e. No tiene firma de código. Windows puede avisar que el editor es desconocido.",
     "Read the Timberwing Systems license": "Leer la licencia de Timberwing Systems",

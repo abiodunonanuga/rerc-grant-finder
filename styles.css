@@ -347,6 +347,7 @@ fieldset legend { margin-bottom: 9px; }
 }
 
 @media (max-width: 680px) {
+  html { scroll-padding-top: 124px; }
   :root { --header-height: 62px; }
   body { padding-bottom: calc(66px + env(safe-area-inset-bottom)); }
   h1 { font-size: 2rem; }

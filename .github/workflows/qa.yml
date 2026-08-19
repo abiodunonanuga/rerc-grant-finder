@@ -35,10 +35,14 @@ jobs:
           node --check deadline-utils.js
           node --check scripts/qa_deadline_parity.cjs
           node --check scripts/qa_public_site.cjs
+          node --check scripts/qa_rercie_ui.cjs
+          node --check scripts/qa_rercie_public_mascot.cjs
       - name: Run release checks
         run: |
           python scripts/catalog_maintenance.py check
           python scripts/qa_geography_coverage.py
+          python scripts/qa_resilience_transportation.py
+          python rercie/rercie.py --smoke
           python scripts/qa_release.py
       - name: Install browser QA dependencies
         run: |
@@ -54,10 +58,13 @@ jobs:
       - name: Run browser and mobile QA
         run: |
           python -m http.server 8877 --bind 127.0.0.1 > /tmp/rerc-http.log 2>&1 &
+          RERCIE_SESSION_TOKEN=rercie-ci-token python rercie/rercie.py --serve --host 127.0.0.1 --port 8791 > /tmp/rercie-http.log 2>&1 &
           if ! node scripts/qa_public_site.cjs http://127.0.0.1:8877/ browser-qa; then
             sleep 5
             node scripts/qa_public_site.cjs http://127.0.0.1:8877/ browser-qa
           fi
+          node scripts/qa_rercie_ui.cjs http://127.0.0.1:8791/ rercie-ci-token browser-qa-rercie
+          node scripts/qa_rercie_public_mascot.cjs http://127.0.0.1:8877/ browser-qa-rercie-mascot
           python scripts/generate_source_qa_evidence.py --browser-report browser-qa/playwright_qa.json
           git diff --exit-code -- rercie/packaging/QA_EVIDENCE.json
           python scripts/qa_release.py
@@ -66,5 +73,8 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: browser-qa
-          path: browser-qa/
+          path: |
+            browser-qa/
+            browser-qa-rercie/
+            browser-qa-rercie-mascot/
           if-no-files-found: error

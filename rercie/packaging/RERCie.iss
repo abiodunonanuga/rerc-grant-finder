@@ -5,7 +5,7 @@
   #error OutputDir must be defined by the build script.
 #endif
 #ifndef AppVersion
-  #define AppVersion "0.5.0"
+  #define AppVersion "0.5.1"
 #endif
 
 #define AppName "RERC-e"
@@ -89,5 +89,8 @@ var
   ResultCode: Integer;
 begin
   if (CurStep = ssInstall) and FileExists(ExpandConstant('{app}\RERC-e.exe')) then
-    Exec(ExpandConstant('{app}\RERC-e.exe'), '--stop', ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  begin
+    if (not Exec(ExpandConstant('{app}\RERC-e.exe'), '--stop', ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, ResultCode)) or (ResultCode <> 0) then
+      RaiseException('RERC-e could not stop the previous version. Close RERC-e and run setup again.');
+  end;
 end;

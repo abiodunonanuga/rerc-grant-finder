@@ -846,6 +846,7 @@ function initialize() {
   elements.fundingCount.textContent = fundingResources.filter((item) => item.item_type === "Funding").length.toLocaleString();
   elements.resourceCount.textContent = fundingResources.filter((item) => item.item_type === "Resource").length.toLocaleString();
   elements.caseStudyCount.textContent = caseStudies.length.toLocaleString();
+  document.querySelector(".scene-catalog")?.setAttribute("aria-busy", "false");
   populateStateOptions();
   elements.stageSelect.innerHTML = stages.map((stage) => `<option value="${escapeHtml(stage)}">${escapeHtml(stage)}</option>`).join("");
   buildCheckList(elements.applicantOptions, applicantOptions, "applicant");

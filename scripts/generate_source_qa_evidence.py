@@ -125,12 +125,12 @@ def main() -> int:
         text=True,
     )
     smoke = json.loads(smoke_process.stdout)
-    assert smoke["status"] == "PASS" and smoke["version"] == "0.5.0"
+    assert smoke["status"] == "PASS" and smoke["version"] == "0.5.1"
     assert smoke["docx_bytes"] >= 3000
     smoke_contract = {key: value for key, value in smoke.items() if key != "docx_bytes"}
 
     local_gemma = json.loads((PACKAGING / "LOCAL_GEMMA_QA.json").read_text(encoding="utf-8"))
-    assert local_gemma["status"] == "PASS" and local_gemma["app_version"] == "0.5.0"
+    assert local_gemma["status"] == "PASS" and local_gemma["app_version"] == "0.5.1"
     assert local_gemma["model"] == "gemma-3-1b-it-Q4_K_M.gguf"
     head_commit = subprocess.check_output(
         ['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True
@@ -204,14 +204,14 @@ def main() -> int:
     assert layout_sha256() == LAYOUT_SHA256
 
     installer_manifest = json.loads((PACKAGING / "installer_manifest.json").read_text(encoding="utf-8"))
-    assert installer_manifest["package"]["version"] == "0.5.0"
+    assert installer_manifest["package"]["version"] == "0.5.1"
     build_script = (RERCIE / "build_installer.ps1").read_text(encoding="utf-8")
     assert "gemma-3-1b-it-Q4_K_M.gguf" in build_script and "b9987" in build_script
     assert (PACKAGING / "INSTALLER_NOTICE.txt").is_file()
     identity = source_service_identity_check()
 
     evidence = {
-        "app_version": "0.5.0",
+        "app_version": "0.5.1",
         "status": "SOURCE_PASS",
         "tested_date": local_gemma["tested_date"],
         "evidence_stage": "source",
@@ -240,7 +240,7 @@ def main() -> int:
     }
     output = PACKAGING / "QA_EVIDENCE.json"
     output.write_text(json.dumps(evidence, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(json.dumps({"status": "PASS", "output": str(output), "app_version": "0.5.0", "counts": counts, "profile_count": len(profile_rows), "layout_geometry_sha256": LAYOUT_SHA256, "service_identity": identity}, indent=2))
+    print(json.dumps({"status": "PASS", "output": str(output), "app_version": "0.5.1", "counts": counts, "profile_count": len(profile_rows), "layout_geometry_sha256": LAYOUT_SHA256, "service_identity": identity}, indent=2))
     return 0
 
 

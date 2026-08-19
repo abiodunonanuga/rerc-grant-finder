@@ -14,7 +14,7 @@ $RepoRoot = Split-Path -Parent $Here
 $AssetRoot = Join-Path $RepoRoot "assets"
 if (-not (Test-Path -LiteralPath $AssetRoot -PathType Container)) { $AssetRoot = Join-Path $RepoRoot "site-src\assets" }
 Set-Location -LiteralPath $Here
-$Version = "0.5.0"
+$Version = "0.5.1"
 $RuntimeName = "llama-b9987-bin-win-cpu-x64.zip"
 $RuntimeUrl = "https://github.com/ggerganov/llama.cpp/releases/download/b9987/$RuntimeName"
 $RuntimeSha256 = "6847d537b3cd5099051989d08c7eca4296e7a0f1755dbf0540c82e37768320f3"
@@ -36,10 +36,15 @@ function Get-Sha256([string]$Path) {
 }
 
 function Get-SignToolPath {
-    $candidates = @(
-        "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe",
-        "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x86\signtool.exe"
-    )
+    $root = "C:\Program Files (x86)\Windows Kits\10\bin"
+    $candidates = @()
+    if (Test-Path -LiteralPath $root -PathType Container) {
+        $versions = Get-ChildItem -LiteralPath $root -Directory | Sort-Object Name -Descending
+        foreach ($version in $versions) {
+            $candidates += Join-Path $version.FullName "x64\signtool.exe"
+            $candidates += Join-Path $version.FullName "x86\signtool.exe"
+        }
+    }
     return $candidates | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } | Select-Object -First 1
 }
 
@@ -79,6 +84,12 @@ if ($localQa.status -ne "PASS" -or $localQa.app_version -ne $Version) { throw "L
 if ($localQa.PSObject.Properties["historical"] -and $localQa.historical) { throw "Historical local Gemma evidence cannot authorize a current release build." }
 if ($localQa.model -ne "gemma-3-1b-it-Q4_K_M.gguf") { throw "LOCAL_GEMMA_QA.json does not identify the approved Gemma model." }
 if ($localQa.source_sha256 -ne (Get-Sha256 (Join-Path $Here "rercie_core.py"))) { throw "LOCAL_GEMMA_QA.json does not match the current RERC-e source." }
+
+$licensePath = Join-Path $Here "RERC-e-LICENSE.txt"
+$licenseManifestPath = Join-Path $Here "packaging\RERC-e-LICENSE-MANIFEST.json"
+$licenseManifest = Get-Content -LiteralPath $licenseManifestPath -Raw | ConvertFrom-Json
+if ($licenseManifest.version -ne $Version) { throw "The Timberwing license manifest is not for RERC-e $Version." }
+if ($licenseManifest.license_sha256 -ne (Get-Sha256 $licensePath)) { throw "The Timberwing license manifest hash does not match RERC-e-LICENSE.txt." }
 
 $sourceInstallerManifestPath = Join-Path $Here "packaging\installer_manifest.json"
 $sourceInstallerManifest = Get-Content -LiteralPath $sourceInstallerManifestPath -Raw | ConvertFrom-Json
@@ -265,7 +276,7 @@ $downloadProbeProcess = Start-Process -FilePath (Join-Path $PackageRoot "RERC-e.
 if ($downloadProbeProcess.ExitCode -ne 0) { throw "The native launcher could not reach the Gemma download endpoint." }
 if (-not (Test-Path -LiteralPath $downloadProbePath -PathType Leaf)) { throw "The Gemma download probe report was not created." }
 $downloadProbe = Get-Content -LiteralPath $downloadProbePath -Raw | ConvertFrom-Json
-if ($downloadProbe.status -ne "PASS" -or $downloadProbe.http_status -ne 206 -or $downloadProbe.bytes -ne 1024 -or $downloadProbe.model -ne "gemma-3-1b-it-Q4_K_M.gguf") { throw "The Gemma download probe report was not valid." }
+if ($downloadProbe.status -ne "PASS" -or $downloadProbe.http_status -notin @(200, 206) -or $downloadProbe.bytes -ne 1024 -or $downloadProbe.model -ne "gemma-3-1b-it-Q4_K_M.gguf") { throw "The Gemma download probe report was not valid." }
 $qa.checks.native_launcher | Add-Member -NotePropertyName download_probe_http_status -NotePropertyValue $downloadProbe.http_status -Force
 $qa.checks.native_launcher | Add-Member -NotePropertyName download_probe_bytes -NotePropertyValue $downloadProbe.bytes -Force
 $qa.checks.native_launcher.status = "PASS"
@@ -321,7 +332,7 @@ $signature = Get-AuthenticodeSignature -LiteralPath $InstallerPath
 $signatureDisclosure = if ($signature.Status -eq "Valid") { "The installer has a valid authorized publisher signature." } else { "The installer is not code-signed, so Windows may show a safety notice." }
 $releaseQaPath = Join-Path $OutputDirectory "RERC-e-Release-QA.json"
 $releaseQa = [ordered]@{
-    status = "PASS"
+    status = if ($signature.Status -eq "Valid") { "PASS" } else { "PASS_WITH_UNSIGNED_WARNING" }
     evidence_stage = "release_asset"
     app = "RERC-e"
     version = $Version
@@ -357,7 +368,7 @@ $releaseQa = [ordered]@{
 [IO.File]::WriteAllText($releaseQaPath, ($releaseQa | ConvertTo-Json -Depth 7), [Text.UTF8Encoding]::new($false))
 
 [pscustomobject]@{
-    status = "PASS"
+    status = $releaseQa.status
     version = $Version
     installer = $InstallerPath
     bytes = (Get-Item -LiteralPath $InstallerPath).Length

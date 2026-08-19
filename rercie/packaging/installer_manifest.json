@@ -1,27 +1,27 @@
 {
-    "package":  {
-                    "name":  "RERC-e",
-                    "version":  "0.5.0",
-                    "installer":  "RERC-e-Setup.exe",
-                    "entrypoint":  "RERC-e.exe",
-                    "powershell_required":  false,
-                    "install_scope":  "current_user",
-                    "publisher":  "Timberwing Systems, an EPR, P.C. initiative",
-                    "license":  "RERC-e-LICENSE.txt"
-                },
-    "runtime":  {
-                    "project":  "llama.cpp",
-                    "version":  "b9987",
-                    "asset":  "llama-b9987-bin-win-cpu-x64.zip",
-                    "sha256":  "6847d537b3cd5099051989d08c7eca4296e7a0f1755dbf0540c82e37768320f3"
-                },
-    "model":  {
-                  "name":  "gemma-3-1b-it-Q4_K_M.gguf",
-                  "downloaded_on_first_run":  true,
-                  "bytes":  806058240,
-                  "sha256":  "8ccc5cd1f1b3602548715ae25a66ed73fd5dc68a210412eea643eb20eb75a135",
-                  "source":  "https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF",
-                  "download_url":  "https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-Q4_K_M.gguf?download=true",
-                  "license":  "Gemma Terms"
-              }
+  "package": {
+    "name": "RERC-e",
+    "version": "0.5.1",
+    "installer": "RERC-e-Setup.exe",
+    "entrypoint": "RERC-e.exe",
+    "powershell_required": false,
+    "install_scope": "current_user",
+    "publisher": "Timberwing Systems, an EPR, P.C. initiative",
+    "license": "RERC-e-LICENSE.txt"
+  },
+  "runtime": {
+    "project": "llama.cpp",
+    "version": "b9987",
+    "asset": "llama-b9987-bin-win-cpu-x64.zip",
+    "sha256": "6847d537b3cd5099051989d08c7eca4296e7a0f1755dbf0540c82e37768320f3"
+  },
+  "model": {
+    "name": "gemma-3-1b-it-Q4_K_M.gguf",
+    "downloaded_on_first_run": true,
+    "bytes": 806058240,
+    "sha256": "8ccc5cd1f1b3602548715ae25a66ed73fd5dc68a210412eea643eb20eb75a135",
+    "source": "https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF",
+    "download_url": "https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-Q4_K_M.gguf?download=true",
+    "license": "Gemma Terms"
+  }
 }

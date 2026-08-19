@@ -13,13 +13,14 @@ import unicodedata
 import urllib.parse
 import urllib.request
 import zipfile
+import xml.etree.ElementTree as ET
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 from xml.sax.saxutils import escape
 
 
-APP_VERSION = "0.5.0"
+APP_VERSION = "0.5.1"
 APP_DIR = Path(os.environ.get("RERCIE_APP_ROOT") or (Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent))
 ASSET_DIR = APP_DIR / "assets"
 if not ASSET_DIR.is_dir() and not getattr(sys, "frozen", False):
@@ -38,6 +39,21 @@ LOCAL_MODELS_URL = os.environ.get("RERCIE_LOCAL_MODELS_URL", "http://127.0.0.1:8
 SESSION_TOKEN = os.environ.get("RERCIE_SESSION_TOKEN", "")
 EXPECTED_HOST = os.environ.get("RERCIE_EXPECTED_HOST", "127.0.0.1:8789").lower()
 EXPECTED_ORIGIN = f"http://{EXPECTED_HOST}"
+
+
+def _require_loopback_runtime_url(name: str, value: str) -> str:
+    parsed = urllib.parse.urlparse(value)
+    if parsed.scheme != "http" or parsed.hostname not in {"127.0.0.1", "localhost", "::1"}:
+        raise RuntimeError(f"{name} must use a loopback-only http URL.")
+    return value
+
+
+for _runtime_name, _runtime_url in (
+    ("RERCIE_LOCAL_CHAT_URL", LOCAL_CHAT_URL),
+    ("RERCIE_LOCAL_HEALTH_URL", LOCAL_HEALTH_URL),
+    ("RERCIE_LOCAL_MODELS_URL", LOCAL_MODELS_URL),
+):
+    _require_loopback_runtime_url(_runtime_name, _runtime_url)
 CENSUS_YEAR = "2024"
 CENSUS_ISLAND_YEAR = "2020"
 MAX_REQUEST_BYTES = 6 * 1024 * 1024
@@ -311,11 +327,15 @@ def _selected_record_summary(record: dict[str, str]) -> str:
         ("Organization", record.get("organization")),
         ("Status", record.get("status")),
         ("Eligible users", record.get("eligible_users")),
+        ("Geography", record.get("geography")),
         ("Project stage", record.get("project_stage")),
+        ("Topics", record.get("topic_tags")),
+        ("Support type", record.get("support_type")),
         ("Amount or support", record.get("amount_or_cost")),
         ("Match or cost", record.get("match_or_cost")),
         ("Deadline or availability", record.get("deadline_or_availability")),
-        ("Summary", record.get("summary")),
+        ("Last checked", record.get("last_checked")),
+        ("Summary", record.get("summary") or record.get("why_it_matters")),
         ("Official page", record.get("source_url")),
     )
     return "\n".join(f"{label}: {value}" for label, value in fields if value)
@@ -340,6 +360,17 @@ def handoff_to_form(handoff: dict[str, Any]) -> dict[str, Any]:
                 line += f" - {item['description']}"
             if item.get("status"):
                 line += f" (Status: {item['status']})"
+            details = []
+            if item.get("owner"):
+                details.append(f"Owner: {item['owner']}")
+            if item.get("dueDate"):
+                details.append(f"Due: {item['dueDate']}")
+            if item.get("notes"):
+                details.append(f"Notes: {item['notes']}")
+            if item.get("sourceUrl"):
+                details.append(f"Source: {item['sourceUrl']}")
+            if details:
+                line += " | " + " | ".join(details)
             roadmap_lines.append(line)
         notes_parts.append("\n".join(roadmap_lines))
     if reference_records:
@@ -376,12 +407,16 @@ def consume_startup_handoff() -> dict[str, Any] | None:
         size = STARTUP_HANDOFF_PATH.stat().st_size
         if size <= 0 or size > MAX_HANDOFF_BYTES:
             raise ValueError(f"The launcher plan must be no larger than {MAX_HANDOFF_BYTES // 1024} KB.")
-        return handoff_to_form(validate_handoff_text(STARTUP_HANDOFF_PATH.read_bytes()))
-    finally:
+        imported = handoff_to_form(validate_handoff_text(STARTUP_HANDOFF_PATH.read_bytes()))
+    except Exception as exc:
+        rejected = STARTUP_HANDOFF_PATH.with_name(f"rejected-{int(time.time())}.rercie")
         try:
-            STARTUP_HANDOFF_PATH.unlink()
+            STARTUP_HANDOFF_PATH.replace(rejected)
+            raise ValueError(f"The startup plan was rejected and preserved as {rejected.name}: {exc}") from exc
         except OSError:
-            pass
+            raise
+    STARTUP_HANDOFF_PATH.unlink(missing_ok=True)
+    return imported
 
 
 def request_json(url: str, payload: dict[str, Any] | None = None, headers: dict[str, str] | None = None, timeout: int = 30) -> Any:
@@ -510,7 +545,11 @@ def fetch_public_community_profile(community: str, state: str) -> dict[str, str]
             source = str(record.get("source") or "RERC Community Explorer profile bundle").strip()
             profile: dict[str, str] = {
                 "source": source,
-                "source_url": "https://henkelpress.github.io/rerc-grant-finder/",
+                "source_url": str(record.get("source_url") or (
+                    "https://api.census.gov/data/2024/acs/acs5/profile.html"
+                    if "ACS" in source else
+                    "https://www.census.gov/data/datasets/2020/dec/2020-island-areas.html"
+                )),
                 "year": str(record.get("vintage") or ""),
                 "geography_type": str(record.get("placeType") or "community").replace("_", " ").strip(),
                 "place": str(record.get("name") or record.get("community") or ""),
@@ -652,16 +691,18 @@ def lookup_community_profile(community: str, state: str, census_api_key: str = "
 
     api_key = _census_api_key(census_api_key)
     key_provided = bool(api_key)
+    public_profile_unavailable = False
     try:
         profile = fetch_public_community_profile(community, state)
     except Exception:
+        public_profile_unavailable = True
+        profile = {}
         if not key_provided:
             return {
                 "profile": {},
-                "message": "No public profile match was available. Add a Census API key for this lookup, or check the spelling and state for your community.",
-                "status": "key_required",
+                "message": "The prebuilt community facts could not be reached right now. Retry, add a Census API key for fallback lookup, or continue with checked local facts.",
+                "status": "unavailable",
             }
-        profile = {}
 
     if profile:
         return {
@@ -881,8 +922,13 @@ def _funding_record_text(value: Any) -> str:
     fields = (
         ("Program", record.get("title") or record.get("program")),
         ("Organization", record.get("organization") or record.get("agency")),
-        ("Description", record.get("description")),
-        ("Best for", record.get("best_for") or record.get("bestFor")),
+        ("Status", record.get("status")),
+        ("Eligible applicants", record.get("eligible_users") or record.get("best_for") or record.get("bestFor")),
+        ("Project stage", record.get("project_stage")),
+        ("Description", record.get("summary") or record.get("description") or record.get("why_it_matters")),
+        ("Amount or support", record.get("amount_or_cost")),
+        ("Match or cost share", record.get("match_or_cost")),
+        ("Deadline or availability", record.get("deadline_or_availability")),
         ("Official page", record.get("url") or record.get("source_url")),
     )
     return "\n".join(f"- {label}: {value}" for label, value in fields if value) or raw[:5000]
@@ -910,7 +956,7 @@ def deterministic_scaffold(payload: dict[str, Any], public_profile: dict[str, st
     evidence_block = ""
     if verified_excerpts:
         evidence_block = (
-            "\n\nVerified excerpts selected from the supplied material:\n\n"
+            "\n\nExact excerpts selected from the supplied material (the underlying claims still require human review):\n\n"
             + "\n".join(f"- \"{item}\"" for item in verified_excerpts)
         )
     notes_block = (
@@ -1017,8 +1063,61 @@ def grounding_issues(
     return ["draft differs from the deterministic evidence scaffold"]
 
 
+DRAFT_FIELD_LIMITS = {
+    "community": 200,
+    "state": 100,
+    "projectTitle": 300,
+    "projectSummary": 5000,
+    "selectedGrant": 20000,
+    "matchCapacity": 10000,
+    "sourceNotes": 10000,
+    "projectNotes": 100000,
+}
+
+
+def validate_draft_context(payload: dict[str, Any]) -> None:
+    if not isinstance(payload, dict):
+        raise ValueError("The draft request must be a JSON object.")
+    for field, limit in DRAFT_FIELD_LIMITS.items():
+        value = str(payload.get(field) or "")
+        if len(value) > limit:
+            raise ValueError(f"{field} is too long. Keep it under {limit:,} characters.")
+    missing = [
+        label for field, label in (
+            ("community", "community"),
+            ("state", "state or territory"),
+            ("projectTitle", "project title"),
+        ) if not str(payload.get(field) or "").strip()
+    ]
+    if missing:
+        raise ValueError("Add the " + ", ".join(missing) + " before creating a draft.")
+    if not any(str(payload.get(field) or "").strip() for field in ("projectSummary", "projectNotes", "selectedGrant")):
+        raise ValueError("Add a project summary, imported project notes, or funding details before creating a draft.")
+
+
+def validate_supplied_profile(value: Any) -> dict[str, str]:
+    if value in (None, {}):
+        return {}
+    raw = _plain_object(value, "publicProfile")
+    unexpected = set(raw) - set(HANDOFF_PROFILE_FIELD_LIMITS)
+    if unexpected:
+        raise ValueError("publicProfile contains unsupported fields: " + ", ".join(sorted(unexpected)))
+    profile: dict[str, str] = {}
+    for key, item in raw.items():
+        if type(item) not in {str, int, float, bool}:
+            raise ValueError(f"publicProfile.{key} must be text, a number, or true/false.")
+        profile[key] = _bounded_handoff_string(str(item), f"publicProfile.{key}", HANDOFF_PROFILE_FIELD_LIMITS[key])
+    if profile.get("source_url"):
+        profile["source_url"] = _validated_http_url(profile["source_url"], "publicProfile.source_url")
+    return profile
+
+
 def build_draft(payload: dict[str, Any]) -> dict[str, Any]:
-    if payload.get("usePublicData"):
+    validate_draft_context(payload)
+    supplied_profile = validate_supplied_profile(payload.get("publicProfile"))
+    if supplied_profile:
+        profile_lookup = {"profile": supplied_profile, "message": "Community facts imported from the Community Explorer plan.", "status": "imported"}
+    elif payload.get("usePublicData"):
         profile_lookup = lookup_community_profile(
             str(payload.get("community") or ""),
             str(payload.get("state") or ""),
@@ -1049,8 +1148,8 @@ def build_draft(payload: dict[str, Any]) -> dict[str, Any]:
         draft = deterministic_scaffold(payload, public_profile)
         warnings.append("RERC-e removed an unverified evidence selection.")
     safety_notice = (
-        f"Gemma selected {len(excerpts)} exact evidence excerpt"
-        f"{'s' if len(excerpts) != 1 else ''}; RERC-e verified and placed them in a fixed outline."
+        f"Gemma selected {len(excerpts)} exact supplied excerpt"
+        f"{'s' if len(excerpts) != 1 else ''}; RERC-e checked that they were copied exactly and placed them in a fixed outline. Review the underlying claims."
         if excerpts
         else "RERC-e used a fixed evidence-based outline. Add and verify the marked details before submission."
     )
@@ -1069,9 +1168,16 @@ def build_draft(payload: dict[str, Any]) -> dict[str, Any]:
         "generatedAt": int(time.time()),
     }
 
+XML_FORBIDDEN_CONTROLS = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F]")
+
+
+def _xml_text(value: Any) -> str:
+    return XML_FORBIDDEN_CONTROLS.sub("", str(value or ""))
+
+
 def _paragraph_xml(text: str, style: str | None = None) -> str:
     properties = f'<w:pPr><w:pStyle w:val="{style}"/></w:pPr>' if style else ""
-    safe = escape(text)
+    safe = escape(_xml_text(text))
     return f'<w:p>{properties}<w:r><w:t xml:space="preserve">{safe}</w:t></w:r></w:p>'
 
 
@@ -1098,7 +1204,7 @@ def build_docx(draft: str, title: str = "RERC-e Draft") -> bytes:
     content_types = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/></Types>'''
     root_rels = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>'''
     document_rels = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'''
-    core_xml = f'''<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>{escape(title)}</dc:title><dc:creator>RERC-e</dc:creator></cp:coreProperties>'''
+    core_xml = f'''<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>{escape(_xml_text(title))}</dc:title><dc:creator>RERC-e</dc:creator></cp:coreProperties>'''
     app_xml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>RERC-e</Application></Properties>'''
     output = io.BytesIO()
     with zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED) as package:
@@ -1127,7 +1233,13 @@ HTML_PAGE = r'''<!doctype html>
     header { padding:24px max(20px,calc((100vw - 1280px)/2)); color:#fff; background:var(--green); border-bottom:5px solid var(--sun); }
     header .brand { display:flex; justify-content:space-between; gap:20px; align-items:center; }
     header .welcome { display:grid; grid-template-columns:minmax(0,1fr) 120px; gap:24px; align-items:center; }
-    header .mascot { width:120px; height:168px; object-fit:contain; border:4px solid rgba(255,255,255,.82); border-radius:6px; background:#fff; }
+    header .mascot-stage { position:relative; width:120px; height:168px; justify-self:end; transform-origin:50% 90%; animation:rercie-bob 4s ease-in-out infinite; }
+    header .mascot { display:block; width:100%; height:100%; object-fit:contain; border:4px solid rgba(255,255,255,.82); border-radius:6px; background:#fff; }
+    header .mascot-wing { position:absolute; z-index:2; top:39px; right:-9px; width:42px; height:58px; transform-origin:20% 82%; animation:rercie-wave 2.4s ease-in-out infinite; border:2px solid #4e3927; border-radius:75% 20% 70% 30%; background:#7a5738; box-shadow:inset -8px -6px 0 rgba(48,31,20,.18); }
+    header .mascot-wing::before,header .mascot-wing::after { content:""; position:absolute; right:3px; width:28px; height:11px; border-radius:70% 30% 70% 30%; background:#9a7049; transform:rotate(16deg); }
+    header .mascot-wing::before { top:12px; } header .mascot-wing::after { top:29px; right:1px; }
+    @keyframes rercie-bob { 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-4px) rotate(-1deg)} }
+    @keyframes rercie-wave { 0%,100%{transform:rotate(7deg)} 18%{transform:rotate(-24deg)} 34%{transform:rotate(12deg)} 50%{transform:rotate(-18deg)} 68%{transform:rotate(7deg)} }
     header h1 { margin:12px 0 6px; font-size:2.25rem; line-height:1.05; }
     header p { max-width:760px; margin:0; color:#e4f1eb; }
     header a { color:#fff; font-weight:700; }
@@ -1169,13 +1281,14 @@ HTML_PAGE = r'''<!doctype html>
     .working progress { display:block; width:100%; height:14px; margin-top:8px; accent-color:var(--green); }
     .output { min-height:570px; padding:18px; border:1px solid var(--line); white-space:pre-wrap; background:#fff; font-family:Consolas,"Courier New",monospace; font-size:1rem; overflow-wrap:anywhere; }
     @media (max-width:900px) { main { grid-template-columns:1fr; } .output { min-height:420px; } }
-    @media (max-width:560px) { header .brand,.engine { grid-template-columns:1fr; display:grid; } header .welcome { grid-template-columns:minmax(0,1fr) 88px; gap:12px; } header .mascot { width:88px; height:124px; } main { padding:10px; } .panel { padding:14px; } .actions button { flex:1 1 145px; } }
+    @media (prefers-reduced-motion:reduce) { header .mascot-stage,header .mascot-wing { animation:none !important; } }
+    @media (max-width:560px) { header .brand,.engine { grid-template-columns:1fr; display:grid; } header .welcome { grid-template-columns:minmax(0,1fr) 88px; gap:12px; } header .mascot-stage { width:88px; height:124px; } main { padding:10px; } .panel { padding:14px; } .actions button { flex:1 1 145px; } }
   </style>
 </head>
 <body>
   <header>
     <div class="brand"><strong>Recreation Economy <em>for</em> Rural Communities</strong><a href="https://henkelpress.github.io/rerc-grant-finder/" target="_blank" rel="noopener">Open the public explorer</a></div>
-    <div class="welcome"><div><h1>Meet RERC-e</h1><p>RERC-e helps you turn a grant match and your project notes into a first draft. Check every fact before you apply.</p></div><img class="mascot" src="/assets/rerc-e-eagle.jpg" alt="RERC-e, a bald eagle field guide holding a notebook"></div>
+    <div class="welcome"><div><h1>Meet RERC-e</h1><p>RERC-e helps you turn a grant match and your project notes into a first draft. Check every fact before you apply.</p></div><div class="mascot-stage"><img class="mascot" src="/assets/rerc-e-eagle.jpg" alt="RERC-e, a bald eagle field guide holding a notebook"><span class="mascot-wing" aria-hidden="true"></span></div></div>
 
   </header>
   <div class="privacy"><strong>Private by default:</strong> Gemma writing and local reference files stay on this computer. Census and catalog lookups use public websites.</div>
@@ -1190,17 +1303,17 @@ HTML_PAGE = r'''<!doctype html>
       </div>
       <h2>Tell us about the project</h2>
       <p class="section-note">Start with the facts you know. The draft will mark anything that is missing.</p>
-      <label for="community">Community</label><input id="community" placeholder="Example: Taos">
-      <label for="state">State or territory</label><select id="state"></select>
-      <label for="projectTitle">Project title</label><input id="projectTitle" placeholder="Example: Downtown trail connection">
-      <label for="projectSummary">What do you want to do?</label><textarea id="projectSummary" class="small"></textarea>
+      <label for="community">Community</label><input id="community" required aria-required="true" maxlength="200" placeholder="Example: Taos">
+      <label for="state">State or territory</label><select id="state" required aria-required="true"></select>
+      <label for="projectTitle">Project title</label><input id="projectTitle" required aria-required="true" maxlength="300" placeholder="Example: Downtown trail connection">
+      <label for="projectSummary">What do you want to do?</label><textarea id="projectSummary" class="small" maxlength="5000"></textarea>
       <label for="grantSelect">Funding match</label><select id="grantSelect"><option value="">Load the public list</option></select>
       <div class="actions"><button id="loadGrants" class="quiet" type="button">Load funding list</button></div>
       <label for="selectedGrant">Funding details</label><textarea id="selectedGrant" placeholder="Choose a funding match above, or paste the current details here."></textarea>
       <label for="matchCapacity">Match, staff, and partners</label><textarea id="matchCapacity" class="small"></textarea>
       <label for="sourceNotes">Facts to check on the official page</label><textarea id="sourceNotes" class="small" placeholder="Deadline, eligibility, match, award size, and source link"></textarea>
       <label for="fileInput">Add text files</label><input id="fileInput" type="file" multiple accept=".txt,.md,.csv,.json">
-      <label for="projectNotes">Notes and file text</label><textarea id="projectNotes"></textarea>
+      <label for="projectNotes">Notes and file text</label><textarea id="projectNotes" maxlength="100000"></textarea>
       <label class="check" for="usePublicData"><input id="usePublicData" type="checkbox" checked><span>Look up prebuilt community facts and local Census fallback if needed.</span></label>
       <div class="actions"><button id="lookupCommunity" class="quiet" type="button">Look up community facts</button></div>
       <details class="lookup-help"><summary>Community lookup help</summary><p class="section-note">RERC-e first checks the public prebuilt <code>community_profiles.js</code> dataset for an exact community + state/territory match. Use a free Census API key only when that match is not found.</p><label for="censusApiKey">Census API key</label><input id="censusApiKey" type="password" autocomplete="off" placeholder="Optional Census API key for fallback lookup"><p class="section-note"><a href="https://api.census.gov/data/key_signup.html" target="_blank" rel="noopener">Get a free Census API key</a></p></details>
@@ -1218,7 +1331,7 @@ HTML_PAGE = r'''<!doctype html>
         <button id="copyDraft" class="quiet" type="button">Copy</button>
       </div>
       <div id="working" class="working" hidden aria-live="polite">
-        <div class="working-row"><span id="workingLabel">RERC-e is working...</span><span id="workingTime">0 seconds</span></div>
+        <div class="working-row"><span id="workingLabel">RERC-e is working...</span><span id="workingTime" aria-hidden="true">0 seconds</span></div>
         <progress aria-label="RERC-e is generating the draft"></progress>
       </div>
       <p id="status" class="status" aria-live="polite">Ready.</p>
@@ -1230,7 +1343,7 @@ HTML_PAGE = r'''<!doctype html>
     const stateSelect = document.getElementById("state");
     states.forEach((state) => { const option=document.createElement("option"); option.value=state; option.textContent=state||"Choose a state or territory"; stateSelect.appendChild(option); });
     const MAX_PLAN_BYTES=256*1024;
-    let lastDraft="";
+    let lastDraft=""; let activePublicProfile={};
     const status=document.getElementById("status"); const output=document.getElementById("output");
     const sessionToken=new URLSearchParams(location.hash.slice(1)).get("token")||""; history.replaceState(null,"",location.pathname+location.search);
     function apiFetch(url,options={}){ const headers=new Headers(options.headers||{}); headers.set("X-RERCie-Token",sessionToken); return fetch(url,{...options,headers}); }
@@ -1239,27 +1352,29 @@ HTML_PAGE = r'''<!doctype html>
     function startWorking(){ const box=document.getElementById("working"); const label=document.getElementById("workingLabel"); const clock=document.getElementById("workingTime"); const provider=document.getElementById("provider").value; const started=Date.now(); box.hidden=false; label.textContent=provider==="local"?"RERC-e is reviewing your notes with local Gemma...":"RERC-e is building a structured outline..."; const tick=()=>{ const elapsed=Math.floor((Date.now()-started)/1000); clock.textContent=elapsed+" seconds"; }; tick(); workingTimer=window.setInterval(tick,1000); }
     function stopWorking(){ document.getElementById("working").hidden=true; if(workingTimer){window.clearInterval(workingTimer);workingTimer=0;} }
     function formatProfileValue(key,value){ if((key==="population"||key==="median_household_income")&&/^\d+$/.test(String(value))){ const number=Number(value).toLocaleString(); return key==="median_household_income"?"$"+number:number; } return String(value); }
-    function renderProfile(profile,message,lookupStatus){ const box=document.getElementById("communityProfile"); box.replaceChildren(); box.hidden=false; const heading=document.createElement("strong"); heading.textContent=profile&&profile.place?profile.place:"Community facts"; box.appendChild(heading); if(!profile||!Object.keys(profile).length){ const note=document.createElement("span"); note.textContent=message||"No community facts were found."; box.appendChild(note); if(lookupStatus==="key_required"){document.querySelector(".lookup-help").open=true;} return; } const labels={population:"Population",median_age:"Median age",median_household_income:"Median household income",poverty_rate_percent:"People below the poverty line",geography_type:"Geography used"}; const list=document.createElement("ul"); Object.keys(labels).forEach((key)=>{ if(!profile[key])return; const item=document.createElement("li"); let value=formatProfileValue(key,profile[key]); if(key==="median_age")value+=" years"; if(key==="poverty_rate_percent")value+="%"; item.textContent=labels[key]+": "+value; list.appendChild(item); }); box.appendChild(list); const source=document.createElement(profile.source_url?"a":"span"); source.textContent=profile.source||"U.S. Census Bureau"; if(profile.source_url){source.href=profile.source_url;source.target="_blank";source.rel="noopener";} box.appendChild(source); if(profile.coverage_note){ const coverage=document.createElement("p"); coverage.textContent=profile.coverage_note; box.appendChild(coverage); } }
+    function renderProfile(profile,message,lookupStatus){ activePublicProfile=profile&&typeof profile==="object"?profile:{}; const box=document.getElementById("communityProfile"); box.replaceChildren(); box.hidden=false; const heading=document.createElement("strong"); heading.textContent=profile&&profile.place?profile.place:"Community facts"; box.appendChild(heading); if(!profile||!Object.keys(profile).length){ const note=document.createElement("span"); note.textContent=message||"No community facts were found."; box.appendChild(note); if(lookupStatus==="key_required"){document.querySelector(".lookup-help").open=true;} return; } const labels={population:"Population",median_age:"Median age",median_household_income:"Median household income",poverty_rate_percent:"People below the poverty line",geography_type:"Geography used"}; const list=document.createElement("ul"); Object.keys(labels).forEach((key)=>{ if(profile[key]===undefined||profile[key]===null||String(profile[key]).trim()==="")return; const item=document.createElement("li"); let value=formatProfileValue(key,profile[key]); if(key==="median_age")value+=" years"; if(key==="poverty_rate_percent")value+="%"; item.textContent=labels[key]+": "+value; list.appendChild(item); }); box.appendChild(list); const source=document.createElement(profile.source_url?"a":"span"); source.textContent=profile.source||"U.S. Census Bureau"; if(profile.source_url){source.href=profile.source_url;source.target="_blank";source.rel="noopener";} box.appendChild(source); if(profile.coverage_note){ const coverage=document.createElement("p"); coverage.textContent=profile.coverage_note; box.appendChild(coverage); } }
     function applyImportedPlan(data){ document.getElementById("community").value=data.community||""; stateSelect.value=data.state||""; document.getElementById("projectTitle").value=data.projectTitle||""; document.getElementById("projectNotes").value=data.projectNotes||""; document.getElementById("selectedGrant").value=data.selectedFundingDetails||""; if(data.profile&&Object.keys(data.profile).length){renderProfile(data.profile,"Community facts imported from the plan.","found");}else{document.getElementById("communityProfile").hidden=true;} const message=(data.message||"Community Explorer plan opened.")+" Review the imported facts and official funding pages before drafting."; const importStatus=document.getElementById("planImportStatus"); importStatus.textContent=message; importStatus.className="status"; setStatus(message); }
     async function importPlanText(text){ const response=await apiFetch("/api/import-plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({packageText:text})}); const data=await response.json(); if(!response.ok)throw new Error(data.error||"The plan could not be opened."); applyImportedPlan(data); }
     async function openPlanFile(file){ if(!file)return; const importStatus=document.getElementById("planImportStatus"); if(!/\.(rercie|json)$/i.test(file.name)){throw new Error("Choose a .rercie or .json Community Explorer plan.");} if(file.size<=0||file.size>MAX_PLAN_BYTES){throw new Error("The plan must be a non-empty file no larger than 256 KB.");} importStatus.textContent="Checking the Community Explorer plan..."; const text=await file.text(); if(new TextEncoder().encode(text).length>MAX_PLAN_BYTES)throw new Error("The plan must be no larger than 256 KB."); let parsed; try{parsed=JSON.parse(text);}catch{throw new Error("The plan is not valid JSON.");} if(!parsed||Array.isArray(parsed)||typeof parsed!=="object"||parsed.schema!=="rercie-handoff"||parsed.version!==1){throw new Error("This is not a supported RERC-e Community Explorer plan.");} await importPlanText(text); }
     async function checkStartupPlan(){ try{ const response=await apiFetch("/api/startup-plan"); const data=await response.json(); if(data.status==="none")return; if(!response.ok)throw new Error(data.error||"The plan could not be opened."); applyImportedPlan(data); }catch(error){ const importStatus=document.getElementById("planImportStatus"); importStatus.textContent="The plan passed from Windows could not be opened: "+error.message; importStatus.className="status warning"; setStatus(importStatus.textContent,true); } }
     async function lookupCommunityFacts(){ const button=document.getElementById("lookupCommunity"); button.disabled=true; setStatus("Looking up community facts..."); try{ const body={community:document.getElementById("community").value,state:stateSelect.value,censusApiKey:document.getElementById("censusApiKey").value}; const response=await apiFetch("/api/community-profile",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}); const data=await response.json(); if(!response.ok)throw new Error(data.error||"Lookup failed."); renderProfile(data.profile,data.message,data.status); setStatus(data.message,data.status!=="found"); }catch(error){renderProfile({},"Community facts could not be reached right now.","unavailable");setStatus("Community lookup failed: "+error.message,true);}finally{button.disabled=false;} }
-    function collectPayload(){ return {community:document.getElementById("community").value,state:stateSelect.value,projectTitle:document.getElementById("projectTitle").value,projectSummary:document.getElementById("projectSummary").value,selectedGrant:document.getElementById("selectedGrant").value,matchCapacity:document.getElementById("matchCapacity").value,sourceNotes:document.getElementById("sourceNotes").value,projectNotes:document.getElementById("projectNotes").value,usePublicData:document.getElementById("usePublicData").checked,provider:document.getElementById("provider").value,model:"gemma-3-1b-it-Q4_K_M.gguf",censusApiKey:document.getElementById("censusApiKey").value}; }
-    async function checkRuntime(){ const badge=document.getElementById("runtime"); try{ const response=await apiFetch("/api/runtime"); const data=await response.json(); badge.textContent=data.ready?"Local model ready":"Local model is starting"; badge.className=data.ready?"runtime":"runtime offline"; }catch{ badge.textContent="Could not check local writer"; badge.className="runtime offline"; } }
-    async function loadGrants(){ setStatus("Loading the public funding list..."); const response=await apiFetch("/api/grants"); if(!response.ok) throw new Error((await response.json()).error||"The list could not be loaded."); const data=await response.json(); const select=document.getElementById("grantSelect"); select.innerHTML='<option value="">Choose a funding match</option>'; data.grants.forEach((grant,index)=>{ const option=document.createElement("option"); option.value=String(index); option.textContent=`${grant.title||grant.program||"Untitled"} - ${grant.organization||grant.agency||"Organization not listed"}`; option.dataset.grant=JSON.stringify(grant,null,2); select.appendChild(option); }); setStatus(`Loaded ${data.grants.length} funding options. Updated ${data.updated||"date not listed"}.`); }
+    function collectPayload(){ return {community:document.getElementById("community").value,state:stateSelect.value,projectTitle:document.getElementById("projectTitle").value,projectSummary:document.getElementById("projectSummary").value,selectedGrant:document.getElementById("selectedGrant").value,matchCapacity:document.getElementById("matchCapacity").value,sourceNotes:document.getElementById("sourceNotes").value,projectNotes:document.getElementById("projectNotes").value,publicProfile:activePublicProfile,usePublicData:document.getElementById("usePublicData").checked,provider:document.getElementById("provider").value,model:"gemma-3-1b-it-Q4_K_M.gguf",censusApiKey:document.getElementById("censusApiKey").value}; }
+    function validateDraftInputs(){ const required=[["community","community"],["state","state or territory"],["projectTitle","project title"]]; for(const [id,label] of required){ const control=document.getElementById(id); if(!control.value.trim()){ setStatus(`Add the ${label} before creating a draft.`,true); control.focus(); return false; } } const hasContext=["projectSummary","projectNotes","selectedGrant"].some((id)=>document.getElementById(id).value.trim()); if(!hasContext){ setStatus("Add a project summary, imported project notes, or funding details before creating a draft.",true); document.getElementById("projectSummary").focus(); return false; } return true; }
+    let runtimePoll=0;
+    async function checkRuntime(){ const badge=document.getElementById("runtime"); try{ const response=await apiFetch("/api/runtime"); const data=await response.json(); badge.textContent=data.ready?"Local model ready":"Local model is starting"; badge.className=data.ready?"runtime":"runtime offline"; if(data.ready&&runtimePoll){clearInterval(runtimePoll);runtimePoll=0;} }catch{ badge.textContent="Could not check local writer"; badge.className="runtime offline"; } }
+    async function loadGrants(){ const button=document.getElementById("loadGrants"); button.disabled=true; setStatus("Loading the public funding list..."); try{ const response=await apiFetch("/api/grants"); const data=await response.json(); if(!response.ok) throw new Error(data.error||"The list could not be loaded."); const select=document.getElementById("grantSelect"); select.replaceChildren(); const placeholder=document.createElement("option"); placeholder.value=""; placeholder.textContent="Choose a funding match"; select.appendChild(placeholder); data.grants.forEach((grant,index)=>{ const option=document.createElement("option"); option.value=String(index); option.textContent=`${grant.title||grant.program||"Untitled"} - ${grant.organization||grant.agency||"Organization not listed"}`; option.dataset.grant=JSON.stringify(grant,null,2); select.appendChild(option); }); setStatus(`Loaded ${data.grants.length} funding options. Updated ${data.updated||"date not listed"}.`); }finally{ button.disabled=false; } }
     document.getElementById("loadGrants").addEventListener("click",()=>loadGrants().catch((error)=>setStatus(`Could not load funding: ${error.message}`,true)));
     document.getElementById("grantSelect").addEventListener("change",(event)=>{ document.getElementById("selectedGrant").value=event.target.selectedOptions[0]?.dataset?.grant||""; });
-    document.getElementById("fileInput").addEventListener("change",async(event)=>{ const parts=[]; for(const file of event.target.files){ if(file.size>2000000){ setStatus(`${file.name} is too large. Use a text file under 2 MB.`,true); continue; } parts.push(`\n--- File: ${file.name} ---\n${await file.text()}`); } const notes=document.getElementById("projectNotes"); notes.value=`${notes.value}\n${parts.join("\n")}`.trim(); if(parts.length) setStatus(`Read ${parts.length} file(s).`); });
+    document.getElementById("fileInput").addEventListener("change",async(event)=>{ const files=[...event.target.files]; const parts=[]; let total=0; if(files.length>10){setStatus("Add no more than 10 text files at a time.",true);event.target.value="";return;} for(const file of files){ if(file.size>512*1024){ setStatus(`${file.name} is too large. Use a text file under 512 KB.`,true); continue; } total+=file.size; if(total>2*1024*1024){setStatus("The selected files exceed the 2 MB combined limit.",true);break;} parts.push(`\n--- File: ${file.name} ---\n${await file.text()}`); } const notes=document.getElementById("projectNotes"); const combined=`${notes.value}\n${parts.join("\n")}`.trim(); if(combined.length>100000){setStatus("The notes and file text exceed the 100,000-character drafting limit. Use shorter excerpts.",true);return;} notes.value=combined; if(parts.length) setStatus(`Read ${parts.length} file(s).`); });
     document.getElementById("planInput").addEventListener("change",(event)=>{ openPlanFile(event.target.files[0]).catch((error)=>{ const importStatus=document.getElementById("planImportStatus"); importStatus.textContent="Could not open the plan: "+error.message; importStatus.className="status warning"; setStatus(importStatus.textContent,true); }).finally(()=>{event.target.value="";}); });
     document.getElementById("lookupCommunity").addEventListener("click",lookupCommunityFacts);
-    document.getElementById("draftButton").addEventListener("click",async()=>{ const button=document.getElementById("draftButton"); button.disabled=true; startWorking(); setStatus("RERC-e is preparing the draft..."); try{ const response=await apiFetch("/api/draft",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(collectPayload())}); const data=await response.json(); if(!response.ok) throw new Error(data.error||"Draft failed."); lastDraft=data.draft; output.textContent=data.draft; renderProfile(data.publicProfile,data.profileMessage,data.profileStatus); const readyMessage=data.localKnowledgeChars?"Draft ready. Local reference files were used.":"Draft ready."; setStatus(data.warnings?.length?data.warnings.join(" "):readyMessage+" "+(data.safetyNotice||"")+" "+(data.profileMessage||""),Boolean(data.warnings?.length)); }catch(error){ setStatus("Draft failed: "+error.message,true); }finally{ stopWorking(); button.disabled=false; } });
+    document.getElementById("draftButton").addEventListener("click",async()=>{ if(!validateDraftInputs())return; const button=document.getElementById("draftButton"); button.disabled=true; startWorking(); setStatus("RERC-e is preparing the draft..."); try{ const response=await apiFetch("/api/draft",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(collectPayload())}); const data=await response.json(); if(!response.ok) throw new Error(data.error||"Draft failed."); lastDraft=data.draft; output.textContent=data.draft; renderProfile(data.publicProfile,data.profileMessage,data.profileStatus); const readyMessage=data.localKnowledgeChars?"Draft ready. Local reference files were used.":"Draft ready."; setStatus(data.warnings?.length?data.warnings.join(" "):readyMessage+" "+(data.safetyNotice||"")+" "+(data.profileMessage||""),Boolean(data.warnings?.length)); }catch(error){ setStatus("Draft failed: "+error.message,true); }finally{ stopWorking(); button.disabled=false; } });
     function downloadBlob(blob,filename){ const link=document.createElement("a"); link.href=URL.createObjectURL(blob); link.download=filename; link.click(); setTimeout(()=>URL.revokeObjectURL(link.href),1000); }
     function draftFilename(extension){ const raw=document.getElementById("projectTitle").value||"Project"; const safe=raw.normalize("NFKD").replace(/[^\w -]/g,"").trim().replace(/\s+/g,"_").slice(0,60)||"Project"; const now=new Date(); const date=[now.getFullYear(),String(now.getMonth()+1).padStart(2,"0"),String(now.getDate()).padStart(2,"0")].join("-"); return `RERC-e_${safe}_Draft_${date}.${extension}`; }
     document.getElementById("downloadMd").addEventListener("click",()=>{ if(!lastDraft){setStatus("Create a draft first.",true);return;} downloadBlob(new Blob([lastDraft],{type:"text/markdown"}),draftFilename("md")); });
-    document.getElementById("downloadDocx").addEventListener("click",async()=>{ if(!lastDraft){setStatus("Create a draft first.",true);return;} setStatus("Building the Word file..."); const response=await apiFetch("/api/export-docx",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({draft:lastDraft,title:document.getElementById("projectTitle").value||"RERC-e Draft"})}); if(!response.ok){setStatus("The Word file could not be created.",true);return;} downloadBlob(await response.blob(),draftFilename("docx")); setStatus("Word file ready."); });
-    document.getElementById("copyDraft").addEventListener("click",async()=>{ if(!lastDraft){setStatus("Create a draft first.",true);return;} await navigator.clipboard.writeText(lastDraft); setStatus("Draft copied."); });
-    checkRuntime(); checkStartupPlan(); loadGrants().catch(()=>setStatus("The public funding list is not available right now. You can paste funding details instead.",true));
+    document.getElementById("downloadDocx").addEventListener("click",async()=>{ if(!lastDraft){setStatus("Create a draft first.",true);return;} const button=document.getElementById("downloadDocx"); button.disabled=true; setStatus("Building the Word file..."); try{ const response=await apiFetch("/api/export-docx",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({draft:lastDraft,title:document.getElementById("projectTitle").value||"RERC-e Draft"})}); if(!response.ok){ const data=await response.json().catch(()=>({})); throw new Error(data.error||"The Word file could not be created."); } downloadBlob(await response.blob(),draftFilename("docx")); setStatus("Word file ready."); }catch(error){setStatus("Word export failed: "+error.message,true);}finally{button.disabled=false;} });
+    document.getElementById("copyDraft").addEventListener("click",async()=>{ if(!lastDraft){setStatus("Create a draft first.",true);return;} try{ if(!navigator.clipboard||!navigator.clipboard.writeText)throw new Error("Clipboard access is unavailable"); await navigator.clipboard.writeText(lastDraft); setStatus("Draft copied."); }catch{ setStatus("Copy is unavailable in this browser. Select the draft text and copy it manually.",true); output.focus(); const selection=window.getSelection(); const range=document.createRange(); range.selectNodeContents(output); selection.removeAllRanges(); selection.addRange(range); } });
+    checkRuntime(); runtimePoll=window.setInterval(checkRuntime,5000); checkStartupPlan(); loadGrants().catch(()=>setStatus("The public funding list is not available right now. You can paste funding details instead.",true));
   </script>
 </body>
 </html>'''.replace("__STATE_OPTIONS__", json.dumps([""] + list(STATE_FIPS.keys())))
@@ -1395,8 +1510,12 @@ class RERCieHandler(BaseHTTPRequestHandler):
 
 
 def serve(host: str, port: int) -> int:
+    global EXPECTED_HOST, EXPECTED_ORIGIN
     if host not in {"127.0.0.1", "localhost"}:
         raise ValueError("RERC-e can run only on this computer.")
+    browser_host = "127.0.0.1" if host == "localhost" else host
+    EXPECTED_HOST = f"{browser_host}:{port}"
+    EXPECTED_ORIGIN = f"http://{EXPECTED_HOST}"
     if not SESSION_TOKEN:
         raise RuntimeError("RERC-e needs a local session token.")
     server = ThreadingHTTPServer((host, port), RERCieHandler)
@@ -1539,7 +1658,7 @@ def smoke() -> int:
 
         lookup_globals["fetch_public_community_profile"] = lambda community, state: (_ for _ in ()).throw(ValueError("malformed payload"))
         malformed_no_key = lookup_community_profile("Damascus", "Virginia", "")
-        assert malformed_no_key["status"] == "key_required"
+        assert malformed_no_key["status"] == "unavailable"
 
         lookup_globals["fetch_public_community_profile"] = lambda community, state: {}
         lookup_globals["fetch_census_community_profile"] = lambda community, state, census_api_key="": {"place": "Damascus town, Virginia", "source": "census fallback", "geography_type": "place"}
@@ -1552,6 +1671,19 @@ def smoke() -> int:
         lookup_globals["fetch_census_community_profile"] = backup_census_lookup
         lookup_globals["_census_api_key"] = backup_key_lookup
 
+    imported_profile_payload = {
+        "community": "St. Paul", "state": "Virginia", "projectTitle": "Trail",
+        "projectNotes": "Connect the trail.", "publicProfile": sample_profile,
+        "usePublicData": False, "provider": "fallback",
+    }
+    imported_profile_result = build_draft(imported_profile_payload)
+    assert imported_profile_result["profileStatus"] == "imported"
+    assert "Population: 1,046" in imported_profile_result["draft"]
+    try:
+        _require_loopback_runtime_url("test", "https://example.com/v1/chat")
+        raise AssertionError("A non-loopback writer URL was accepted.")
+    except RuntimeError:
+        pass
     no_leak_prompt = compose_prompt({"projectTitle": "Test", "censusApiKey": "CENSUS_API_KEY_SENTINEL"}, sample_profile, "")
     assert "CENSUS_API_KEY_SENTINEL" not in no_leak_prompt
     unsafe_draft = "A survey found 70% support and an $85,000 budget."
@@ -1560,13 +1692,28 @@ def smoke() -> int:
     assert grounding_issues(unsafe_qualitative, {"projectSummary": "Improve a trail."}, sample_profile)
     safe_scaffold = deterministic_scaffold({"community": "Test", "state": "Virginia", "projectTitle": "Trail", "projectSummary": "Improve a trail."}, sample_profile)
     assert not grounding_issues(safe_scaffold, {"community": "Test", "state": "Virginia", "projectTitle": "Trail", "projectSummary": "Improve a trail."}, sample_profile)
+    rich_funding = _funding_record_text(json.dumps({
+        "title": "Trail Grant", "organization": "Example Agency", "status": "Recurring",
+        "eligible_users": "Local governments", "summary": "Supports trail connections.",
+        "amount_or_cost": "$100,000", "match_or_cost": "20%", "deadline_or_availability": "Annual",
+        "source_url": "https://example.gov/trail",
+    }))
+    assert all(label in rich_funding for label in ("Status", "Eligible applicants", "Amount or support", "Match or cost share", "Deadline or availability"))
+    try:
+        validate_draft_context({"community": "Damascus", "state": "Virginia", "projectTitle": "Trail"})
+        raise AssertionError("Drafting accepted no project summary, notes, or funding details.")
+    except ValueError:
+        pass
     sample = {"community":"Damascus","state":"Virginia","projectTitle":"Trailhead Wayfinding","projectSummary":"Improve access from downtown to nearby trails.","selectedGrant":"Sample funding record","usePublicData":False,"provider":"fallback"}
     result = build_draft(sample)
     assert "Fit Summary" in result["draft"]
-    docx = build_docx(result["draft"], "Smoke Test")
+    docx = build_docx(result["draft"] + "\x01", "Smoke Test\x02")
     assert docx.startswith(b"PK")
     with zipfile.ZipFile(io.BytesIO(docx)) as package:
         assert "word/document.xml" in package.namelist()
+        document_xml = package.read("word/document.xml")
+        ET.fromstring(document_xml)
+        assert b"\x01" not in document_xml and b"\x02" not in package.read("docProps/core.xml")
     print(json.dumps({
         "status": "PASS",
         "version": APP_VERSION,

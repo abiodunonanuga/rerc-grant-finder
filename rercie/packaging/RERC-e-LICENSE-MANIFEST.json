@@ -1,13 +1,13 @@
 {
-    "schema":  "timberwing-license-manifest-v1",
-    "product":  "RERC-e",
-    "version":  "0.5.0",
-    "license_identifier":  "TIMBERWING-RERC-E-0.5.0-20260719",
-    "publisher":  "Timberwing Systems, an EPR, P.C. initiative",
-    "issued_date":  "2026-07-19",
-    "license_file":  "RERC-e-LICENSE.txt",
-    "license_sha256":  "af91f71947576f4b20e91f93d336c867fc6a1ae774073fd0d0be2e144a22f4db",
-    "installer_acceptance_required":  true,
-    "authenticode_status":  "pending_authorized_code_signing_certificate",
-    "authenticode_note":  "No authorized EPR, P.C. or Timberwing Systems code-signing certificate was available on the build computer."
+  "schema": "timberwing-license-manifest-v1",
+  "product": "RERC-e",
+  "version": "0.5.1",
+  "license_identifier": "TIMBERWING-RERC-E-0.5.1-20260819",
+  "publisher": "Timberwing Systems, an EPR, P.C. initiative",
+  "issued_date": "2026-08-19",
+  "license_file": "RERC-e-LICENSE.txt",
+  "license_sha256": "b1c8f7f8fdc4d6ef906f6e8684f7a958e069bb111b434f119229b4a10c044da4",
+  "installer_acceptance_required": true,
+  "authenticode_status": "pending_authorized_code_signing_certificate",
+  "authenticode_note": "No authorized EPR, P.C. or Timberwing Systems code-signing certificate was available on the build computer."
 }

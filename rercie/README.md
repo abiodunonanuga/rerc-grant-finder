@@ -2,7 +2,7 @@
 
 RERC-e Local Grant-Writing Guide is an optional app for the Recreation Economy *for* Rural Communities funding and resource explorer.
 
-Current source version: `0.5.0`.
+Current source version: `0.5.1`.
 
 The Windows installer includes the RERC-e app and the pinned `llama.cpp` runtime. The local Gemma writer does not require a command line, an account, or an API key. The Gemma model is downloaded only when the person selects **Download and start**.
 
@@ -20,9 +20,9 @@ Upgrades keep a verified local Gemma model, so people do not have to download it
 
 No command line is needed. Open RERC-e from the Start Menu. The launcher can open or stop the local tool.
 
-RERC-e 0.5.0 can also open a Community Explorer plan. Use **Open Community Explorer plan** inside RERC-e, or open an installed `.rercie` file from Windows. RERC-e checks the file before filling any fields and shows what it imported.
+RERC-e 0.5.1 can also open a Community Explorer plan. Use **Open Community Explorer plan** inside RERC-e, or open an installed `.rercie` file from Windows. RERC-e checks the file before filling any fields and shows what it imported.
 
-RERC-e 0.5.0 passed package-bound and standalone source-bound local Gemma generation QA. Public installer distribution remains on hold until EPR, P.C. can apply an authorized Timberwing Systems publisher signature and the signed installer passes Windows security checks.
+RERC-e 0.5.1 passed package-bound and standalone source-bound local Gemma generation QA. Public installer distribution remains on hold until EPR, P.C. can apply an authorized Timberwing Systems publisher signature and the signed installer passes Windows security checks.
 
 ## What RERC-e Does
 
