@@ -57,15 +57,15 @@
     },
     "live_catalog": {
       "status": "PASS",
-      "total_items": 1317,
+      "total_items": 1031,
       "funding_items": 829,
       "resource_items": 192,
-      "case_study_items": 296,
+      "case_study_items": 10,
       "territory_filter_checked": true,
-      "case_study_unique_urls_checked": 296,
+      "case_study_unique_urls_checked": 9,
       "case_study_hard_failed_urls": 0,
-      "case_study_reachable_urls": 264,
-      "case_study_restricted_urls": 32,
+      "case_study_reachable_urls": 9,
+      "case_study_restricted_urls": 0,
       "case_study_manual_review_urls": 0
     },
     "local_generation": {
@@ -148,7 +148,7 @@
     "status": "PENDING_BUILD"
   },
   "verification_inputs": {
-    "browser_contract_sha256": "80146294d1cf65b146ed28d53f0d0ffd3ebab1ac48333a200b6e54535343d501",
+    "browser_contract_sha256": "2d39c21e836ad5ecc7d4e6613c666df43182f973dbf324415a8de8d3749b960f",
     "local_gemma_report_sha256": "5383f6d92de2c91a430bda95d82703c83a5d7280894f2ad38dbb3866c4f98bd4"
   }
 }

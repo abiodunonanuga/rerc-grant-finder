@@ -1,48 +1,48 @@
 {
   "status": "PASS",
   "updated": "2026-08-20",
-  "records": 1317,
+  "records": 1031,
   "funding": 829,
   "resources": 192,
-  "community_examples": 296,
-  "catalog_source_commit": "fc77c65349807db22e90fb4ee95dd64759ff8938",
+  "community_examples": 10,
+  "catalog_source_commit": "13cd44a1dbf3ce6cdb434d5140234d70159f15ab",
   "release_binding_note": "This is the source commit used to generate the files. The QA report records the generated file hashes.",
   "site_sha256": {
-    "index.html": "91d6f6315d49140a4292759e30d7d7ed5639b583283caf4affd0e77b91cd3e67",
+    "index.html": "6d5ef43d920f8e936eb766859530ac6f90a561530718339e6fac46a8c585db5a",
     "styles.css": "f4a50d4162fed3eb743c8259ef6ed0bf55ec7fdc24efa4ebcbb9506b60cb0d0f",
     "rercie.css": "218bfb2993d46f1c396719bacbbb69cfcef47b6fccb7f76eb1f2c97a73ac475c",
-    "app.js": "6f0841e7fd60946ce5fae42dfca8df6f1ba0d75d947f1503abd43b7b58704a3a",
+    "app.js": "ca3d667d66b2fcb0a95cb7827f40e67aab74c337e20f38e9c3cd084974f60664",
     "planner.js": "29f1f7848e1bb996aa6468aff8e71905105de85832a5992ebc9ca23ce404a5fb",
-    "ui-i18n.js": "cc2e7394c4b2660dafa4e63b10159db269dfe83affa549d6324b3223e5ae39f2",
+    "ui-i18n.js": "30f886c294a18b515004d32d556bff74861088a773864dc6dbc90188248532fb",
     "deadline-utils.js": "9630163876672f5d0dd801ba18ab96b1c91b076a657e6b42f0130f7db959d402",
     "site-config.js": "7802db1651f5ea8e7d3f6b7bf5b5f055c4ca509e0990cda47aba7226d17881c5",
     "data.js": "6cbed266c0bcaf303fd5fea0b32fd811baf676e738b9bc10e1d1d5fad5089857",
-    "case_studies.js": "696ce5baadfd55d30fb469272ce02b3367b63abd325dfe52562764396da1fead",
+    "case_studies.js": "13b81cdff1d86ed4529e29764e98bd66d92a999b116f911147e77665cab16dd2",
     "maintenance/multistate_coverage.json": "ab694ea9a0d5c2b7e8bd8f2fe5e19995cc2968ae54c35c727853ebaa02a36035",
     "favicon.svg": "08bd8268fdeb2a2e83d8a55d89c92afcedc01024c585fc6401c8897f6878cd04",
     "vendor/jszip.min.js": "acc7e41455a80765b5fd9c7ee1b8078a6d160bbbca455aeae854de65c947d59e",
     "vendor/lucide.min.js": "3411692820cb8d47543f69496aa25fd603a358f4498046f41c508a5a3342210e",
     "assets/hero-outdoor.jpg": "c401e10950d2fbc0698ef754003010cc6045b5ecd2ed7ce230fce72715c3983c",
     "assets/rerc-e-eagle.jpg": "a549963e0172f9a8f27f9f78288cb974ef7a567ac0c9818fbb7f35b6d5a2e57a",
-    "README.md": "5337dca86623591008d38b1fd53e6a5c0ff00c80776d5197432f633ae61ecaf0"
+    "README.md": "4df77ed73ed5ce78bc6f272936976e6001a2e09c4cceb63042b835855ec09f9c"
   },
   "source_sha256": {
     "data.js": "6cbed266c0bcaf303fd5fea0b32fd811baf676e738b9bc10e1d1d5fad5089857",
-    "case_studies.js": "696ce5baadfd55d30fb469272ce02b3367b63abd325dfe52562764396da1fead"
+    "case_studies.js": "13b81cdff1d86ed4529e29764e98bd66d92a999b116f911147e77665cab16dd2"
   },
   "docx": {
     "file": "RERC_Community_Explorer_Appendix_2026-08-20.docx",
-    "bytes": 387733,
-    "sha256": "5abd2d0b7d74f4f9cfdb03b3d74529917bf28edd2695d83e6b7600206f7dd92b"
+    "bytes": 294722,
+    "sha256": "2863fd5376463285971627947f8cecf0bd644c09be526f414c455e3634a91a20"
   },
   "xlsx": {
     "file": "RERC_Community_Explorer_Master_2026-08-20.xlsx",
-    "bytes": 379598,
-    "sha256": "0b4e2fdfc2ddc34e91a928b9ed312c3120bfca9b41744b5d494044762513ba8d"
+    "bytes": 278896,
+    "sha256": "6594667f0ad52be6bc26219ebe31d6f66d9370341903bb01dbdb4d7570fd9205"
   },
   "csv": {
     "file": "RERC_Community_Explorer_Master_2026-08-20.csv",
-    "bytes": 852511,
-    "sha256": "036c628751c85d31372caf94e06c2204c66ba8f85fbb5fa47987eb1a7661300d"
+    "bytes": 615405,
+    "sha256": "beb762e904b1f3ab5404cfb63e3484d385799cbb4f858a099f9ac9779e0832b0"
   }
 }
