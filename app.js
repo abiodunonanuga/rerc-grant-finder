@@ -558,7 +558,7 @@ function render() {
   const fundingResults = currentMatches.filter((item) => item.item_type === "Funding");
   const resourceResults = currentMatches.filter((item) => item.item_type === "Resource");
   const caseResults = currentMatches.filter((item) => item.item_type === "Case Study");
-  const caseStudyLimit = Math.max(24, Math.min(120, Number(elements.caseStudyViewSelect?.value) || 24));
+  const caseStudyLimit = Math.max(10, Math.min(24, Number(elements.caseStudyViewSelect?.value) || 10));
   let visible = currentMatches.slice(0, limit);
   if (mode === "All") {
     const each = limitValue === "all" ? Number.MAX_SAFE_INTEGER : Math.max(1, Math.floor(limit / 3));
@@ -610,7 +610,7 @@ function render() {
     elements.results.innerHTML = [
       renderGroup("Funding", "Ways to pay for the work", "Grants, loans, tax credits, and other funding options.", shownFunding, fundingMatches, "funding-group"),
       renderGroup("Resources", "Tools and technical help", "Guides, data, training, and hands-on support.", shownResources, resourceMatches, "resource-group"),
-      renderGroup("Case studies", "Featured community examples", "Open the Case studies tab for more ranked examples and links to complete source libraries.", shownCases, caseMatches, "case-group")
+      renderGroup("Case studies", "Independent community precedents", "Open the Case studies tab for detailed precedents not repeated in the linked libraries.", shownCases, caseMatches, "case-group")
     ].join("");
   } else {
     elements.results.innerHTML = visible.map((item) => renderCard(item, 3)).join("");

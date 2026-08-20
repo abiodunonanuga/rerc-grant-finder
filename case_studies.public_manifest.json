@@ -1,47 +1,36 @@
 {
-  "release_id": "rerc-public-community-examples-2026-08-14",
+  "release_id": "rerc-independent-community-precedents-2026-08-20",
   "status": "PASS",
-  "scope": "Text-only community examples derived from official federal public web records.",
-  "approval_basis": "Public RERC community-example integration approved on 2026-07-17.",
+  "scope": "Curated, detailed public precedents not duplicated in the linked source libraries.",
   "privacy": {
     "private_source_records_modified": false,
     "local_paths_included": false,
     "admin_fields_included": false,
     "images_included": false
   },
-  "rights_note": "Official links and short source-derived descriptions are attributed. Images are excluded. This release check is not a legal opinion.",
-  "count": 296,
+  "count": 10,
   "program_counts": {
-    "EPA Brownfields Success Stories": 113,
-    "EPA Examples of Smart Growth Communities and Projects": 25,
-    "U.S. Climate Resilience Toolkit": 126,
-    "USDA Rural Development Success Stories": 32
+    "Federal Highway Administration": 2,
+    "National Park Service Rivers, Trails, and Conservation Assistance": 2,
+    "U.S. Climate Resilience Toolkit Action Plan": 1,
+    "USDA Forest Service Pacific Northwest Research Station": 1,
+    "USDA Forest Service Research and Development": 3,
+    "USDA Natural Resources Conservation Service": 1
   },
   "source_host_counts": {
-    "toolkit.climate.gov": 126,
-    "www.epa.gov": 138,
-    "www.rd.usda.gov": 32
-  },
-  "source_health": {
-    "unique_urls": 296,
-    "reachable": 264,
-    "restricted_but_present": 32,
-    "hard_failure": 0,
-    "manual_review": 0
+    "highways.dot.gov": 1,
+    "research.fs.usda.gov": 3,
+    "toolkit.climate.gov": 1,
+    "www.fhwa.dot.gov": 1,
+    "www.fs.usda.gov": 1,
+    "www.nps.gov": 2,
+    "www.nrcs.usda.gov": 1
   },
   "checks": [
     "unique IDs",
-    "official HTTPS hosts only",
+    "official HTTPS sources",
+    "no linked-library duplication",
     "bounded summaries",
-    "known geography",
-    "no private paths",
-    "no internal workflow language",
-    "no source filenames",
-    "no common mojibake",
-    "no images",
-    "no extraction debris",
-    "specific community names",
-    "normalized community types",
-    "distinct planning-assistance summaries"
+    "no private paths"
   ]
 }

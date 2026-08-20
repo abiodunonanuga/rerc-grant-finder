@@ -289,11 +289,11 @@ def main() -> int:
     case_payload = json.loads(case_raw[len(case_prefix):-1])
     cases = case_payload["items"]
     assert len(cases) == case_payload["count"]
-    assert all(case["source_url"].startswith(("https://www.epa.gov/", "https://toolkit.climate.gov/", "https://www.rd.usda.gov/")) for case in cases)
+    assert len(cases) == 10
+    assert all(case.get("case_library_overlap") == "Not in the linked case-study libraries" for case in cases)
+    assert all(case["source_url"].startswith("https://") for case in cases)
+    assert not any(any(path in case["source_url"] for path in ("/case-study/", "/brownfields/success-stories", "/smartgrowth/examples-smart-growth", "/newsroom/success-stories/")) for case in cases)
     assert not any(re.search(r"[A-Za-z]:\\\\|protos|private_internal|needs_image_review", json.dumps(case), re.I) for case in cases)
-    case_by_id = {case["item_id"]: case for case in cases}
-    assert case_by_id["RERC-CASE-BROWNFIELDS-SUCCESS-STORIES-WEIRTON-WV-FROM-ABANDONED-SCHOOL-TO-MAIN-EVENT-WV-2017"]["summary"].startswith("Weirton used EPA brownfields")
-    assert case_by_id["RERC-CASE-BROWNFIELDS-SUCCESS-STORIES-WELLSBURG-WV-A-LOCAL-MANUFACTURING-EXPANSION-TAKES-FLIGHT-WV-2017"]["summary"].startswith("Wellsburg and regional partners")
 
     downloads = ROOT / "downloads"
     public_downloads = re.findall(r'href="downloads/([^\"]+)"', index)

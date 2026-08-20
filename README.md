@@ -6,10 +6,10 @@ Live site: <https://henkelpress.github.io/rerc-grant-finder/>
 
 ## Current Catalog
 
-- 1,317 public records
+- 1,031 public records
 - 829 funding options
 - 192 guides, tools, data sources, training programs, and other resources
-- 296 project-specific official federal case studies
+- 10 curated, detailed public precedents outside the linked case-study libraries
 
 Resource results can be filtered by type. Case-study browsing starts with 24 ranked examples and links to the complete official source libraries.
 - Coverage for all 50 states, the District of Columbia, Puerto Rico, American Samoa, Guam, the Northern Mariana Islands, and the U.S. Virgin Islands
@@ -35,7 +35,7 @@ Maintenance instructions: [`MAINTENANCE.md`](MAINTENANCE.md)
 
 ## Case Studies
 
-The community-example layer includes only public text and links from official EPA, U.S. Climate Resilience Toolkit, and USDA Rural Development pages. Private records, local paths, administrative notes, and images are excluded. The 2026-07-18 automated check reached 271 of 303 unique pages directly. USDA Rural Development blocked automated access to 32 pages, so those links require manual review; no case-study link returned a hard failure.
+The community-example layer contains 10 curated, detailed public precedents that are not repeated in the four linked source libraries. The records draw on direct official pages and reports from the National Park Service, Natural Resources Conservation Service, Federal Highway Administration, Forest Service, and a Climate Resilience Toolkit action-plan page. Private records, local paths, administrative notes, and images are excluded. The 2026-08-20 source-health check reached all nine unique official source URLs with no hard failures.
 
 ## Meet RERC-e
 
