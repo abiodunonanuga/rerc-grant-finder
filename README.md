@@ -6,7 +6,7 @@ Live site: <https://henkelpress.github.io/rerc-grant-finder/>
 
 ## Current Catalog
 
-- 1,366 public records
+- 1,317 public records
 - 829 funding options
 - 192 guides, tools, data sources, training programs, and other resources
 - 296 project-specific official federal case studies
@@ -14,7 +14,7 @@ Live site: <https://henkelpress.github.io/rerc-grant-finder/>
 Resource results can be filtered by type. Case-study browsing starts with 24 ranked examples and links to the complete official source libraries.
 - Coverage for all 50 states, the District of Columbia, Puerto Rico, American Samoa, Guam, the Northern Mariana Islands, and the U.S. Virgin Islands
 
-People choose a state or territory, select All, Funding, Resources, or Case studies, answer a few project questions, and export the matched results as a real Word DOCX or CSV. Regional programs appear only when their reviewed service area includes the selected state or territory. The full Word appendix, Excel workbook, and CSV include all three content types and their official URLs.
+People choose a state or territory, select All, Funding, Resources, or Case studies, and answer a few project questions. Saved funding is organized into a chronological Plan, Design, Build, and Operate sequence with application timing, useful phase outputs, and later saved targets that the current step can help prepare. This planning sequence does not promise an award. Users can export the roadmap and funding sequence as a real Word DOCX or CSV. Regional programs appear only when their reviewed service area includes the selected state or territory. The full Word appendix, Excel workbook, and CSV include all three content types and their official URLs.
 
 ## Public Site Files
 

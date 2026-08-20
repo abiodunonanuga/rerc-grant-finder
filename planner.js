@@ -33,6 +33,23 @@
       allMatches: "Show all matches",
       noSaved: "No saved matches yet. Add options to build a plan.",
       noDeadlines: "Save funding options to see their application timing here.",
+      noFundingSequence: "Save funding options to build a phase-by-phase grant strategy.",
+      fundingSequence: "Funding sequence",
+      fundingSequenceSummary: "{count} saved funding options, ordered from planning through operations.",
+      fundingSequenceCaveat: "This is a planning sequence, not a promise of funding. Each program makes its own award decisions.",
+      sequenceStep: "Step {step}",
+      sequenceTiming: "Application timing",
+      preparesFor: "Can prepare application materials for",
+      noLaterTargets: "Build readiness for the next project phase.",
+      planPurpose: "Define the project, partners, scope, community support, and early costs.",
+      designPurpose: "Complete design, engineering, environmental review, permits, and firm cost estimates.",
+      buildPurpose: "Fund construction, acquisition, equipment, and other capital work.",
+      operatePurpose: "Support programming, staffing, maintenance, stewardship, and long-term use.",
+      planOutputs: "Useful outputs: project plan, partner roles, public input, feasibility findings, and a preliminary budget.",
+      designOutputs: "Useful outputs: final plans, permits, site control, environmental clearances, and a construction estimate.",
+      buildOutputs: "Useful outputs: completed facilities, installed equipment, and documented project delivery.",
+      operateOutputs: "Useful outputs: operating plan, staffing, maintenance schedule, programming, and performance measures.",
+      noPhaseFunding: "No saved funding is assigned to this phase yet.",
       officialEnglish:
         "Official program names, rules, and source material may remain in English. Confirm requirements with the program.",
       plan: "Plan",
@@ -121,6 +138,23 @@
       startupError: "The planner could not start in this browser.",
     },
     es: {
+      noFundingSequence: "Guarde opciones de financiamiento para crear una estrategia por fases.",
+      fundingSequence: "Secuencia de financiamiento",
+      fundingSequenceSummary: "{count} opciones guardadas, desde la planificaciÃ³n hasta la operaciÃ³n.",
+      fundingSequenceCaveat: "Esta es una secuencia de planificaciÃ³n, no una promesa de fondos. Cada programa toma sus propias decisiones.",
+      sequenceStep: "Paso {step}",
+      sequenceTiming: "Plazo de solicitud",
+      preparesFor: "Puede preparar materiales de solicitud para",
+      noLaterTargets: "Prepare el proyecto para la siguiente fase.",
+      planPurpose: "Defina el proyecto, los socios, el alcance, el apoyo de la comunidad y los costos iniciales.",
+      designPurpose: "Complete el diseÃ±o, la ingenierÃ­a, la revisiÃ³n ambiental, los permisos y costos firmes.",
+      buildPurpose: "Financie la construcciÃ³n, adquisiciÃ³n, equipos y otras obras de capital.",
+      operatePurpose: "Apoye la programaciÃ³n, el personal, el mantenimiento, la administraciÃ³n y el uso a largo plazo.",
+      planOutputs: "Resultados Ãºtiles: plan del proyecto, socios, opiniÃ³n pÃºblica, viabilidad y presupuesto preliminar.",
+      designOutputs: "Resultados Ãºtiles: planos, permisos, control del sitio, revisiones ambientales y costo de construcciÃ³n.",
+      buildOutputs: "Resultados Ãºtiles: instalaciones terminadas, equipos instalados y entrega documentada.",
+      operateOutputs: "Resultados Ãºtiles: plan operativo, personal, mantenimiento, programaciÃ³n y medidas de desempeÃ±o.",
+      noPhaseFunding: "TodavÃ­a no hay financiamiento guardado asignado a esta fase.",
       saved: "Guardado",
       save: "Agregar al plan",
       remove: "Quitar del plan",
@@ -759,6 +793,116 @@
     setCount("roadmapCount", state.workspace.savedIds.length, "savedCount");
   }
 
+  function phaseStrategy(phase) {
+    const key = phase.toLowerCase();
+    return { purpose: t(key + "Purpose"), outputs: t(key + "Outputs") };
+  }
+
+  function fundingSequenceEntries() {
+    const timingOrder = { dated: 0, rolling: 1, recurring: 2, variable: 3, active_period: 4, date_pending: 5, closed: 6 };
+    const entries = savedItems().filter(function (item) {
+      return textValue(item.item_type, 80) === "Funding";
+    }).map(function (item) {
+      const id = itemId(item);
+      const phase = PHASES.includes(state.workspace.roadmapAssignments[id])
+        ? state.workspace.roadmapAssignments[id] : inferPhase(item);
+      return { item: item, phase: phase, deadline: reviewedDeadline(item), timing: fundingTimingInfo(item) };
+    }).sort(function (a, b) {
+      const phaseDifference = PHASES.indexOf(a.phase) - PHASES.indexOf(b.phase);
+      if (phaseDifference) return phaseDifference;
+      if (a.deadline && b.deadline) return a.deadline.date.getTime() - b.deadline.date.getTime();
+      if (a.deadline) return -1;
+      if (b.deadline) return 1;
+      return (timingOrder[a.timing.type] ?? 99) - (timingOrder[b.timing.type] ?? 99) ||
+        textValue(a.item.title, 500).localeCompare(textValue(b.item.title, 500));
+    });
+    return entries.map(function (entry, index) { return Object.assign({}, entry, { sequence: index + 1 }); });
+  }
+
+  function laterFundingTargets(entries, phase, itemIdValue) {
+    const phaseIndex = PHASES.indexOf(phase);
+    return entries.filter(function (entry) {
+      return itemId(entry.item) !== itemIdValue && PHASES.indexOf(entry.phase) > phaseIndex;
+    }).slice(0, 3).map(function (entry) { return textValue(entry.item.title, 500); });
+  }
+
+  function sequenceTimingText(entry) {
+    if (entry.deadline) {
+      return new Intl.DateTimeFormat(state.language, { year: "numeric", month: "short", day: "numeric" }).format(entry.deadline.date);
+    }
+    return timingLabel(entry.timing.type);
+  }
+
+  function renderFundingSequence() {
+    const root = byId("fundingSequence");
+    if (!root) return;
+    root.replaceChildren();
+    const entries = fundingSequenceEntries();
+    setCount("fundingSequenceCount", entries.length, "savedCount");
+    if (!entries.length) {
+      const empty = document.createElement("p");
+      empty.className = "empty-copy";
+      empty.textContent = t("noFundingSequence");
+      root.appendChild(empty);
+      return;
+    }
+    const summary = document.createElement("p");
+    summary.className = "funding-sequence-summary";
+    summary.textContent = t("fundingSequenceSummary", { count: entries.length });
+    root.appendChild(summary);
+    PHASES.forEach(function (phase, phaseIndex) {
+      const strategy = phaseStrategy(phase);
+      const phaseEntries = entries.filter(function (entry) { return entry.phase === phase; });
+      const section = document.createElement("section");
+      section.className = "funding-sequence-phase";
+      section.dataset.phase = phase.toLowerCase();
+      const header = document.createElement("header");
+      const number = document.createElement("span");
+      number.className = "funding-phase-number";
+      number.textContent = String(phaseIndex + 1);
+      const heading = document.createElement("h4");
+      heading.textContent = t(phase.toLowerCase());
+      header.append(number, heading);
+      const purpose = document.createElement("p");
+      purpose.className = "funding-phase-purpose";
+      purpose.textContent = strategy.purpose;
+      const outputs = document.createElement("p");
+      outputs.className = "funding-phase-outputs";
+      outputs.textContent = strategy.outputs;
+      section.append(header, purpose, outputs);
+      if (!phaseEntries.length) {
+        const empty = document.createElement("p");
+        empty.className = "funding-phase-empty";
+        empty.textContent = t("noPhaseFunding");
+        section.appendChild(empty);
+      }
+      phaseEntries.forEach(function (entry) {
+        const item = entry.item;
+        const card = document.createElement("article");
+        card.className = "funding-sequence-item";
+        const step = document.createElement("span");
+        step.className = "funding-sequence-step";
+        step.textContent = t("sequenceStep", { step: entry.sequence });
+        const title = document.createElement("h5");
+        title.textContent = textValue(item.title, 500);
+        const timing = document.createElement("p");
+        timing.className = "funding-sequence-timing";
+        timing.textContent = t("sequenceTiming") + ": " + sequenceTimingText(entry);
+        const targets = laterFundingTargets(entries, entry.phase, itemId(item));
+        const prepares = document.createElement("p");
+        prepares.className = "funding-sequence-prepares";
+        prepares.textContent = targets.length ? t("preparesFor") + ": " + targets.join("; ") : t("noLaterTargets");
+        card.append(step, title, timing, prepares);
+        section.appendChild(card);
+      });
+      root.appendChild(section);
+    });
+    const caveat = document.createElement("p");
+    caveat.className = "funding-sequence-caveat";
+    caveat.textContent = t("fundingSequenceCaveat");
+    root.appendChild(caveat);
+  }
+
   function cssSafeId(value) {
     return String(value).replace(/[^A-Za-z0-9_-]/g, "-").slice(0, 100);
   }
@@ -989,6 +1133,7 @@
     refreshCounts();
     renderSavedTray();
     renderRoadmap();
+    renderFundingSequence();
     renderDeadlines();
     renderComparison();
     if (state.savedOnly) renderSavedOnly();
@@ -1576,11 +1721,16 @@
   }
 
   function projectExportModel(includeNotes) {
+    const sequenceEntries = fundingSequenceEntries();
+    const sequenceById = new Map(sequenceEntries.map(function (entry) { return [itemId(entry.item), entry]; }));
     const items = savedItems().map(function (item) {
+      const sequence = sequenceById.get(itemId(item));
       return {
         item: item,
         phase: state.workspace.roadmapAssignments[itemId(item)] || inferPhase(item),
         deadline: reviewedDeadline(item),
+        sequence: sequence ? sequence.sequence : null,
+        preparesFor: sequence ? laterFundingTargets(sequenceEntries, sequence.phase, itemId(item)) : [],
       };
     });
     return {
@@ -1619,6 +1769,9 @@
       "Title",
       "Organization",
       "Roadmap phase",
+      "Funding sequence order",
+      "Phase purpose",
+      "Prepares for later saved funding",
       "Status",
       "Eligible applicants",
       "Geography",
@@ -1641,6 +1794,9 @@
         item.title,
         item.organization,
         entry.phase,
+        entry.sequence || "",
+        entry.sequence ? phaseStrategy(entry.phase).purpose : "",
+        entry.preparesFor.join("; "),
         item.status,
         item.eligible_users,
         item.geography,
@@ -1722,6 +1878,29 @@
     }
     body.push(docxParagraph(t("roadmap"), "Heading1"));
     body.push(docxParagraph(t(model.items.length === 1 ? "selectedItemSummary" : "selectedItemsSummary", { count: model.items.length }), "Metadata"));
+    const fundingEntries = model.items.filter(function (entry) { return entry.sequence; })
+      .sort(function (a, b) { return a.sequence - b.sequence; });
+    if (fundingEntries.length) {
+      body.push(docxParagraph(t("fundingSequence"), "Heading1"));
+      body.push(docxParagraph(t("fundingSequenceSummary", { count: fundingEntries.length }), "Metadata"));
+      PHASES.forEach(function (phase) {
+        const phaseEntries = fundingEntries.filter(function (entry) { return entry.phase === phase; });
+        const strategy = phaseStrategy(phase);
+        body.push(docxParagraph(t(phase.toLowerCase()), "Heading2"));
+        body.push(docxParagraph(strategy.purpose, "BodyText"));
+        body.push(docxParagraph(strategy.outputs, "Metadata"));
+        if (!phaseEntries.length) body.push(docxParagraph(t("noPhaseFunding"), "Metadata"));
+        phaseEntries.forEach(function (entry) {
+          body.push(docxKeyValue(t("sequenceStep", { step: entry.sequence }), textValue(entry.item.title, 500)));
+          body.push(docxKeyValue(t("sequenceTiming"), entry.deadline
+            ? new Intl.DateTimeFormat(state.language, { year: "numeric", month: "long", day: "numeric" }).format(entry.deadline.date)
+            : timingLabel(fundingTimingInfo(entry.item).type)));
+          body.push(docxParagraph(entry.preparesFor.length
+            ? t("preparesFor") + ": " + entry.preparesFor.join("; ") : t("noLaterTargets"), "BodyText"));
+        });
+      });
+      body.push(docxParagraph(t("fundingSequenceCaveat"), "ClosingNote"));
+    }
     PHASES.forEach(function (phase) {
       const entries = model.items.filter(function (entry) { return entry.phase === phase; });
       if (!entries.length) return;

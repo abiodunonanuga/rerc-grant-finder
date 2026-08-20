@@ -220,7 +220,7 @@ def main() -> int:
     assert "source-backed examples from Protos" not in index and "community profile" not in index.lower()
     assert "why it fits" not in index.lower()
     assert all(value not in index for value in ("fundingViewSwitch", "showFundingCalendar", "calendarGrid", "calendarAgenda", "exportCalendar"))
-    assert all(value in index for value in ("fundingTypeOptions", "caseStudyPhaseOptions", "Reset roadmap", "contribute", "openIssueReport", "openCatalogSubmission", "issueReportDialog", "catalogSubmissionDialog"))
+    assert all(value in index for value in ("fundingTypeOptions", "caseStudyPhaseOptions", "Reset roadmap", "contribute", "openIssueReport", "openCatalogSubmission", "issueReportDialog", "catalogSubmissionDialog", "fundingSequence", "fundingSequenceCount"))
     assert "github.com/henkelpress/rerc-grant-finder/issues/new" not in index
     contributions = (ROOT / "contributions.js").read_text(encoding="utf-8")
     assert all(value in contributions for value in ("issueReportUrl", "catalogSubmissionUrl", "embedded", "docs.google.com"))
@@ -229,6 +229,7 @@ def main() -> int:
     assert all(value in deadline_utils for value in ("parseDeadline", "fundingTiming", "RERCDeadlineUtils"))
     assert all(value in app_js for value in ("fundingFilterLabels", "caseStudyPhase", "fundingTiming", "fundingTimingCounts", "wordPageBreakXml"))
     assert all(value in planner for value in (
+        "fundingSequenceEntries", "renderFundingSequence", "laterFundingTargets", "Funding sequence order", "fundingSequenceCaveat",
         "deadline-status", "stateChanged", "docxPageBreak", "rerc.activeWorkspaceId.v2",
         "WORKSPACE_ID_PREFIX", "createWorkspaceId", "phaseChanged"
     ))

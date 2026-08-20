@@ -304,12 +304,36 @@ async function main() {
     }));
     check("private_browser_workspace", /^browser-/.test(checks.workspace.id || ""));
 
+    for (let index = 0; index < 3; index += 1) {
+      const nextSave = page.getByRole("button", { name: "Add to plan" }).first();
+      if (await nextSave.count()) { await nextSave.click(); await page.waitForTimeout(200); }
+    }
+    const roadmapSelects = page.locator("#roadmap select");
+    const phases = ["Plan", "Design", "Build", "Operate"];
+    const phaseCount = Math.min(await roadmapSelects.count(), phases.length);
+    for (let index = 0; index < phaseCount; index += 1) {
+      await roadmapSelects.nth(index).selectOption(phases[index]);
+      await page.waitForTimeout(120);
+    }
+    checks.fundingSequence = await page.locator("#fundingSequence").evaluate((node) => ({
+      phases: [...node.querySelectorAll(".funding-sequence-phase")].map((section) => section.dataset.phase),
+      steps: [...node.querySelectorAll(".funding-sequence-step")].map((step) => step.textContent.trim()),
+      count: Number(document.getElementById("fundingSequenceCount")?.textContent || 0),
+      caveat: node.querySelector(".funding-sequence-caveat")?.textContent || "",
+      laterTargets: [...node.querySelectorAll(".funding-sequence-prepares")].some((item) => /prepare application materials for/i.test(item.textContent))
+    }));
+    check("funding_sequence", checks.fundingSequence.phases.join("|") === "plan|design|build|operate"
+      && checks.fundingSequence.count === phaseCount && checks.fundingSequence.steps.length === phaseCount
+      && /not a promise of funding/i.test(checks.fundingSequence.caveat)
+      && (phaseCount < 2 || checks.fundingSequence.laterTargets));
+
     const roadmapPhase = page.locator("#roadmap select").first();
+    const roadmapItemId = await roadmapPhase.getAttribute("data-roadmap-id");
     const currentPhase = await roadmapPhase.inputValue();
     const nextPhase = currentPhase === "Build" ? "Plan" : "Build";
     await roadmapPhase.selectOption(nextPhase); await page.waitForTimeout(300);
     checks.roadmapPhaseChange = {
-      selected: await page.locator("#roadmap select").first().inputValue(),
+      selected: await page.locator(`#roadmap select[data-roadmap-id="${roadmapItemId}"]`).inputValue(),
       message: await page.locator("#plannerStatus").innerText()
     };
     check("roadmap_phase_editable", checks.roadmapPhaseChange.selected === nextPhase
@@ -369,6 +393,9 @@ async function main() {
     page.once("dialog", (dialog) => dialog.accept());
     downloads.rercie = await download(page, "#exportRercie", "plan.rercie");
     checks.rercie = JSON.parse(fs.readFileSync(downloads.rercie.file, "utf8"));
+    checks.sequenceCsv = fs.readFileSync(downloads.csv.file, "utf8");
+    check("funding_sequence_csv", checks.sequenceCsv.includes("Funding sequence order")
+      && checks.sequenceCsv.includes("Phase purpose") && checks.sequenceCsv.includes("Prepares for later saved funding"));
     check("download_events", Object.values(downloads).every((item) => item.bytes > 0));
     check("rercie_schema", checks.rercie.schema === "rercie-handoff" && checks.rercie.version === 1
       && !hasSensitiveKey(checks.rercie) && !/sk-[A-Za-z0-9]{12,}/.test(JSON.stringify(checks.rercie)));
