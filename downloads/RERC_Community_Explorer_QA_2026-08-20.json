@@ -5,10 +5,10 @@
   "funding": 829,
   "resources": 192,
   "community_examples": 296,
-  "catalog_source_commit": "5caf6f0971690951038560d5243368ac30267b16",
+  "catalog_source_commit": "fc77c65349807db22e90fb4ee95dd64759ff8938",
   "release_binding_note": "This is the source commit used to generate the files. The QA report records the generated file hashes.",
   "site_sha256": {
-    "index.html": "c48bbd0fa7a70334b4cfb2ec20053c4a9fec03bfb8e6e82a0d7753dbf4f11b21",
+    "index.html": "91d6f6315d49140a4292759e30d7d7ed5639b583283caf4affd0e77b91cd3e67",
     "styles.css": "f4a50d4162fed3eb743c8259ef6ed0bf55ec7fdc24efa4ebcbb9506b60cb0d0f",
     "rercie.css": "218bfb2993d46f1c396719bacbbb69cfcef47b6fccb7f76eb1f2c97a73ac475c",
     "app.js": "6f0841e7fd60946ce5fae42dfca8df6f1ba0d75d947f1503abd43b7b58704a3a",
@@ -33,12 +33,12 @@
   "docx": {
     "file": "RERC_Community_Explorer_Appendix_2026-08-20.docx",
     "bytes": 387733,
-    "sha256": "e77d1a0034d4e08db9101646384a49116d2599868f6d95645188159ba210e888"
+    "sha256": "5abd2d0b7d74f4f9cfdb03b3d74529917bf28edd2695d83e6b7600206f7dd92b"
   },
   "xlsx": {
     "file": "RERC_Community_Explorer_Master_2026-08-20.xlsx",
-    "bytes": 379599,
-    "sha256": "d65c16a8bf4c48c688cfcd8a2b22a6043d6da69523946a62264496339532a788"
+    "bytes": 379598,
+    "sha256": "0b4e2fdfc2ddc34e91a928b9ed312c3120bfca9b41744b5d494044762513ba8d"
   },
   "csv": {
     "file": "RERC_Community_Explorer_Master_2026-08-20.csv",
