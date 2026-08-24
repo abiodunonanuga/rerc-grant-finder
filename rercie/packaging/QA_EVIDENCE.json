@@ -148,7 +148,7 @@
     "status": "PENDING_BUILD"
   },
   "verification_inputs": {
-    "browser_contract_sha256": "2d39c21e836ad5ecc7d4e6613c666df43182f973dbf324415a8de8d3749b960f",
+    "browser_contract_sha256": "e951f242b76879145f3a7b659dd70cc0bc446aa1dd26d904289c485b05dc0ca3",
     "local_gemma_report_sha256": "5383f6d92de2c91a430bda95d82703c83a5d7280894f2ad38dbb3866c4f98bd4"
   }
 }
