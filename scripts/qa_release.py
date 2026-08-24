@@ -104,6 +104,8 @@ def main() -> int:
     assert not any((item.get("summary") or "").strip() in {"", "-"} for item in items)
     reviewed_resources = [item for item in items if item["item_id"].startswith(("RERC-RES-R2-", "RERC-RES-NEW-2026-"))]
     assert len(reviewed_resources) == 123
+    vdot_ta = by_id["RERC-FND-0585"]
+    assert vdot_ta["source_url"] == "https://www.vdot.virginia.gov/doing-business/for-localities/local-assistance/transportation-alternatives/"
     assert all(len(item["summary"].strip()) >= 55 for item in reviewed_resources)
     assert not any(
         item["summary"].strip(". ").lower()
@@ -220,7 +222,7 @@ def main() -> int:
     assert "source-backed examples from Protos" not in index and "community profile" not in index.lower()
     assert "why it fits" not in index.lower()
     assert all(value not in index for value in ("fundingViewSwitch", "showFundingCalendar", "calendarGrid", "calendarAgenda", "exportCalendar"))
-    assert all(value in index for value in ("fundingTypeOptions", "caseStudyPhaseOptions", "Reset roadmap", "contribute", "openIssueReport", "openCatalogSubmission", "issueReportDialog", "catalogSubmissionDialog", "fundingSequence", "fundingSequenceCount"))
+    assert all(value in index for value in ("fundingTypeOptions", "caseStudyPhaseOptions", "Reset roadmap", "resetStateSelection", "contribute", "openIssueReport", "openCatalogSubmission", "issueReportDialog", "catalogSubmissionDialog", "fundingSequence", "fundingSequenceCount"))
     assert "github.com/henkelpress/rerc-grant-finder/issues/new" not in index
     contributions = (ROOT / "contributions.js").read_text(encoding="utf-8")
     assert all(value in contributions for value in ("issueReportUrl", "catalogSubmissionUrl", "embedded", "docs.google.com"))

@@ -64,7 +64,11 @@
             <div><h3 id="communityPanelTitle">Your location</h3><p>Choose one state, D.C., or U.S. territory.</p></div>
           </div>
           <div class="field-grid">
-            <label class="field field-wide" for="stateSelect"><span>State, D.C., or U.S. territory <b aria-hidden="true">*</b></span><select id="stateSelect" aria-describedby="communityRequirement communityCoverage" required></select></label>
+            <label class="field field-wide" for="stateSelect"><span>State, D.C., or U.S. territory <b aria-hidden="true">*</b></span><select id="stateSelect" aria-describedby="communityRequirement communityCoverage stateChangeHelp" required></select></label>
+          </div>
+          <div class="state-change-controls">
+            <button id="resetStateSelection" class="secondary-button" type="button"><i data-lucide="map-pin-off" aria-hidden="true"></i>Change state or territory</button>
+            <p id="stateChangeHelp">Choose another state at any time. Changing states clears saved matches and local project notes for this browser workspace.</p>
           </div>
           <p id="communityRequirement" class="required-note">A state or territory is required before you continue.</p>
           <p id="communityCoverage" class="coverage-note">Regional programs appear only in the states and territories they serve. Check the program website before you apply.</p>

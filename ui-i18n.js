@@ -22,6 +22,8 @@
     "Funding sequence": "Secuencia de financiamiento",
     "See saved funding in the order your project may need it, from early planning through long-term operations.": "Vea el financiamiento guardado en el orden que su proyecto puede necesitarlo, desde la planificaciÃ³n hasta la operaciÃ³n.",
     "Save funding options to build a phase-by-phase grant strategy.": "Guarde opciones de financiamiento para crear una estrategia por fases.",
+    "Change state or territory": "Cambiar estado o territorio",
+    "Choose another state at any time. Changing states clears saved matches and local project notes for this browser workspace.": "Puede elegir otro estado en cualquier momento. Cambiar de estado borra las opciones guardadas y las notas locales de este espacio de trabajo.",
     "Reset roadmap": "Reiniciar ruta",
     "Your plan is saved only in this browser. Reset it before sharing this device.": "Su plan se guarda solo en este navegador. Reinícielo antes de compartir este dispositivo.",
     "Use Add to plan on any result to add it here.": "Use Agregar al plan en cualquier resultado para añadirlo aquí.",

@@ -182,6 +182,8 @@ async function main() {
     await page.evaluate(() => window.RERCExplorer.chooseMode("Funding"));
     await page.waitForTimeout(100);
     const appalachiaCard = page.locator('article[data-item-id="RERC-FND-0271"]');
+    checks.vdotTa = await page.evaluate(() => window.RERCExplorer.catalog.find((item) => item.item_id === "RERC-FND-0585")?.source_url || "");
+    check("vdot_transportation_alternatives_url", checks.vdotTa === "https://www.vdot.virginia.gov/doing-business/for-localities/local-assistance/transportation-alternatives/");
     checks.card = await appalachiaCard.evaluate((card) => {
       const who = card.querySelector(".eligibility");
       const details = card.querySelector("details");
@@ -351,8 +353,20 @@ async function main() {
     await page.evaluate(() => window.RERCExplorer.chooseMode("Funding"));
     await page.locator('[data-action="planner-save"]').first().click(); await page.waitForTimeout(300);
     await selectStateFromAnyPhase(page, "New York");
-    checks.stateSwitchClearsSaved = Number(await page.evaluate(() => document.querySelector("#savedCountBadge, #savedTrayCount, #mobileSavedCount")?.textContent || 0)) === 0;
-    check("state_switch_clears_saved", checks.stateSwitchClearsSaved);
+    checks.stateSwitchClearsSaved = await page.evaluate(() => ({
+      saved: Number(document.querySelector("#savedCountBadge, #savedTrayCount, #mobileSavedCount")?.textContent || 0),
+      state: document.getElementById("stateSelect")?.value,
+      status: document.getElementById("profileStatus")?.textContent || ""
+    }));
+    check("state_switch_clears_saved", checks.stateSwitchClearsSaved.saved === 0
+      && checks.stateSwitchClearsSaved.state === "New York" && /cleared/i.test(checks.stateSwitchClearsSaved.status));
+    await page.locator("#resetStateSelection").click(); await page.waitForTimeout(250);
+    checks.stateReset = await page.evaluate(() => ({
+      state: document.getElementById("stateSelect")?.value,
+      locked: [...document.querySelectorAll('#workflowSteps [data-wizard-step="2"], #workflowSteps [data-wizard-step="3"], #workflowSteps [data-wizard-step="4"]')].every((node) => node.disabled),
+      status: document.getElementById("profileStatus")?.textContent || ""
+    }));
+    check("state_reset_control", checks.stateReset.state === "" && checks.stateReset.locked && /new state or territory/i.test(checks.stateReset.status));
     await selectStateFromAnyPhase(page, "Virginia");
     await page.evaluate(() => window.RERCExplorer.chooseMode("Funding"));
     await page.locator('[data-action="planner-save"]').first().click();
@@ -424,6 +438,11 @@ async function main() {
         stateSelected: await mobilePage.locator("#stateSelect").inputValue() === "New Mexico",
         results: await mobilePage.locator(".result-card").count() > 0
       };
+      await mobilePage.locator('[data-mobile-action="filters"]').click(); await mobilePage.waitForTimeout(150);
+      await mobilePage.locator("#stateSelect").selectOption({ label: "Colorado" }); await mobilePage.waitForTimeout(200);
+      checks.mobile[width].stateSwitch = await mobilePage.locator("#stateSelect").inputValue() === "Colorado";
+      await mobilePage.locator("#resetStateSelection").click(); await mobilePage.waitForTimeout(200);
+      checks.mobile[width].stateReset = await mobilePage.locator("#stateSelect").inputValue() === "";
       check(`mobile_${width}`, Object.values(checks.mobile[width]).every(Boolean));
       await mobilePage.screenshot({ path: path.join(outDir, `mobile-${width}.png`), fullPage: true });
       await mobile.close();

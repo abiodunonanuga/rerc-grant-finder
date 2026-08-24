@@ -87,6 +87,9 @@ p { margin: 0; }
 .panel-heading p { margin-top: 3px; color: var(--muted); }
 .panel-step { display: grid; width: 32px; height: 32px; flex: 0 0 auto; place-items: center; color: var(--white); background: var(--rerc-green); border-radius: 50%; font-weight: 800; }
 .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.state-change-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 12px; }
+.state-change-controls p { flex: 1 1 260px; margin: 0; color: var(--muted); font-size: 0.84rem; line-height: 1.4; }
+.state-change-controls .secondary-button { flex: 0 0 auto; }
 .field-wide { grid-column: 1 / -1; }
 .field { display: grid; gap: 6px; min-width: 0; }
 .field > span, fieldset legend { color: var(--forest); font-weight: 800; }
@@ -402,6 +405,8 @@ fieldset legend { margin-bottom: 9px; }
   .explorer-main { padding: 16px 14px 40px; }
   .wizard-heading, .wizard-panel { padding-left: 16px; padding-right: 16px; }
   .field-grid, .question-grid, .profile-summary-content { grid-template-columns: 1fr; }
+  .state-change-controls { align-items: stretch; flex-direction: column; }
+  .state-change-controls .secondary-button { width: 100%; justify-content: center; }
   .supplemental-filters { grid-template-columns: 1fr; }
   .field-wide { grid-column: auto; }
   .question-grid { gap: 20px; }

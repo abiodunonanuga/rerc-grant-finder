@@ -79,6 +79,8 @@
       deleted: "This roadmap was reset on this device.",
       clearHistoryConfirm: "Reset this roadmap? This removes saved matches, comparison choices, phase assignments, and local notes on this device.",
       stateChanged: "Saved matches were cleared because you selected a different state or territory.",
+      stateReset: "Choose a new state or territory to start a fresh plan.",
+      clearStateConfirm: "Change state or territory? This clears saved matches, comparisons, phase assignments, and local notes for this browser workspace.",
       phaseChanged: "Moved to {phase}.",
       addedToPlan: "Added to your plan.",
       removedFromPlan: "Removed from your plan.",
@@ -138,6 +140,8 @@
       startupError: "The planner could not start in this browser.",
     },
     es: {
+      stateReset: "Elija un nuevo estado o territorio para comenzar un plan nuevo.",
+      clearStateConfirm: "Â¿Cambiar el estado o territorio? Esto borra las opciones guardadas, comparaciones, fases y notas locales de este espacio de trabajo.",
       noFundingSequence: "Guarde opciones de financiamiento para crear una estrategia por fases.",
       fundingSequence: "Secuencia de financiamiento",
       fundingSequenceSummary: "{count} opciones guardadas, desde la planificaciÃ³n hasta la operaciÃ³n.",
@@ -2347,27 +2351,60 @@
         schedulePersist();
       });
     }
+    function emptyStateWorkspace() {
+      state.workspace.savedIds = [];
+      state.workspace.compareIds = [];
+      state.workspace.roadmapAssignments = {};
+      state.workspace.projectTitle = "";
+      state.workspace.projectNotes = "";
+      state.savedOnly = false;
+    }
+
+    function profileForState(control) {
+      const option = control && control.options ? control.options[control.selectedIndex] : null;
+      const value = textValue(control && control.value, 120);
+      const label = textValue(option && option.text, 120) || value;
+      return sanitizeProfile(value ? { state: label, stateCode: value, community: label, name: label, placeType: "state_or_territory" } : {});
+    }
+
     const communityState = byId("stateSelect");
-    [communityState].forEach(function (control) {
-      if (!control) return;
-      control.addEventListener("change", function () {
+    if (communityState) {
+      communityState.addEventListener("change", function () {
         const previousState = textValue(state.workspace.profile.stateCode, 120);
-        const nextState = textValue(control.value, 120);
+        const nextState = textValue(communityState.value, 120);
         if (previousState && nextState && previousState !== nextState) {
-          state.workspace.savedIds = [];
-          state.workspace.compareIds = [];
-          state.workspace.roadmapAssignments = {};
-          state.workspace.projectTitle = "";
-          state.workspace.projectNotes = "";
-          state.savedOnly = false;
-          hydrateInputs();
+          emptyStateWorkspace();
+          state.workspace.profile = profileForState(communityState);
+          const title = byId("projectTitle");
+          const notes = byId("projectNotes");
+          if (title) title.value = "";
+          if (notes) notes.value = "";
           persistWorkspace().then(refreshWorkspaceUI).catch(reportError);
           setStatus("profileStatus", t("stateChanged"), "info");
         }
-        control.setCustomValidity("");
-        control.removeAttribute("aria-invalid");
+        communityState.setCustomValidity("");
+        communityState.removeAttribute("aria-invalid");
         syncCommunityGate();
       });
+    }
+
+    bind("resetStateSelection", "click", function () {
+      if (state.workspace.savedIds.length && !window.confirm(t("clearStateConfirm"))) return;
+      emptyStateWorkspace();
+      state.workspace.profile = sanitizeProfile({});
+      const title = byId("projectTitle");
+      const notes = byId("projectNotes");
+      if (title) title.value = "";
+      if (notes) notes.value = "";
+      if (typeof explorer().setStateSelection === "function") explorer().setStateSelection("");
+      persistWorkspace().then(function () {
+        if (typeof state.showWizardStep === "function") state.showWizardStep(1, { focus: false });
+        else revealCommunityForm(false);
+        refreshWorkspaceUI();
+        syncCommunityGate();
+        setStatus("profileStatus", t("stateReset"), "info");
+        if (communityState) communityState.focus({ preventScroll: true });
+      }).catch(reportError);
     });
 
     const filters = byId("communityFilters");
