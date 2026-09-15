@@ -66,6 +66,7 @@ Name: "{autoprograms}\RERC-e website"; Filename: "{#AppUrl}"
 
 [Registry]
 Root: HKA; Subkey: "Software\Classes\.rercie"; ValueType: string; ValueName: ""; ValueData: "RERC-e.Plan"; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\.rerc-e"; ValueType: string; ValueName: ""; ValueData: "RERC-e.Plan"; Flags: uninsdeletevalue
 Root: HKA; Subkey: "Software\Classes\RERC-e.Plan"; ValueType: string; ValueName: ""; ValueData: "RERC-e Community Explorer Plan"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\RERC-e.Plan\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#AppExe},0"
 Root: HKA; Subkey: "Software\Classes\RERC-e.Plan\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#AppExe}"" ""%1"""

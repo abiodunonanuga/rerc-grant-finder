@@ -416,13 +416,13 @@ async function main() {
     await page.locator("#projectTitle").fill("QA TEST Community trail connection");
     await page.locator("#projectNotes").fill("Synthetic browser QA notes.");
     await page.locator("#includeHandoffNotes").check();
-    downloads.rercie = await download(page, "#exportRercie", "plan.rercie");
+    downloads.rercie = await download(page, "#exportRercie", "plan.rerc-e");
     checks.rercie = JSON.parse(fs.readFileSync(downloads.rercie.file, "utf8"));
     checks.sequenceCsv = fs.readFileSync(downloads.csv.file, "utf8");
     check("funding_sequence_csv", checks.sequenceCsv.includes("Funding sequence order")
       && checks.sequenceCsv.includes("Phase purpose") && checks.sequenceCsv.includes("Prepares for later saved funding"));
     check("download_events", Object.values(downloads).every((item) => item.bytes > 0));
-    check("rercie_schema", checks.rercie.schema === "rercie-handoff" && checks.rercie.version === 1
+    check("rercie_schema", checks.rercie.schema === "rerc-e-handoff" && checks.rercie.version === 1
       && !hasSensitiveKey(checks.rercie) && !/sk-[A-Za-z0-9]{12,}/.test(JSON.stringify(checks.rercie)));
     await page.screenshot({ path: path.join(outDir, "desktop.png"), fullPage: true });
     await context.close();

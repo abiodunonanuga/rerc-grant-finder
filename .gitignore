@@ -2,6 +2,7 @@ __pycache__/
 *.py[cod]
 rercie/build/
 rercie/build-cache/
+rercie/packaging/obj/
 rercie/dist/
 rercie/models/
 rercie/runtime/

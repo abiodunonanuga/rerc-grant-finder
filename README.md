@@ -46,15 +46,16 @@ RERC-e Local Grant-Writing Guide is an optional Windows app. It helps people rev
 - Start Menu shortcut and optional desktop shortcut
 - No account or API key required for local writing
 - First use downloads a verified Google Gemma 3 1B model, about 0.81 GB
+- Newer source opens the local guide in an embedded Windows app window and shows one guided step at a time
 - Real Word `.docx` and Markdown export
 
 [Download RERC-e for Windows](https://github.com/henkelpress/rerc-grant-finder/releases/latest/download/RERCie-Setup.exe)
 
-The current public installer is RERC-e 0.4.0. It passed installer QA and uses Google Gemma 3 1B. The installer is not code-signed, so Windows may show a safety notice. RERC-e 0.5.1 has passed source, local-generation, browser, animation, and launcher compilation QA but is not the public installer yet. Its unsigned package was blocked by Windows security and is held for authorized publisher signing and clean-machine testing. RERC-e is a community-built tool. It is not an EPA grant program, does not decide eligibility, and does not submit applications.
+The current public installer is RERC-e 0.4.0. It passed installer QA and uses Google Gemma 3 1B. The installer is not code-signed, so Windows may show a safety notice and an unknown publisher. RERC-e 0.5.1 source now includes a guided interface and embedded WebView2 app window; these source changes are not in the current public installer. The next package is held for an authorized, trusted publisher signature, package QA, and clean-machine Windows security testing. RERC-e is a community-built tool. It is not an EPA grant program, does not decide eligibility, and does not submit applications.
 
 The reviewed source and Timberwing Systems license are in `rercie/`. Model weights are not stored in this repository or installer.
 
-In the Community Explorer, save the matches you want to review, enter a named community, and choose **Download for RERC-e**. The `.rercie` file contains the selected public records and roadmap. Project notes are included only when you check **Include project notes**. Open the file with **Open Community Explorer plan** in RERC-e 0.5.1 source or a future reviewed installer. The current public 0.4.0 installer does not yet include plan import.
+In the Community Explorer, save the matches you want to review, enter a named community, and choose **Download for RERC-e**. The new `.rerc-e` plan file contains the selected public records and roadmap. Project notes are included only when you check **Include project notes**. Open the file with **Open Community Explorer plan** in RERC-e source or a future reviewed installer. Older plan files remain readable. The current public 0.4.0 installer does not yet include plan import.
 
 ## Release QA
 

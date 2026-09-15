@@ -4,7 +4,8 @@ param(
     [string]$InnoCompiler = "",
     [string]$CodeSigningThumbprint = "",
     [string]$TimestampUrl = "http://timestamp.digicert.com",
-    [switch]$RequireCodeSignature
+    [switch]$RequireCodeSignature,
+    [switch]$AllowUnsignedQaBuild
 )
 
 $ErrorActionPreference = "Stop"
@@ -21,6 +22,9 @@ $RuntimeSha256 = "6847d537b3cd5099051989d08c7eca4296e7a0f1755dbf0540c82e37768320
 $LicenseUrl = "https://raw.githubusercontent.com/ggml-org/llama.cpp/b9987/LICENSE"
 $BuildRoot = Join-Path $Here "build\installer-$Version"
 $CacheDir = Join-Path $Here "build-cache"
+$WebView2Version = "1.0.4191.47"
+$WebView2PackageSha256 = "f492bbf547d0da329553b6727435b677579b1e9f91cc9e4a1ad029366d5f23d0"
+$WebView2PackageDir = Join-Path $CacheDir "nuget\microsoft.web.webview2\$WebView2Version"
 $ArchivePath = Join-Path $CacheDir $RuntimeName
 $Extracted = Join-Path $BuildRoot "llama-extracted"
 $PyInstallerRoot = Join-Path $BuildRoot "pyinstaller"
@@ -30,6 +34,10 @@ $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
 $InstallerPath = Join-Path $OutputDirectory "RERC-e-Setup.exe"
 $Csc = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
 if (-not $InnoCompiler) { $InnoCompiler = Join-Path $env:LOCALAPPDATA "Programs\Inno Setup 6\ISCC.exe" }
+if ($RequireCodeSignature -and $AllowUnsignedQaBuild) { throw "Choose a signed release build or an unsigned QA-only build, not both." }
+if (-not $CodeSigningThumbprint -and -not $AllowUnsignedQaBuild) {
+    throw "Public RERC-e installers require an authorized, trusted publisher signature. Supply -CodeSigningThumbprint, or use -AllowUnsignedQaBuild only for local QA."
+}
 
 function Get-Sha256([string]$Path) {
     return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -55,6 +63,12 @@ function Sign-TimberwingBinary([string]$Path) {
     }
     $certificate = Get-ChildItem -LiteralPath "Cert:\CurrentUser\My\$CodeSigningThumbprint" -ErrorAction SilentlyContinue
     if (-not $certificate -or -not $certificate.HasPrivateKey) { throw "The requested code-signing certificate is unavailable or has no private key." }
+    if ($certificate.Subject -notmatch "Timberwing Systems|EPR, P[.]C[.]") { throw "The code-signing certificate identity does not name the authorized RERC-e publisher." }
+    if ($certificate.NotBefore -gt (Get-Date) -or $certificate.NotAfter -lt (Get-Date)) { throw "The code-signing certificate is outside its valid date range." }
+    $eku = $certificate.Extensions | Where-Object { $_.Oid.Value -eq "2.5.29.37" } | Select-Object -First 1
+    if (-not $eku -or -not ($eku.EnhancedKeyUsages | Where-Object { $_.Value -eq "1.3.6.1.5.5.7.3.3" })) {
+        throw "The certificate is not authorized for code signing."
+    }
     $signTool = Get-SignToolPath
     if (-not $signTool) { throw "SignTool was not found." }
     & $signTool sign /sha1 $CodeSigningThumbprint /fd SHA256 /tr $TimestampUrl /td SHA256 $Path
@@ -66,10 +80,21 @@ function Sign-TimberwingBinary([string]$Path) {
     return [string]$status.Status
 }
 
+if ($CodeSigningThumbprint) {
+    $publisherCertificate = Get-ChildItem -LiteralPath "Cert:\CurrentUser\My\$CodeSigningThumbprint" -ErrorAction SilentlyContinue
+    if (-not $publisherCertificate -or -not $publisherCertificate.HasPrivateKey) {
+        throw "The authorized RERC-e publisher certificate is unavailable or has no private key."
+    }
+    if (-not (Get-SignToolPath)) { throw "SignTool is required for a signed RERC-e release build." }
+}
+
 $sourceQaPath = Join-Path $Here "packaging\QA_EVIDENCE.json"
 $sourceQa = Get-Content -LiteralPath $sourceQaPath -Raw | ConvertFrom-Json
 if ($sourceQa.status -ne "SOURCE_PASS") { throw "QA_EVIDENCE.json status is $($sourceQa.status). Complete and review RERC-e $Version source QA before building." }
 if ($sourceQa.app_version -ne $Version) { throw "QA_EVIDENCE.json is for version $($sourceQa.app_version), not release $Version. Run and review current source QA before building." }
+if ($sourceQa.checks.local_generation.source_normalized_sha256 -ne (Get-Sha256 (Join-Path $Here "rercie_core.py"))) {
+    throw "QA_EVIDENCE.json local-generation evidence does not bind to the current RERC-e source."
+}
 if ($sourceQa.PSObject.Properties["historical"] -and $sourceQa.historical) { throw "Historical QA evidence cannot authorize a current release build." }
 if ($sourceQa.evidence_stage -ne "source") { throw "QA_EVIDENCE.json must be current source-stage evidence." }
 $requiredQaChecks = @("source_smoke", "display_scaling", "live_catalog", "community_lookup", "local_generation", "docx_export", "api_privacy_regression", "service_identity_checks", "licensing_and_runtime")
@@ -116,6 +141,21 @@ if (Test-Path -LiteralPath $BuildRoot) { Remove-Item -LiteralPath $BuildRoot -Re
 [IO.Directory]::CreateDirectory($OutputDirectory) | Out-Null
 [IO.Directory]::CreateDirectory($PackageRoot) | Out-Null
 
+$dotnetCommand = Get-Command dotnet -ErrorAction SilentlyContinue
+if (-not $dotnetCommand) { throw "The .NET SDK is required to restore the pinned Microsoft WebView2 package." }
+$oldDotnetHome = $env:DOTNET_CLI_HOME
+try {
+    $env:DOTNET_CLI_HOME = Join-Path $CacheDir "dotnet-home"
+    & $dotnetCommand.Source restore (Join-Path $Here "packaging\WebView2Sdk.csproj") --packages (Join-Path $CacheDir "nuget") --configfile (Join-Path $Here "packaging\NuGet.Config") --verbosity quiet
+    if ($LASTEXITCODE -ne 0) { throw "The pinned Microsoft WebView2 SDK restore failed." }
+} finally {
+    $env:DOTNET_CLI_HOME = $oldDotnetHome
+}
+$webView2Package = Join-Path $WebView2PackageDir "microsoft.web.webview2.$WebView2Version.nupkg"
+if (-not (Test-Path -LiteralPath $webView2Package -PathType Leaf) -or (Get-Sha256 $webView2Package) -ne $WebView2PackageSha256) {
+    throw "The Microsoft WebView2 SDK package failed its pinned SHA-256 check."
+}
+
 python -m PyInstaller --noconfirm --clean --distpath (Join-Path $PyInstallerRoot "dist") --workpath (Join-Path $PyInstallerRoot "work") .\RERCieService.spec
 if ($LASTEXITCODE -ne 0) { throw "PyInstaller failed." }
 
@@ -154,6 +194,14 @@ if (-not (Test-Path -LiteralPath (Join-Path $ServiceSource "RERCieService.exe") 
 Copy-Item -LiteralPath $ServiceSource -Destination $ServiceDestination -Recurse
 
 if (-not (Test-Path -LiteralPath $Csc -PathType Leaf)) { throw "The Windows C# compiler was not found at $Csc." }
+$webView2Lib = Join-Path $WebView2PackageDir "lib\net462"
+$webView2Core = Join-Path $webView2Lib "Microsoft.Web.WebView2.Core.dll"
+$webView2WinForms = Join-Path $webView2Lib "Microsoft.Web.WebView2.WinForms.dll"
+$webView2Loader = Join-Path $WebView2PackageDir "runtimes\win-x64\native\WebView2Loader.dll"
+foreach ($file in @($webView2Core, $webView2WinForms, $webView2Loader)) {
+    if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { throw "The pinned Microsoft WebView2 SDK is missing $file." }
+    Copy-Item -LiteralPath $file -Destination $PackageRoot
+}
 $cscArgs = @(
     "/nologo", "/target:winexe", "/optimize+", "/platform:x64",
     "/out:$(Join-Path $PackageRoot 'RERC-e.exe')",
@@ -161,6 +209,7 @@ $cscArgs = @(
     "/reference:System.dll", "/reference:System.Core.dll", "/reference:System.Drawing.dll",
     "/reference:System.Windows.Forms.dll", "/reference:System.Net.Http.dll",
     "/reference:System.Web.Extensions.dll", "/reference:System.Security.dll",
+    "/reference:$webView2Core", "/reference:$webView2WinForms",
     (Join-Path $Here "packaging\RERCieLauncher.cs")
 )
 & $Csc @cscArgs
@@ -174,6 +223,8 @@ if (-not (Test-Path -LiteralPath $PythonLicense -PathType Leaf)) { throw "The Py
 Copy-Item -LiteralPath $PythonLicense -Destination (Join-Path $PackageRoot "LICENSE-PYTHON.txt")
 [IO.Directory]::CreateDirectory((Join-Path $PackageRoot "licenses")) | Out-Null
 Copy-Item -LiteralPath (Join-Path $Here "licenses\GEMMA_TERMS.txt") -Destination (Join-Path $PackageRoot "licenses\GEMMA_TERMS.txt")
+Copy-Item -LiteralPath (Join-Path $WebView2PackageDir "LICENSE.txt") -Destination (Join-Path $PackageRoot "licenses\WEBVIEW2-LICENSE.txt")
+Copy-Item -LiteralPath (Join-Path $WebView2PackageDir "NOTICE.txt") -Destination (Join-Path $PackageRoot "licenses\WEBVIEW2-NOTICE.txt")
 curl.exe -L --fail --retry 3 --output (Join-Path $PackageRoot "runtime\llama\LICENSE-llama.cpp") $LicenseUrl
 if ($LASTEXITCODE -ne 0) { throw "The llama.cpp license download failed." }
 
@@ -191,6 +242,7 @@ Copy-Item -LiteralPath (Join-Path $AssetRoot "ASSET_PROVENANCE.md") -Destination
 
 $integrityFiles = @(
     Get-Item -LiteralPath (Join-Path $PackageRoot "RERC-e.exe")
+    Get-ChildItem -LiteralPath $PackageRoot -Filter "*.dll" -File
     Get-ChildItem -LiteralPath (Join-Path $PackageRoot "service") -Recurse -File | Where-Object { $_.Extension -in @(".exe", ".dll", ".pyd") }
     Get-ChildItem -LiteralPath (Join-Path $PackageRoot "runtime\llama") -File | Where-Object { $_.Extension -in @(".exe", ".dll") }
 )
@@ -332,7 +384,7 @@ $signature = Get-AuthenticodeSignature -LiteralPath $InstallerPath
 $signatureDisclosure = if ($signature.Status -eq "Valid") { "The installer has a valid authorized publisher signature." } else { "The installer is not code-signed, so Windows may show a safety notice." }
 $releaseQaPath = Join-Path $OutputDirectory "RERC-e-Release-QA.json"
 $releaseQa = [ordered]@{
-    status = if ($signature.Status -eq "Valid") { "PASS" } else { "PASS_WITH_UNSIGNED_WARNING" }
+    status = if ($signature.Status -eq "Valid") { "PASS" } else { "QA_ONLY_UNSIGNED" }
     evidence_stage = "release_asset"
     app = "RERC-e"
     version = $Version
@@ -346,6 +398,7 @@ $releaseQa = [ordered]@{
     integrity_files = @($entries).Count
     signature_status = [string]$signature.Status
     publisher_signature_requested = [bool]$CodeSigningThumbprint
+    public_release_allowed = ($signature.Status -eq "Valid")
     launcher_signature_status = $launcherSignatureStatus
     service_signature_status = $serviceSignatureStatus
     powershell_required = $false

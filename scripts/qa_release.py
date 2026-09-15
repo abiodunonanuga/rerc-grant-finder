@@ -391,7 +391,9 @@ def main() -> int:
     )
     assert installer_manifest["package"]["version"] == EXPECTED_RERCIE_VERSION
     source_qa = json.loads((ROOT / "rercie" / "packaging" / "QA_EVIDENCE.json").read_text(encoding="utf-8"))
-    assert source_qa["status"] == "SOURCE_PASS" and source_qa["evidence_stage"] == "source"
+    assert source_qa["status"] in {"SOURCE_PASS", "SOURCE_PENDING_NATIVE_QA"} and source_qa["evidence_stage"] == "source"
+    assert source_qa["checks"]["display_scaling"]["status"] == ("PASS" if source_qa["status"] == "SOURCE_PASS" else "PENDING_RETEST")
+    assert source_qa["checks"]["source_smoke"]["handoff_schema"] == app.app.HANDOFF_SCHEMA
     assert source_qa["app_version"] == EXPECTED_RERCIE_VERSION
     assert source_qa["app_version"] == expected_app_version
     assert source_qa.get("historical") is not True
@@ -416,6 +418,7 @@ def main() -> int:
     assert local_report['source_normalized_sha256'] == git_blob_sha256(
         head_commit, 'rercie/rercie_core.py'
     )
+    assert source_qa["checks"]["local_generation"]["source_normalized_sha256"] == local_report["source_normalized_sha256"]
     assert local_report["raw_model_prose_exposed"] is False
     assert local_report["evidence_scope"].startswith(("Package-bound", "Source-bound"))
     assert local_report["later_standalone_rerun"]["status"] == "PASS"

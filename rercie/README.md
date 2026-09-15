@@ -8,7 +8,7 @@ The Windows installer includes the RERC-e app and the pinned `llama.cpp` runtime
 
 ## Install RERC-e on Windows
 
-1. Check the latest GitHub release for a signed `RERC-e-Setup.exe`.
+1. Check the latest GitHub release and its publisher-signature status. The current public 0.4.0 installer is unsigned.
 2. Open the installer and follow the setup screens.
 3. Keep the Start Menu shortcut. You can also choose a desktop shortcut.
 4. Select **Meet RERC-e** on the last screen.
@@ -18,11 +18,11 @@ The first model download is about 0.81 GB. RERC-e checks the model before using 
 
 Upgrades keep a verified local Gemma model, so people do not have to download it again.
 
-No command line is needed. Open RERC-e from the Start Menu. The launcher can open or stop the local tool.
+No command line is needed. Open RERC-e from the Start Menu. The newer launcher opens the guide inside its own Windows window, with no browser address bar. **Setup and status** returns to the download/start controls. Closing RERC-e stops the local services it started. Official funding and publisher pages still open in the default browser so their real web addresses remain visible for verification.
 
-RERC-e 0.5.1 can also open a Community Explorer plan. Use **Open Community Explorer plan** inside RERC-e, or open an installed `.rercie` file from Windows. RERC-e checks the file before filling any fields and shows what it imported.
+RERC-e source can also open a Community Explorer plan. Use **Open Community Explorer plan** inside RERC-e, or open an installed `.rerc-e` file from Windows. RERC-e checks the file before filling any fields and shows what it imported. Older plan files remain readable.
 
-RERC-e 0.5.1 passed source smoke, standalone source-bound local Gemma inference, browser, animation, reduced-motion, and native launcher compilation QA. Its unsigned package was blocked by Windows security before native package smoke, so installer distribution remains on hold until EPR, P.C. can apply an authorized Timberwing Systems publisher signature and the signed installer passes clean Windows security testing.
+RERC-e 0.5.1 source now includes a three-step interface, a larger first-run button, embedded Microsoft WebView2 display, and RERC-e-branded new plan files. The public 0.4.0 installer does not include these changes. Native launcher compilation and browser flows pass in source QA; integrated native-window behavior still needs a signed-package and clean-machine test. No authorized RERC-e code-signing certificate was available on this computer, so verified-publisher distribution remains on hold.
 
 ## What RERC-e Does
 
@@ -40,17 +40,17 @@ Gemma writing and files in `local_knowledge` stay on this computer. RERC-e first
 
 Do not add private files to a public copy of this project. Local reference files belong in `local_knowledge`.
 
-Imported plans stay on this computer. The `.rercie` handoff is a local file export. RERC-e processes it through its authenticated loopback service only after you open or import it. RERC-e does not put plan notes in a web address or send them to the public explorer. A launcher-opened plan is copied into RERC-e's local runtime folder, checked once, and removed after the local service reads it.
+Imported plans stay on this computer. The `.rerc-e` handoff is a local file export. RERC-e processes it through its authenticated loopback service only after you open or import it. RERC-e does not put plan notes in a web address or send them to the public explorer. A launcher-opened plan is copied into RERC-e's local runtime folder, checked once, and removed after the local service reads it.
 
 ## Community Explorer Plan Format
 
-A plan is UTF-8 JSON saved with the `.rercie` extension. The in-app picker also accepts `.json`. The maximum file size is 256 KB.
+A plan is UTF-8 JSON saved with the `.rerc-e` extension. The in-app picker also accepts `.json` and older plan files. The maximum file size is 256 KB.
 
 The top-level object must contain exactly these fields:
 
 ```json
 {
-  "schema": "rercie-handoff",
+  "schema": "rerc-e-handoff",
   "version": 1,
   "community": "St. Paul",
   "state": "Virginia",
@@ -91,12 +91,13 @@ The build does not regenerate source QA evidence. It generates `file_integrity.j
 python -m pip install -r .\requirements-build.txt
 python ..\scripts\qa_local_gemma.py
 python ..\scripts\qa_release.py
-.\build_installer.ps1 -AcceptRuntimeDownload
+$publisherThumbprint = "<authorized-publisher-certificate-thumbprint>"
+.\build_installer.ps1 -AcceptRuntimeDownload -CodeSigningThumbprint $publisherThumbprint -RequireCodeSignature
 ```
 
 The local Gemma service must be running for `qa_local_gemma.py`. A pending or failed QA result is a release hold, not a reason to edit the evidence to `PASS`.
 
-The public installer is not yet digitally signed. A production publisher should add a trusted Windows code-signing certificate before broad institutional deployment.
+The build now requires a trusted, identity-matched publisher certificate by default and signs the launcher, service, and installer with a SHA-256 timestamp. The certificate and SignTool must be available on the authorized signing computer. For isolated QA only, use `-AllowUnsignedQaBuild`; that path labels its result `QA_ONLY_UNSIGNED` and does not authorize a public release. A valid signature identifies the publisher but does not guarantee that a new download has enough Windows SmartScreen reputation to suppress its initial warning.
 
 ## Help
 

@@ -201,7 +201,8 @@ def main() -> int:
     historical = json.loads((PACKAGING / "QA_EVIDENCE_0.3.5_HISTORICAL.json").read_text(encoding="utf-8"))
     display = historical["checks"]["display_scaling"]
     assert display["status"] == "PASS" and display["tested_scales"] == ["100%", "150%", "200%"]
-    assert layout_sha256() == LAYOUT_SHA256
+    current_layout_sha256 = layout_sha256()
+    layout_review_current = current_layout_sha256 == LAYOUT_SHA256
 
     installer_manifest = json.loads((PACKAGING / "installer_manifest.json").read_text(encoding="utf-8"))
     assert installer_manifest["package"]["version"] == "0.5.1"
@@ -212,13 +213,13 @@ def main() -> int:
 
     evidence = {
         "app_version": "0.5.1",
-        "status": "SOURCE_PASS",
+        "status": "SOURCE_PASS" if layout_review_current else "SOURCE_PENDING_NATIVE_QA",
         "tested_date": local_gemma["tested_date"],
         "evidence_stage": "source",
         "checks": {
             "source_smoke": {"status": "PASS", **smoke_contract, "docx_minimum_bytes": 3000},
             "native_launcher": {"status": "PENDING_BUILD", "powershell_required": False, "plan_handoff_supported": True},
-            "display_scaling": {"status": "PASS", "tested_scales": display["tested_scales"], "layout_geometry_sha256": LAYOUT_SHA256, "layout_reviewed_for_version": "0.5.1", "dpi_autoscaling_and_scroll_enabled": True},
+            "display_scaling": {"status": "PASS" if layout_review_current else "PENDING_RETEST", "tested_scales": display["tested_scales"] if layout_review_current else [], "historical_tested_scales": display["tested_scales"], "layout_geometry_sha256": current_layout_sha256, "historical_reviewed_geometry_sha256": LAYOUT_SHA256, "dpi_autoscaling_and_scroll_enabled": True},
             "installer_wizard": {"status": "PENDING_RELEASE_TEST", "per_user_install": True, "uninstall_entry": True},
             "package_integrity": {"status": "PENDING_BUILD", "integrity_checked_binaries": 0},
             "live_catalog": {"status": "PASS", "total_items": counts["public_total"], "funding_items": counts["funding"], "resource_items": counts["resources"], "case_study_items": counts["case_studies"], "territory_filter_checked": True, "case_study_unique_urls_checked": source_health["unique_urls"], "case_study_hard_failed_urls": source_health["counts"]["hard_failure"], "case_study_reachable_urls": source_health["counts"]["reachable"], "case_study_restricted_urls": source_health["counts"]["restricted_but_present"], "case_study_manual_review_urls": source_health["counts"]["manual_review"]},
@@ -234,13 +235,14 @@ def main() -> int:
             "The public installer is not code-signed, so Windows may show a safety notice.",
             "The isolated installer test runs on the build computer rather than a clean Windows virtual machine.",
             "Users must review every generated draft and verify current funding rules at the official source.",
+            "The redesigned native launcher and embedded Windows window need current 100%, 150%, and 200% DPI visual review and signed-package testing." if not layout_review_current else "The embedded Windows window needs signed-package testing.",
         ],
         "release_binding": {"source_commit": None, "integrity_manifest_sha256": None, "installer_sha256": None, "status": "PENDING_BUILD"},
         "verification_inputs": {"browser_contract_sha256": hashlib.sha256(json.dumps(browser_contract, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest(), "local_gemma_report_sha256": git_blob_sha256(head_commit, "rercie/packaging/LOCAL_GEMMA_QA.json")},
     }
     output = PACKAGING / "QA_EVIDENCE.json"
     output.write_text(json.dumps(evidence, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(json.dumps({"status": "PASS", "output": str(output), "app_version": "0.5.1", "counts": counts, "profile_count": len(profile_rows), "layout_geometry_sha256": LAYOUT_SHA256, "service_identity": identity}, indent=2))
+    print(json.dumps({"status": evidence["status"], "output": str(output), "app_version": "0.5.1", "counts": counts, "profile_count": len(profile_rows), "layout_geometry_sha256": current_layout_sha256, "service_identity": identity}, indent=2))
     return 0
 
 

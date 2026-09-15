@@ -57,7 +57,8 @@ for _runtime_name, _runtime_url in (
 CENSUS_YEAR = "2024"
 CENSUS_ISLAND_YEAR = "2020"
 MAX_REQUEST_BYTES = 6 * 1024 * 1024
-HANDOFF_SCHEMA = "rercie-handoff"
+HANDOFF_SCHEMA = "rerc-e-handoff"
+LEGACY_HANDOFF_SCHEMA = "rercie-handoff"
 HANDOFF_VERSION = 1
 MAX_HANDOFF_BYTES = 256 * 1024
 MAX_HANDOFF_RECORDS = 100
@@ -198,7 +199,7 @@ def validate_handoff_package(package: Any) -> dict[str, Any]:
         if unexpected:
             details.append("unexpected " + ", ".join(unexpected))
         raise ValueError("The plan fields are not valid" + (": " + "; ".join(details) if details else "."))
-    if handoff.get("schema") != HANDOFF_SCHEMA or type(handoff.get("schema")) is not str:
+    if type(handoff.get("schema")) is not str or handoff.get("schema") not in {HANDOFF_SCHEMA, LEGACY_HANDOFF_SCHEMA}:
         raise ValueError(f"The plan schema must be {HANDOFF_SCHEMA}.")
     if type(handoff.get("version")) is not int or handoff.get("version") != HANDOFF_VERSION:
         raise ValueError(f"The plan version must be {HANDOFF_VERSION}.")
@@ -1248,11 +1249,7 @@ HTML_PAGE = r'''<!doctype html>
     header .welcome { display:grid; grid-template-columns:minmax(0,1fr) 120px; gap:24px; align-items:center; }
     header .mascot-stage { position:relative; width:120px; height:168px; justify-self:end; transform-origin:50% 90%; animation:rercie-bob 4s ease-in-out infinite; }
     header .mascot { display:block; width:100%; height:100%; object-fit:contain; border:4px solid rgba(255,255,255,.82); border-radius:6px; background:#fff; }
-    header .mascot-wing { position:absolute; z-index:2; top:39px; right:-9px; width:42px; height:58px; transform-origin:20% 82%; animation:rercie-wave 2.4s ease-in-out infinite; border:2px solid #4e3927; border-radius:75% 20% 70% 30%; background:#7a5738; box-shadow:inset -8px -6px 0 rgba(48,31,20,.18); }
-    header .mascot-wing::before,header .mascot-wing::after { content:""; position:absolute; right:3px; width:28px; height:11px; border-radius:70% 30% 70% 30%; background:#9a7049; transform:rotate(16deg); }
-    header .mascot-wing::before { top:12px; } header .mascot-wing::after { top:29px; right:1px; }
     @keyframes rercie-bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
-    @keyframes rercie-wave { 0%,100%{transform:rotate(7deg)} 18%{transform:rotate(-24deg)} 34%{transform:rotate(12deg)} 50%{transform:rotate(-18deg)} 68%{transform:rotate(7deg)} }
     header h1 { margin:12px 0 6px; font-size:2.25rem; line-height:1.05; }
     header p { max-width:760px; margin:0; color:#e4f1eb; }
     header a { color:#fff; font-weight:700; }
@@ -1285,6 +1282,7 @@ HTML_PAGE = r'''<!doctype html>
     .lookup-help summary { color:var(--forest); font-weight:800; cursor:pointer; }
     .funding-summary { margin:8px 0; padding:10px 12px; border-left:4px solid var(--leaf); background:var(--mist); color:var(--ink); font-size:.9rem; overflow-wrap:anywhere; }
     .funding-summary strong { display:block; margin-bottom:3px; }
+    .funding-summary span { display:block; }
     .funding-summary a { display:inline-block; margin-top:5px; color:var(--green); font-weight:700; }
     .funding-details { margin-top:10px; padding:10px 12px; border:1px solid var(--line); background:#fafcfb; }
     .funding-details summary { color:var(--forest); font-weight:800; cursor:pointer; }
@@ -1301,32 +1299,93 @@ HTML_PAGE = r'''<!doctype html>
     .working progress { display:block; width:100%; height:14px; margin-top:8px; accent-color:var(--green); }
     .output { min-height:570px; padding:18px; border:1px solid var(--line); white-space:pre-wrap; background:#fff; font-family:Consolas,"Courier New",monospace; font-size:1rem; overflow-wrap:anywhere; }
     @media (max-width:900px) { main { grid-template-columns:1fr; } .output { min-height:420px; } }
-    @media (prefers-reduced-motion:reduce) { header .mascot-stage,header .mascot-wing { animation:none !important; } }
+    @media (prefers-reduced-motion:reduce) { header .mascot-stage { animation:none !important; } }
     @media (max-width:560px) { header .brand,.engine { grid-template-columns:1fr; display:grid; } header .welcome { grid-template-columns:minmax(0,1fr) 88px; gap:12px; } header .mascot-stage { width:88px; height:124px; } main { padding:10px; } .panel { padding:14px; } .actions button { flex:1 1 145px; } }
+    /* RERC site's forest, river and gold palette, with one task in view. */
+    body { background:#edf3ef; font-family:"Segoe UI",Arial,sans-serif; }
+    header { padding:22px max(20px,calc((100vw - 1080px)/2)) 28px; background:linear-gradient(130deg,#173f35,#00573f 70%); border-bottom:4px solid var(--sun); }
+    header .brand { font-size:.88rem; letter-spacing:.02em; }
+    header .brand a { font-size:.88rem; }
+    header .welcome { grid-template-columns:minmax(0,1fr) 240px; }
+    header h1 { margin-top:22px; font-size:clamp(2rem,4vw,3rem); letter-spacing:-.035em; }
+    header p { max-width:620px; font-size:1.08rem; }
+    header .mascot-stage { width:240px; height:135px; }
+    header .mascot { object-fit:cover; border:3px solid rgba(255,255,255,.85); border-radius:12px; }
+    .assurance { width:min(1080px,calc(100% - 32px)); margin:14px auto 0; padding:9px 14px; border:1px solid #d3e2d8; border-radius:10px; background:#fff; font-size:.88rem; }
+    .assurance summary { color:var(--forest); font-weight:800; cursor:pointer; }
+    .assurance .privacy,.assurance .notice { margin-top:10px; padding:8px 10px; border-radius:8px; font-size:.88rem; }
+    .journey { display:flex; gap:10px; width:min(1080px,100%); margin:20px auto 0; padding:0 16px; }
+    .journey button { flex:1; min-height:62px; padding:9px 15px; border:1px solid #cbd9d0; border-radius:12px; color:var(--forest); background:#fff; font-size:.95rem; font-weight:700; text-align:left; box-shadow:0 3px 12px rgba(23,63,53,.05); }
+    .journey button[aria-current="step"] { color:#fff; background:var(--forest); border-color:var(--forest); }
+    .journey .step-number { display:inline-grid; place-items:center; width:28px; height:28px; margin-right:8px; border-radius:50%; color:var(--forest); background:var(--sun); }
+    .global-status { width:min(1048px,calc(100% - 32px)); margin:10px auto 0; padding:8px 12px; border-radius:8px; background:#e1eee5; font-size:.88rem; }
+    .global-status.warning { background:#fdeaea; }
+    main { display:block; width:min(1080px,100%); padding:16px 16px 48px; }
+    .step-panel[hidden] { display:none !important; }
+    .panel { padding:clamp(18px,3vw,34px); border:1px solid #d7e3da; border-radius:18px; box-shadow:0 12px 34px rgba(23,63,53,.07); }
+    h2 { font-size:clamp(1.4rem,2.5vw,1.85rem); letter-spacing:-.025em; }
+    .step-eyebrow { margin:0 0 6px; color:var(--river); font-size:.78rem; font-weight:800; letter-spacing:.11em; text-transform:uppercase; }
+    .step-intro { max-width:720px; margin:0 0 20px; color:var(--muted); }
+    .field-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:18px; }
+    .field-grid .full { grid-column:1/-1; }
+    label { font-size:.94rem; }
+    input,select,textarea { min-height:46px; padding:11px 12px; border-radius:9px; }
+    textarea { min-height:105px; }
+    input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,summary:focus-visible { outline:3px solid var(--sun); outline-offset:2px; }
+    .plan-import { padding:16px 18px; border:1px solid #ead590; border-radius:12px; background:#fffaf0; }
+    .plan-import h2 { font-size:1.05rem; }
+    .plan-import input { max-width:600px; }
+    .actions { margin-top:20px; }
+    button { min-height:48px; padding:8px 18px; border-radius:10px; }
+    .actions .next { margin-left:auto; }
+    .funding-summary,.community-profile,.engine,.working,.funding-details,.lookup-help { border-radius:10px; }
+    .funding-summary { padding:15px; }
+    .output { min-height:360px; margin-top:18px; padding:24px; border-radius:12px; line-height:1.6; font-family:"Segoe UI",Arial,sans-serif; }
+    .draft-exports { margin-top:10px; }
+    .draft-exports button:disabled { cursor:not-allowed; opacity:.45; }
+    @media (max-width:600px) { header { padding-bottom:18px; } header h1 { margin-top:12px; } header p { font-size:.94rem; } .journey { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; } .journey button { min-height:69px; padding:7px 8px; font-size:.78rem; text-align:center; line-height:1.2; } .journey .step-number { display:grid; width:23px; height:23px; margin:0 auto 3px; } .field-grid { grid-template-columns:1fr; } .actions .next { margin-left:0; } .panel { padding:18px; } header .welcome { grid-template-columns:minmax(0,1fr) 116px; } header .mascot-stage { width:116px; height:72px; } }
   </style>
 </head>
 <body>
   <header>
     <div class="brand"><strong>Recreation Economy <em>for</em> Rural Communities</strong><a href="https://henkelpress.github.io/rerc-grant-finder/" target="_blank" rel="noopener">Open the public explorer</a></div>
-    <div class="welcome"><div><h1>Meet RERC-e</h1><p>RERC-e helps you turn a grant match and your project notes into a first draft. Check every fact before you apply.</p></div><div class="mascot-stage"><img class="mascot" src="/assets/rerc-e-eagle.jpg" alt="RERC-e, a bald eagle field guide holding a notebook"><span class="mascot-wing" aria-hidden="true"></span></div></div>
+    <div class="welcome"><div><h1>Meet RERC-e</h1><p>Use a funding match and your project notes to create a first draft. Check every fact before you apply.</p></div><div class="mascot-stage"><img class="mascot" src="/assets/rerc-e-eagle.jpg" alt="RERC-e, a bald eagle field guide holding a notebook"></div></div>
 
   </header>
-  <div class="privacy"><strong>Private by default:</strong> Gemma writing and local reference files stay on this computer. Census and catalog lookups use public websites.</div>
-  <div class="notice"><strong>Keep in mind:</strong> RERC-e is a community-built grant-writing guide. It is not an EPA grant program. It does not decide who can apply or submit an application for you.</div>
+  <details class="assurance"><summary>Privacy and limits</summary>
+    <div class="privacy"><strong>Private by default:</strong> Gemma writing and local reference files stay on this computer. Census and catalog lookups use public websites.</div>
+    <div class="notice"><strong>Keep in mind:</strong> RERC-e is a community-built grant-writing guide. It is not an EPA grant program. It does not decide who can apply or submit an application for you.</div>
+  </details>
+  <nav class="journey" aria-label="RERC-e steps">
+    <button type="button" data-step="project" aria-current="step"><span class="step-number">1</span> Project</button>
+    <button type="button" data-step="funding"><span class="step-number">2</span> Funding and notes</button>
+    <button type="button" data-step="draft"><span class="step-number">3</span> Draft and export</button>
+  </nav>
+  <p id="status" class="status global-status" aria-live="polite">Ready.</p>
   <main>
-    <section class="panel">
+    <section class="panel step-panel" id="projectStep" data-panel="project" aria-labelledby="projectStepTitle">
+      <p class="step-eyebrow">Step 1 of 3</p>
+      <h2 id="projectStepTitle">Tell RERC-e about your project</h2>
+      <p class="step-intro">Open a plan from the Community Explorer or enter the basic facts here. You can change them at any time.</p>
       <div class="plan-import">
-        <h2>Start from a Community Explorer plan</h2>
+        <h2>Have a Community Explorer plan?</h2>
         <label for="planInput">Open Community Explorer plan</label>
-        <input id="planInput" type="file" accept=".rercie,.json,application/json">
-        <p id="planImportStatus" class="status" aria-live="polite">Choose a `.rercie` plan exported by the public explorer.</p>
+        <input id="planInput" type="file" accept=".rerc-e,.rercie,.json,application/json">
+        <p id="planImportStatus" class="status" aria-live="polite">Choose a RERC-e plan file exported by the public explorer.</p>
       </div>
-      <h2>Tell us about the project</h2>
       <p class="section-note">Start with the facts you know. The draft will mark anything that is missing.</p>
-      <label for="community">Community</label><input id="community" required aria-required="true" maxlength="200" placeholder="Example: Taos">
-      <label for="state">State or territory</label><select id="state" required aria-required="true"></select>
-      <label for="projectTitle">Project title</label><input id="projectTitle" required aria-required="true" maxlength="300" placeholder="Example: Downtown trail connection">
+      <div class="field-grid">
+        <div><label for="community">Community</label><input id="community" required aria-required="true" maxlength="200" placeholder="Example: Taos"></div>
+        <div><label for="state">State or territory</label><select id="state" required aria-required="true"></select></div>
+        <div class="full"><label for="projectTitle">Project title</label><input id="projectTitle" required aria-required="true" maxlength="300" placeholder="Example: Downtown trail connection"></div>
+      </div>
       <label for="projectSummary">What do you want to do?</label><textarea id="projectSummary" class="small" maxlength="5000"></textarea>
+      <div class="actions"><button id="nextFunding" class="next" type="button">Continue to funding and notes</button></div>
+    </section>
+    <section class="panel step-panel" id="fundingStep" data-panel="funding" aria-labelledby="fundingStepTitle" hidden>
+      <p class="step-eyebrow">Step 2 of 3</p>
+      <h2 id="fundingStepTitle">Review funding and add context</h2>
+      <p class="step-intro">Choose a match, then add what your community can contribute and what you still need to verify.</p>
       <label for="grantSearch">Search funding list</label><input id="grantSearch" type="search" maxlength="100" placeholder="Program or organization">
       <label for="grantSelect">Funding match</label><select id="grantSelect"><option value="">Load the public list</option></select>
       <p id="grantSearchStatus" class="section-note" aria-live="polite">Search after loading the public funding list.</p>
@@ -1341,14 +1400,20 @@ HTML_PAGE = r'''<!doctype html>
       <div class="actions"><button id="lookupCommunity" class="quiet" type="button">Look up community facts</button></div>
       <details class="lookup-help"><summary>Community lookup help</summary><p class="section-note">RERC-e first checks the public prebuilt <code>community_profiles.js</code> dataset for an exact community + state/territory match. Use a free Census API key only when that match is not found.</p><label for="censusApiKey">Census API key</label><input id="censusApiKey" type="password" autocomplete="off" placeholder="Optional Census API key for fallback lookup"><p class="section-note"><a href="https://api.census.gov/data/key_signup.html" target="_blank" rel="noopener">Get a free Census API key</a></p></details>
       <div id="communityProfile" class="community-profile" hidden aria-live="polite"></div>
+      <div class="actions"><button class="quiet" type="button" data-go="project">Back to project</button><button class="next" type="button" data-go="draft">Continue to draft</button></div>
     </section>
-    <section class="panel">
+    <section class="panel step-panel" id="draftStep" data-panel="draft" aria-labelledby="draftStepTitle" hidden>
+      <p class="step-eyebrow">Step 3 of 3</p>
+      <h2 id="draftStepTitle">Create and review your first draft</h2>
+      <p class="step-intro">RERC-e writes a starting point. Review every statement and check current rules on official funding pages before using it.</p>
       <div class="engine">
         <div><label for="provider">Writing method</label><select id="provider"><option value="local">Local Gemma writer</option><option value="fallback">Structured outline only</option></select></div>
         <span id="runtime" class="runtime">Checking local writer...</span>
       </div>
       <div class="actions">
         <button id="draftButton" class="secondary" type="button">Create first draft</button>
+      </div>
+      <div class="actions draft-exports" aria-label="Draft exports">
         <button id="downloadDocx" class="quiet" type="button">Export Word</button>
         <button id="downloadMd" class="quiet" type="button">Export Markdown</button>
         <button id="copyDraft" class="quiet" type="button">Copy</button>
@@ -1357,9 +1422,9 @@ HTML_PAGE = r'''<!doctype html>
         <div class="working-row"><span id="workingLabel">RERC-e is working...</span><span id="workingTime" aria-hidden="true">0 seconds</span></div>
         <progress aria-label="RERC-e is generating the draft"></progress>
       </div>
-      <p id="status" class="status" aria-live="polite">Ready.</p>
       <p id="saveStatus" class="section-note" aria-live="polite">Work in this tab is saved locally for refresh recovery.</p>
       <div id="output" class="output" role="region" aria-label="Draft output" tabindex="0">Your first draft will appear here.</div>
+      <div class="actions"><button class="quiet" type="button" data-go="funding">Back to funding and notes</button></div>
     </section>
   </main>
   <script>
@@ -1369,22 +1434,38 @@ HTML_PAGE = r'''<!doctype html>
     const MAX_PLAN_BYTES=256*1024;
     let lastDraft=""; let activePublicProfile={};
     const status=document.getElementById("status"); const output=document.getElementById("output");
+    let currentStep="project";
+    function showStep(step,focusHeading=false){
+      if(!["project","funding","draft"].includes(step))return;
+      currentStep=step;
+      document.querySelectorAll(".step-panel").forEach((panel)=>{panel.hidden=panel.dataset.panel!==step;});
+      document.querySelectorAll(".journey button").forEach((button)=>{
+        if(button.dataset.step===step)button.setAttribute("aria-current","step");
+        else button.removeAttribute("aria-current");
+      });
+      if(step==="funding"&&grantCatalog.length&&status.textContent==="Ready.")setStatus(`${grantCatalog.length} funding options available. Choose a match or add checked details.`);
+      if(focusHeading){const heading=document.querySelector(`[data-panel="${step}"] h2`);heading.tabIndex=-1;heading.focus();window.scrollTo(0,0);}
+      scheduleProjectSave();
+    }
+    document.querySelectorAll(".journey button").forEach((button)=>button.addEventListener("click",()=>showStep(button.dataset.step,true)));
+    document.querySelectorAll("[data-go]").forEach((button)=>button.addEventListener("click",()=>showStep(button.dataset.go,true)));
+    document.getElementById("nextFunding").addEventListener("click",()=>showStep("funding",true));
     const TOKEN_STORAGE_KEY="rercie.tabSessionToken.v1";
     const launchToken=new URLSearchParams(location.hash.slice(1)).get("token")||"";
     let sessionToken=launchToken;
     try{ if(launchToken)sessionStorage.setItem(TOKEN_STORAGE_KEY,launchToken); else sessionToken=sessionStorage.getItem(TOKEN_STORAGE_KEY)||""; }catch{}
     if(location.hash)history.replaceState(null,"",location.pathname+location.search);
     async function apiFetch(url,options={}){ if(!sessionToken)throw new Error("Open RERC-e from its Start Menu shortcut to connect this tab."); const headers=new Headers(options.headers||{}); headers.set("X-RERCie-Token",sessionToken); const response=await fetch(url,{...options,headers}); if(response.status===403){sessionToken=""; try{sessionStorage.removeItem(TOKEN_STORAGE_KEY);}catch{} throw new Error("The local session expired. Reopen RERC-e from its Start Menu shortcut. Your work in this tab is still saved.");} return response; }
-    function setStatus(message,warning=false){ status.textContent=message; status.className=warning?"status warning":"status"; }
+    function setStatus(message,warning=false){ status.textContent=message; status.className=warning?"status global-status warning":"status global-status"; }
     const PROJECT_STORAGE_KEY="rercie.tabProject.v1";
     const PROJECT_FIELDS=["community","state","projectTitle","projectSummary","selectedGrant","matchCapacity","sourceNotes","projectNotes","provider","usePublicData"];
     let inputVersion=0, draftInputVersion=-1, saveTimer=0;
     function draftIsStale(){return Boolean(lastDraft)&&inputVersion!==draftInputVersion;}
     function updateSaveStatus(){const note=document.getElementById("saveStatus"); note.textContent=draftIsStale()?"Inputs changed since this draft. Create a new draft before exporting or copying.":"Work in this tab is saved locally for refresh recovery."; note.className=draftIsStale()?"status warning":"section-note";}
-    function saveProjectState(){if(saveTimer){clearTimeout(saveTimer);saveTimer=0;} const fields={}; PROJECT_FIELDS.forEach((id)=>{const control=document.getElementById(id);fields[id]=control.type==="checkbox"?control.checked:control.value;}); try{sessionStorage.setItem(PROJECT_STORAGE_KEY,JSON.stringify({schema:1,fields,lastDraft,publicProfile:activePublicProfile,inputVersion,draftInputVersion}));updateSaveStatus();}catch{const note=document.getElementById("saveStatus");note.textContent="This browser could not save the project in this tab. Export your draft before refreshing.";note.className="status warning";} }
+    function saveProjectState(){if(saveTimer){clearTimeout(saveTimer);saveTimer=0;} const fields={}; PROJECT_FIELDS.forEach((id)=>{const control=document.getElementById(id);fields[id]=control.type==="checkbox"?control.checked:control.value;}); try{sessionStorage.setItem(PROJECT_STORAGE_KEY,JSON.stringify({schema:1,fields,lastDraft,publicProfile:activePublicProfile,inputVersion,draftInputVersion,step:currentStep}));updateSaveStatus();}catch{const note=document.getElementById("saveStatus");note.textContent="This app could not save the project for refresh recovery. Export your draft before closing.";note.className="status warning";} }
     function scheduleProjectSave(){if(saveTimer)clearTimeout(saveTimer);saveTimer=setTimeout(saveProjectState,250);}
-    function markInputsChanged(){inputVersion++;updateSaveStatus();scheduleProjectSave();}
-    function restoreProjectState(){try{const saved=JSON.parse(sessionStorage.getItem(PROJECT_STORAGE_KEY)||"null");if(!saved||saved.schema!==1||!saved.fields||typeof saved.fields!=="object")return;PROJECT_FIELDS.forEach((id)=>{const control=document.getElementById(id);const value=saved.fields[id];if(control.type==="checkbox")control.checked=Boolean(value);else if(typeof value==="string")control.value=value.slice(0,Number(control.maxLength)>0?control.maxLength:100000);});lastDraft=typeof saved.lastDraft==="string"?saved.lastDraft.slice(0,150000):"";activePublicProfile=saved.publicProfile&&typeof saved.publicProfile==="object"&&!Array.isArray(saved.publicProfile)?saved.publicProfile:{};inputVersion=Number.isSafeInteger(saved.inputVersion)?saved.inputVersion:0;draftInputVersion=Number.isSafeInteger(saved.draftInputVersion)?saved.draftInputVersion:-1;if(lastDraft)output.textContent=lastDraft;if(Object.keys(activePublicProfile).length)renderProfile(activePublicProfile,"Community facts restored from this tab.","found");renderFundingSummary();updateSaveStatus();}catch{} }
+    function markInputsChanged(){inputVersion++;if(status.classList.contains("warning")&&/^Add (the |a project)/.test(status.textContent))setStatus("Project details updated. Continue when you are ready.");updateSaveStatus();scheduleProjectSave();}
+    function restoreProjectState(){try{const saved=JSON.parse(sessionStorage.getItem(PROJECT_STORAGE_KEY)||"null");if(!saved||saved.schema!==1||!saved.fields||typeof saved.fields!=="object")return;PROJECT_FIELDS.forEach((id)=>{const control=document.getElementById(id);const value=saved.fields[id];if(control.type==="checkbox")control.checked=Boolean(value);else if(typeof value==="string")control.value=value.slice(0,Number(control.maxLength)>0?control.maxLength:100000);});lastDraft=typeof saved.lastDraft==="string"?saved.lastDraft.slice(0,150000):"";activePublicProfile=saved.publicProfile&&typeof saved.publicProfile==="object"&&!Array.isArray(saved.publicProfile)?saved.publicProfile:{};inputVersion=Number.isSafeInteger(saved.inputVersion)?saved.inputVersion:0;draftInputVersion=Number.isSafeInteger(saved.draftInputVersion)?saved.draftInputVersion:-1;if(lastDraft)output.textContent=lastDraft;if(Object.keys(activePublicProfile).length)renderProfile(activePublicProfile,"Community facts restored from this app.","found");renderFundingSummary();showStep(saved.step||"project");updateSaveStatus();}catch{} }
     function canUseDraft(){if(!lastDraft){setStatus("Create a draft first.",true);return false;}if(draftIsStale()){setStatus("Inputs changed since this draft. Create a new draft before exporting or copying.",true);return false;}return true;}
     let workingTimer=0;
     function startWorking(){ const box=document.getElementById("working"); const label=document.getElementById("workingLabel"); const clock=document.getElementById("workingTime"); const provider=document.getElementById("provider").value; const started=Date.now(); box.hidden=false; label.textContent=provider==="local"?"RERC-e is reviewing your notes with local Gemma...":"RERC-e is building a structured outline..."; const tick=()=>{ const elapsed=Math.floor((Date.now()-started)/1000); clock.textContent=elapsed+" seconds"; }; tick(); workingTimer=window.setInterval(tick,1000); }
@@ -1393,11 +1474,11 @@ HTML_PAGE = r'''<!doctype html>
     function renderProfile(profile,message,lookupStatus){ activePublicProfile=profile&&typeof profile==="object"?profile:{}; const box=document.getElementById("communityProfile"); box.replaceChildren(); box.hidden=false; const heading=document.createElement("strong"); heading.textContent=profile&&profile.place?profile.place:"Community facts"; box.appendChild(heading); if(!profile||!Object.keys(profile).length){ const note=document.createElement("span"); note.textContent=message||"No community facts were found."; box.appendChild(note); if(lookupStatus==="key_required"){document.querySelector(".lookup-help").open=true;} return; } const labels={population:"Population",median_age:"Median age",median_household_income:"Median household income",poverty_rate_percent:"People below the poverty line",geography_type:"Geography used"}; const list=document.createElement("ul"); Object.keys(labels).forEach((key)=>{ if(profile[key]===undefined||profile[key]===null||String(profile[key]).trim()==="")return; const item=document.createElement("li"); let value=formatProfileValue(key,profile[key]); if(key==="median_age")value+=" years"; if(key==="poverty_rate_percent")value+="%"; item.textContent=labels[key]+": "+value; list.appendChild(item); }); box.appendChild(list); const source=document.createElement(profile.source_url?"a":"span"); source.textContent=profile.source||"U.S. Census Bureau"; if(profile.source_url){source.href=profile.source_url;source.target="_blank";source.rel="noopener";} box.appendChild(source); if(profile.coverage_note){ const coverage=document.createElement("p"); coverage.textContent=profile.coverage_note; box.appendChild(coverage); } }
     function applyImportedPlan(data){ document.getElementById("community").value=data.community||""; stateSelect.value=data.state||""; document.getElementById("projectTitle").value=data.projectTitle||""; document.getElementById("projectNotes").value=data.projectNotes||""; document.getElementById("selectedGrant").value=data.selectedFundingDetails||""; lastDraft="";draftInputVersion=-1;output.textContent="Create a first draft from the imported plan."; if(data.profile&&Object.keys(data.profile).length){renderProfile(data.profile,"Community facts imported from the plan.","found");}else{activePublicProfile={};document.getElementById("communityProfile").hidden=true;} renderFundingSummary();markInputsChanged();saveProjectState(); const message=(data.message||"Community Explorer plan opened.")+" Review the imported facts and official funding pages before drafting."; const importStatus=document.getElementById("planImportStatus"); importStatus.textContent=message; importStatus.className="status"; setStatus(message); }
     async function importPlanText(text){ const response=await apiFetch("/api/import-plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({packageText:text})}); const data=await response.json(); if(!response.ok)throw new Error(data.error||"The plan could not be opened."); applyImportedPlan(data); }
-    async function openPlanFile(file){ if(!file)return; const importStatus=document.getElementById("planImportStatus"); if(!/\.(rercie|json)$/i.test(file.name)){throw new Error("Choose a .rercie or .json Community Explorer plan.");} if(file.size<=0||file.size>MAX_PLAN_BYTES){throw new Error("The plan must be a non-empty file no larger than 256 KB.");} importStatus.textContent="Checking the Community Explorer plan..."; const text=await file.text(); if(new TextEncoder().encode(text).length>MAX_PLAN_BYTES)throw new Error("The plan must be no larger than 256 KB."); let parsed; try{parsed=JSON.parse(text);}catch{throw new Error("The plan is not valid JSON.");} if(!parsed||Array.isArray(parsed)||typeof parsed!=="object"||parsed.schema!=="rercie-handoff"||parsed.version!==1){throw new Error("This is not a supported RERC-e Community Explorer plan.");} await importPlanText(text); }
+    async function openPlanFile(file){ if(!file)return; const importStatus=document.getElementById("planImportStatus"); if(!/\.(rerc-e|rercie|json)$/i.test(file.name)){throw new Error("Choose a RERC-e Community Explorer plan file.");} if(file.size<=0||file.size>MAX_PLAN_BYTES){throw new Error("The plan must be a non-empty file no larger than 256 KB.");} importStatus.textContent="Checking the Community Explorer plan..."; const text=await file.text(); if(new TextEncoder().encode(text).length>MAX_PLAN_BYTES)throw new Error("The plan must be no larger than 256 KB."); let parsed; try{parsed=JSON.parse(text);}catch{throw new Error("The plan is not valid JSON.");} if(!parsed||Array.isArray(parsed)||typeof parsed!=="object"||!(["rerc-e-handoff","rercie-handoff"].includes(parsed.schema))||parsed.version!==1){throw new Error("This is not a supported RERC-e Community Explorer plan.");} await importPlanText(text); }
     async function checkStartupPlan(){ if(!sessionToken){setStatus("Open RERC-e from its Start Menu shortcut to connect this tab.",true);return;} try{ const response=await apiFetch("/api/startup-plan"); const data=await response.json(); if(data.status==="none")return; if(!response.ok)throw new Error(data.error||"The plan could not be opened."); applyImportedPlan(data); }catch(error){ const importStatus=document.getElementById("planImportStatus"); importStatus.textContent=error.message.includes("session")?error.message:"The plan passed from Windows could not be opened: "+error.message; importStatus.className="status warning"; setStatus(importStatus.textContent,true); } }
     async function lookupCommunityFacts(){ const button=document.getElementById("lookupCommunity"); button.disabled=true; setStatus("Looking up community facts..."); try{ const body={community:document.getElementById("community").value,state:stateSelect.value,censusApiKey:document.getElementById("censusApiKey").value}; const response=await apiFetch("/api/community-profile",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}); const data=await response.json(); if(!response.ok)throw new Error(data.error||"Lookup failed."); renderProfile(data.profile,data.message,data.status); markInputsChanged();setStatus(data.message,data.status!=="found"); }catch(error){renderProfile({},"Community facts could not be reached right now.","unavailable");markInputsChanged();setStatus("Community lookup failed: "+error.message,true);}finally{button.disabled=false;} }
     function collectPayload(){ return {community:document.getElementById("community").value,state:stateSelect.value,projectTitle:document.getElementById("projectTitle").value,projectSummary:document.getElementById("projectSummary").value,selectedGrant:document.getElementById("selectedGrant").value,matchCapacity:document.getElementById("matchCapacity").value,sourceNotes:document.getElementById("sourceNotes").value,projectNotes:document.getElementById("projectNotes").value,publicProfile:activePublicProfile,usePublicData:document.getElementById("usePublicData").checked,provider:document.getElementById("provider").value,model:"gemma-3-1b-it-Q4_K_M.gguf",censusApiKey:document.getElementById("censusApiKey").value}; }
-    function validateDraftInputs(){ const required=[["community","community"],["state","state or territory"],["projectTitle","project title"]]; for(const [id,label] of required){ const control=document.getElementById(id); if(!control.value.trim()){ setStatus(`Add the ${label} before creating a draft.`,true); control.focus(); return false; } } const hasContext=["projectSummary","projectNotes","selectedGrant"].some((id)=>document.getElementById(id).value.trim()); if(!hasContext){ setStatus("Add a project summary, imported project notes, or funding details before creating a draft.",true); document.getElementById("projectSummary").focus(); return false; } return true; }
+    function validateDraftInputs(){ const required=[["community","community"],["state","state or territory"],["projectTitle","project title"]]; for(const [id,label] of required){ const control=document.getElementById(id); if(!control.value.trim()){ setStatus(`Add the ${label} before creating a draft.`,true); showStep("project"); control.focus(); return false; } } const hasContext=["projectSummary","projectNotes","selectedGrant"].some((id)=>document.getElementById(id).value.trim()); if(!hasContext){ setStatus("Add a project summary, imported project notes, or funding details before creating a draft.",true); showStep("project"); document.getElementById("projectSummary").focus(); return false; } return true; }
     let runtimePoll=0;
     async function checkRuntime(){ const badge=document.getElementById("runtime"); try{ const response=await apiFetch("/api/runtime"); const data=await response.json(); badge.textContent=data.ready?"Local model ready":"Local model is starting"; badge.className=data.ready?"runtime":"runtime offline"; if(data.ready&&runtimePoll){clearInterval(runtimePoll);runtimePoll=0;} }catch{ badge.textContent="Could not check local writer"; badge.className="runtime offline"; } }
     let grantCatalog=[];
@@ -1432,7 +1513,7 @@ HTML_PAGE = r'''<!doctype html>
       document.getElementById("grantSearchStatus").textContent=`${matches.length} of ${grantCatalog.length} funding options match. ${Math.min(matches.length,60)} shown; search by program or organization to narrow the list${previousRecord&&!matches.includes(previousRecord)?". Current selection kept above":""}.`;
       renderFundingSummary();
     }
-    async function loadGrants(){ const button=document.getElementById("loadGrants"); button.disabled=true; setStatus("Loading the public funding list..."); try{ const response=await apiFetch("/api/grants"); const data=await response.json(); if(!response.ok) throw new Error(data.error||"The list could not be loaded."); grantCatalog=Array.isArray(data.grants)?data.grants:[];renderGrantOptions();setStatus(`Loaded ${grantCatalog.length} funding options. Updated ${data.updated||"date not listed"}.`); }finally{ button.disabled=false; } }
+    async function loadGrants(){ const button=document.getElementById("loadGrants"); button.disabled=true; if(currentStep==="funding")setStatus("Loading the public funding list..."); try{ const response=await apiFetch("/api/grants"); const data=await response.json(); if(!response.ok) throw new Error(data.error||"The list could not be loaded."); grantCatalog=Array.isArray(data.grants)?data.grants:[];renderGrantOptions();if(currentStep==="funding")setStatus(`Loaded ${grantCatalog.length} funding options. Updated ${data.updated||"date not listed"}.`); }finally{ button.disabled=false; } }
     document.getElementById("loadGrants").addEventListener("click",()=>loadGrants().catch((error)=>setStatus(`Could not load funding: ${error.message}`,true)));
     document.getElementById("grantSearch").addEventListener("input",renderGrantOptions);
     document.getElementById("grantSelect").addEventListener("change",(event)=>{ if(event.target.value!=="manual")document.getElementById("selectedGrant").value=event.target.selectedOptions[0]?.dataset?.grant||"";renderFundingSummary();markInputsChanged(); });
@@ -1651,6 +1732,7 @@ def smoke() -> int:
     assert imported["community"] == "St. Paul"
     assert "Sample Trail Grant" in imported["selectedFundingDetails"]
     assert "Community Explorer roadmap" in imported["projectNotes"]
+    assert validate_handoff_text(json.dumps(dict(valid_handoff, schema=LEGACY_HANDOFF_SCHEMA)))["schema"] == HANDOFF_SCHEMA
     invalid_handoff = dict(valid_handoff, schema="wrong-schema")
     try:
         validate_handoff_text(json.dumps(invalid_handoff))

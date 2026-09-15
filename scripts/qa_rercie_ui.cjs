@@ -18,7 +18,9 @@ async function openPage(context) {
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
   await page.route("**/api/grants", (route) => route.fulfill({
     status: 200, contentType: "application/json",
-    body: JSON.stringify({ grants: [], updated: "Synthetic UI QA" })
+    body: JSON.stringify({ grants: [
+      { item_id: "QA-GRANT", title: "Synthetic Trail Grant", organization: "QA agency", source_url: "https://example.org/grant" }
+    ], updated: "Synthetic UI QA" })
   }));
   await page.goto(`${baseUrl}#token=${encodeURIComponent(token)}`, { waitUntil: "networkidle", timeout: 60000 });
   return { page, errors };
@@ -36,21 +38,30 @@ async function main() {
     assert(await page.locator("h1").innerText() === "Meet RERC-e", "RERC-e first screen is blank or wrong");
     const animation = await page.locator(".mascot-stage").evaluate((stage) => ({
       stage: getComputedStyle(stage).animationName,
-      wing: getComputedStyle(stage.querySelector(".mascot-wing")).animationName,
+      imageLoaded: stage.querySelector(".mascot").naturalWidth > 0,
       timerHidden: document.getElementById("workingTime").getAttribute("aria-hidden"),
     }));
-    assert(animation.stage === "rercie-bob" && animation.wing === "rercie-wave", "RERC-e mascot is not animated and waving");
+    assert(animation.stage === "rercie-bob" && animation.imageLoaded, "RERC-e header image is not displayed");
     assert(animation.timerHidden === "true", "Generation timer is exposed through the live region");
+    assert(await page.locator("#projectStep").isVisible() && !await page.locator("#fundingStep").isVisible(), "First screen does not focus on the project");
+    await page.screenshot({ path: path.join(outDir, "rerc-e-project-step.png"), fullPage: true });
 
+    await page.locator('[data-step="draft"]').click();
     await page.locator("#draftButton").click();
     assert(/Add the community/i.test(await page.locator("#status").innerText()), "Empty draft did not explain the first missing field");
     assert(await page.locator("#community").evaluate((node) => document.activeElement === node), "Missing community field was not focused");
+    assert(await page.locator("#projectStep").isVisible(), "Input error did not return to the project step");
 
     await page.locator("#community").fill("St. Paul");
     await page.locator("#state").selectOption("Virginia");
     await page.locator("#projectTitle").fill("Downtown trail connection");
     await page.locator("#projectSummary").fill("Connect downtown businesses to the regional trail with safer wayfinding.");
+    await page.locator("#nextFunding").click();
     await page.locator("#usePublicData").uncheck();
+    await page.locator("#grantSelect").selectOption("0");
+    assert(/Synthetic Trail Grant/.test(await page.locator("#fundingSummary").innerText()), "Funding step did not show the selected match");
+    await page.screenshot({ path: path.join(outDir, "rerc-e-funding-step.png"), fullPage: true });
+    await page.locator('[data-step="draft"]').click();
     await page.locator("#provider").selectOption("fallback");
     await page.locator("#draftButton").click();
     await page.waitForFunction(() => document.getElementById("output").textContent.includes("## Fit Summary"), null, { timeout: 30000 });
@@ -70,20 +81,22 @@ async function main() {
     }, { token });
     assert(importedProfile.profileStatus === "imported" && importedProfile.draft.includes("Population: 0"), "Imported profile facts did not reach drafting");
 
+    await page.locator('[data-step="funding"]').click();
     await page.locator("#fileInput").setInputFiles({
       name: "too-large.txt", mimeType: "text/plain", buffer: Buffer.alloc(513 * 1024, "a")
     });
     assert(/under 512 KB/i.test(await page.locator("#status").innerText()), "Oversized file did not produce the bounded recovery message");
+    await page.locator('[data-step="draft"]').click();
     await page.screenshot({ path: path.join(outDir, "rercie-desktop.png"), fullPage: true });
 
     const reducedContext = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
     const reduced = await openPage(reducedContext);
     const reducedAnimation = await reduced.page.locator(".mascot-stage").evaluate((stage) => ({
       stage: getComputedStyle(stage).animationName,
-      wing: getComputedStyle(stage.querySelector(".mascot-wing")).animationName,
+      imageLoaded: stage.querySelector(".mascot").naturalWidth > 0,
       overflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
     }));
-    assert(reducedAnimation.stage === "none" && reducedAnimation.wing === "none", "Reduced-motion preference did not stop mascot animation");
+    assert(reducedAnimation.stage === "none" && reducedAnimation.imageLoaded, "Reduced-motion preference did not stop mascot animation");
     assert(reducedAnimation.overflow, "RERC-e mobile interface has horizontal overflow");
     await reduced.page.screenshot({ path: path.join(outDir, "rercie-mobile-reduced-motion.png"), fullPage: true });
     assert(errors.length === 0 && reduced.errors.length === 0, `Browser errors: ${[...errors, ...reduced.errors].join(" | ")}`);

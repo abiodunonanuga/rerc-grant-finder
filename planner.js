@@ -99,7 +99,7 @@
       handoffNeedsCommunity: "Add the community name before downloading a plan for RERC-e.",
       handoffMissingSource: "A saved item has no safe official source URL. Remove it or correct the catalog record before exporting.",
       handoffTooLarge: "This plan exceeds the 256 KB RERC-e import limit. Save fewer items or shorten your notes.",
-      handoffNextStep: "Plan file downloaded. RERC-e 0.5.1 source or a future reviewed installer can import it: choose Open Community Explorer plan and select this .rercie file. The current public 0.4.0 installer cannot import it.",
+      handoffNextStep: "RERC-e plan file downloaded. RERC-e source or a future reviewed installer can import it: choose Open Community Explorer plan and select the file. The current public 0.4.0 installer cannot import it.",
       openSource: "Open official program page",
       exportWordAction: "Export community plan as Word",
       exportCsvAction: "Export saved plan as CSV",
@@ -230,7 +230,7 @@
       handoffNeedsCommunity: "Agregue el nombre de la comunidad antes de descargar un plan para RERC-e.",
       handoffMissingSource: "Una opción guardada no tiene una dirección segura de la fuente oficial. Quítela o corrija el registro antes de exportar.",
       handoffTooLarge: "Este plan supera el límite de importación de 256 KB de RERC-e. Guarde menos opciones o acorte sus notas.",
-      handoffNextStep: "Archivo del plan descargado. El código fuente de RERC-e 0.5.1 o un futuro instalador revisado puede importarlo: elija Abrir plan del explorador comunitario y seleccione este archivo .rercie. El instalador público actual 0.4.0 no puede importarlo.",
+      handoffNextStep: "Archivo del plan de RERC-e descargado. El código fuente de RERC-e o un futuro instalador revisado puede importarlo: elija Abrir plan del explorador comunitario y seleccione el archivo. El instalador público actual 0.4.0 no puede importarlo.",
       openSource: "Abrir la página oficial del programa",
       exportWordAction: "Exportar el plan comunitario a Word",
       exportCsvAction: "Exportar el plan guardado a CSV",
@@ -2300,7 +2300,7 @@
       return;
     }
     const payload = {
-      schema: "rercie-handoff",
+      schema: "rerc-e-handoff",
       version: 1,
       community: community,
       state: textValue(byId("stateSelect") && byId("stateSelect").value, 100),
@@ -2325,7 +2325,7 @@
     }
     downloadBlob(
       file,
-      fileStem() + ".rercie"
+      fileStem() + ".rerc-e"
     );
     const status = byId("shareStatus");
     if (status) {
