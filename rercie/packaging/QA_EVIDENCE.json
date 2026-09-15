@@ -1,7 +1,7 @@
 {
   "app_version": "0.5.1",
-  "status": "SOURCE_PASS",
-  "tested_date": "2026-08-19",
+  "status": "SOURCE_PENDING_NATIVE_QA",
+  "tested_date": "2026-09-15",
   "evidence_stage": "source",
   "checks": {
     "source_smoke": {
@@ -9,7 +9,7 @@
       "version": "0.5.1",
       "catalog_formats": 2,
       "territories": 5,
-      "handoff_schema": "rercie-handoff",
+      "handoff_schema": "rerc-e-handoff",
       "handoff_version": 1,
       "handoff_max_bytes": 262144,
       "handoff_checks": [
@@ -36,14 +36,15 @@
       "plan_handoff_supported": true
     },
     "display_scaling": {
-      "status": "PASS",
-      "tested_scales": [
+      "status": "PENDING_RETEST",
+      "tested_scales": [],
+      "historical_tested_scales": [
         "100%",
         "150%",
         "200%"
       ],
-      "layout_geometry_sha256": "df70b1e32a489edfa0fa82309dccd30207a2ae1e1876ae11d4623766e3f7b697",
-      "layout_reviewed_for_version": "0.5.1",
+      "layout_geometry_sha256": "60ff5045c4e13df2c3dade32f0a26a23aeb9593ae541c7d271a7a6cd4ddc6a26",
+      "historical_reviewed_geometry_sha256": "df70b1e32a489edfa0fa82309dccd30207a2ae1e1876ae11d4623766e3f7b697",
       "dpi_autoscaling_and_scroll_enabled": true
     },
     "installer_wizard": {
@@ -71,8 +72,8 @@
     "local_generation": {
       "status": "PASS",
       "model": "Google Gemma 3 1B Instruct Q4_K_M",
-      "source_sha256": "f10f628666ae47e7f1c979ab2cd49a410b0cffc5440a087333a9ceecd1c39a9a",
-      "source_normalized_sha256": "f10f628666ae47e7f1c979ab2cd49a410b0cffc5440a087333a9ceecd1c39a9a",
+      "source_sha256": "f51eeeaeed32c55bce0894ed37a4747e61a08441c24e1a4fd246621f27242ba9",
+      "source_normalized_sha256": "f51eeeaeed32c55bce0894ed37a4747e61a08441c24e1a4fd246621f27242ba9",
       "verified_excerpt_count": 1,
       "raw_model_prose_exposed": false,
       "later_standalone_rerun_status": "PASS"
@@ -139,7 +140,8 @@
   "disclosed_limits": [
     "The public installer is not code-signed, so Windows may show a safety notice.",
     "The isolated installer test runs on the build computer rather than a clean Windows virtual machine.",
-    "Users must review every generated draft and verify current funding rules at the official source."
+    "Users must review every generated draft and verify current funding rules at the official source.",
+    "The redesigned native launcher and embedded Windows window need current 100%, 150%, and 200% DPI visual review and signed-package testing."
   ],
   "release_binding": {
     "source_commit": null,
@@ -148,7 +150,7 @@
     "status": "PENDING_BUILD"
   },
   "verification_inputs": {
-    "browser_contract_sha256": "e951f242b76879145f3a7b659dd70cc0bc446aa1dd26d904289c485b05dc0ca3",
-    "local_gemma_report_sha256": "5383f6d92de2c91a430bda95d82703c83a5d7280894f2ad38dbb3866c4f98bd4"
+    "browser_contract_sha256": "35dfb522baec5ae8d6d16ff68345260fabcfe9053cceea58f96f9f0cf8119545",
+    "local_gemma_report_sha256": "c8e6f1ef6cb44562db4fd6d67062fdeea98be77b35ef04a3160b0421b42dc5ba"
   }
 }
