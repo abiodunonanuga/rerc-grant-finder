@@ -232,7 +232,7 @@ def main() -> int:
     assert all(value in app_js for value in ("fundingFilterLabels", "caseStudyPhase", "fundingTiming", "fundingTimingCounts", "wordPageBreakXml"))
     assert all(value in planner for value in (
         "fundingSequenceEntries", "renderFundingSequence", "laterFundingTargets", "Funding sequence order", "fundingSequenceCaveat",
-        "deadline-status", "stateChanged", "docxPageBreak", "rerc.activeWorkspaceId.v2",
+        "deadline-status", "stateChanged", "pageBreakBefore", "rerc.activeWorkspaceId.v2",
         "WORKSPACE_ID_PREFIX", "createWorkspaceId", "phaseChanged"
     ))
     assert "renderCardActions" not in app_js and "planner-card-actions" in planner

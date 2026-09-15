@@ -99,7 +99,7 @@
         <header class="results-heading">
           <div><p class="eyebrow">Your matches</p><h2 id="communityTitle">Funding, resources, and case studies for rural communities</h2><p id="communitySummary">Choose a state and priorities. Your list will update as you go.</p></div>
           <div class="match-actions">
-            <button id="showSavedOnly" class="secondary-button" type="button" aria-pressed="false"><i data-lucide="bookmark" aria-hidden="true"></i>Saved <span id="savedCountBadge" class="count-badge">0</span></button>
+            <button id="showSavedOnly" class="secondary-button" type="button" aria-pressed="false"><i data-lucide="bookmark" aria-hidden="true"></i><span class="saved-only-label">Saved</span> <span id="savedCountBadge" class="count-badge">0</span></button>
             <button id="openCompare" class="secondary-button" type="button" aria-haspopup="dialog"><i data-lucide="columns-3" aria-hidden="true"></i>Compare <span id="compareCountBadge" class="count-badge">0</span></button>
           </div>
         </header>
@@ -167,6 +167,7 @@
       </section>
       <section class="rail-section project-notes" aria-labelledby="projectDetailsTitle">
         <h3 id="projectDetailsTitle">Project details</h3>
+        <label class="field" for="projectCommunity"><span>Community for the RERC-e draft</span><input id="projectCommunity" type="text" maxlength="200" placeholder="Example: St. Paul"></label>
         <label class="field" for="projectTitle"><span>Project title</span><input id="projectTitle" type="text" maxlength="120" placeholder="Example: Riverfront trail connection"></label>
         <label class="field" for="projectNotes"><span>Notes</span><textarea id="projectNotes" rows="5" maxlength="5000" placeholder="Add goals, partners, or next steps. Notes stay on this device unless you export them."></textarea></label>
       </section>
@@ -177,8 +178,10 @@
           <button id="exportPlanCsv" class="secondary-button" type="button"><i data-lucide="sheet" aria-hidden="true"></i>CSV list</button>
           <button id="exportWorkspaceFile" class="secondary-button" type="button"><i data-lucide="package-down" aria-hidden="true"></i>Save workspace</button>
           <label class="file-button" for="importWorkspaceFile"><i data-lucide="package-open" aria-hidden="true"></i>Open workspace<input id="importWorkspaceFile" type="file" accept=".rerc-workspace,.json,application/json"></label>
-          <button id="exportRercie" class="rercie-button" type="button"><i data-lucide="sparkles" aria-hidden="true"></i>Open in RERC-e</button>
+          <button id="exportRercie" class="rercie-button" type="button"><i data-lucide="sparkles" aria-hidden="true"></i>Download for RERC-e 0.5.1</button>
         </div>
+        <label class="handoff-notes" for="includeHandoffNotes"><input id="includeHandoffNotes" type="checkbox"><span>Include project notes in the RERC-e file</span></label>
+        <p class="handoff-compatibility">The current public RERC-e 0.4.0 installer cannot import this plan. RERC-e 0.5.1 source and future reviewed installers can.</p>
         <button id="deleteLocalData" class="danger-button" type="button"><i data-lucide="rotate-ccw" aria-hidden="true"></i>Reset roadmap</button>
       </section>
     </aside>

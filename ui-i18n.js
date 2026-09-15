@@ -8,6 +8,14 @@
   let observer = null;
 
   const ES = {
+    "Next": "Siguiente",
+    "Deadline: soonest first": "Fecha límite: la más cercana primero",
+    "Starting point": "Punto de partida",
+    "Community for the RERC-e draft": "Comunidad para el borrador de RERC-e",
+    "Example: St. Paul": "Ejemplo: St. Paul",
+    "Download for RERC-e 0.5.1": "Descargar para RERC-e 0.5.1",
+    "Include project notes in the RERC-e file": "Incluir notas del proyecto en el archivo para RERC-e",
+    "The current public RERC-e 0.4.0 installer cannot import this plan. RERC-e 0.5.1 source and future reviewed installers can.": "El instalador público actual de RERC-e 0.4.0 no puede importar este plan. El código fuente de RERC-e 0.5.1 y futuros instaladores revisados sí pueden.",
     "Funding details": "Detalles del financiamiento",
     "Grant": "Subvenci\u00f3n",
     "Loan or financing": "Pr\u00e9stamo o financiamiento",

@@ -29,14 +29,14 @@ RERC-e 0.5.1 passed source smoke, standalone source-bound local Gemma inference,
 - Loads the current public RERC funding list.
 - Accepts project notes and selected text files.
 - Opens a checked Community Explorer plan with its community, state or territory, project title, project notes, profile, roadmap, and selected public records.
-- Looks up community profiles from the public prebuilt `community_profiles.js` dataset for exact community + state/territory matches first. If no exact match is present, RERC-e can use a provided Census API key to query the Census API for fallback place/county matching (including territory-level context for American Samoa, Guam, Northern Mariana Islands, and U.S. Virgin Islands).
+- Looks up community profiles from the public prebuilt `community_profiles.js` dataset by exact community + state/territory match first, then by a unique town/city/village name in that state. If no unambiguous match is present, RERC-e can use a provided Census API key to query the Census API for fallback place/county matching (including territory-level context for American Samoa, Guam, Northern Mariana Islands, and U.S. Virgin Islands).
 - Creates a first-draft grant narrative with clear fact-check markers.
 - Exports a real Word `.docx` file or Markdown.
 - Includes all 50 states, the District of Columbia, and five U.S. territories.
 
 ## Privacy
 
-Gemma writing and files in `local_knowledge` stay on this computer. RERC-e first uses the public prebuilt `community_profiles.js` dataset for exact community + state or territory matches. The HTTPS response is bounded to 8 MiB and 50,000 records; invalid, oversized, or malformed profile files are rejected without using their contents. If no exact profile match is available, RERC-e falls back to a direct Census API lookup only when a `CENSUS_API_KEY` is available (environment or session field). Without a key, it returns `key_required` and makes no direct Census call. The Census key is not sent to Gemma, saved by RERC-e, or included in generated output.
+Gemma writing and files in `local_knowledge` stay on this computer. RERC-e first uses the public prebuilt `community_profiles.js` dataset for exact community + state or territory matches, then a unique town/city/village name within that state. The HTTPS response is bounded to 16 MiB and 50,000 records so the shipped 14.4 MB profile bundle can load; invalid, oversized, or malformed profile files are rejected without using their contents. If no unambiguous profile match is available, RERC-e falls back to a direct Census API lookup only when a `CENSUS_API_KEY` is available (environment or session field). Without a key, it returns `key_required` and makes no direct Census call. The Census key is not sent to Gemma, saved by RERC-e, or included in generated output.
 
 Do not add private files to a public copy of this project. Local reference files belong in `local_knowledge`.
 

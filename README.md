@@ -54,6 +54,8 @@ The current public installer is RERC-e 0.4.0. It passed installer QA and uses Go
 
 The reviewed source and Timberwing Systems license are in `rercie/`. Model weights are not stored in this repository or installer.
 
+In the Community Explorer, save the matches you want to review, enter a named community, and choose **Download for RERC-e**. The `.rercie` file contains the selected public records and roadmap. Project notes are included only when you check **Include project notes**. Open the file with **Open Community Explorer plan** in RERC-e 0.5.1 source or a future reviewed installer. The current public 0.4.0 installer does not yet include plan import.
+
 ## Release QA
 
 - `python scripts/catalog_maintenance.py check`

@@ -17,8 +17,6 @@
   const MAX_NOTES = 12000;
   const MAX_FILE_BYTES = 256 * 1024;
   const MAX_SHARE_LENGTH = 1800;
-  const INSTALLER_URL =
-    "https://github.com/henkelpress/rerc-grant-finder/releases/latest/download/RERCie-Setup.exe";
   const PHASES = ["Plan", "Design", "Build", "Operate"];
   const ALLOWED_LANGUAGES = ["en", "es"];
 
@@ -30,6 +28,11 @@
       compare: "Compare",
       comparing: "Comparing",
       savedOnly: "Show saved only",
+      savedViewCount: "{count} saved matches displayed.",
+      savedViewSummary: "Your saved options are shown below. The Word and CSV controls export this saved view.",
+      savedViewTitle: "Your saved options for {state}",
+      savedOptionsLabel: "Saved options",
+      allMatchesLabel: "All matches",
       allMatches: "Show all matches",
       noSaved: "No saved matches yet. Add options to build a plan.",
       noDeadlines: "Save funding options to see their application timing here.",
@@ -93,6 +96,15 @@
       docxExported: "Saved-plan Word document exported.",
       noExportItems: "Save at least one item before exporting a plan.",
       rercieExported: "RERC-e handoff exported.",
+      handoffNeedsCommunity: "Add the community name before downloading a plan for RERC-e.",
+      handoffMissingSource: "A saved item has no safe official source URL. Remove it or correct the catalog record before exporting.",
+      handoffTooLarge: "This plan exceeds the 256 KB RERC-e import limit. Save fewer items or shorten your notes.",
+      handoffNextStep: "Plan file downloaded. RERC-e 0.5.1 source or a future reviewed installer can import it: choose Open Community Explorer plan and select this .rercie file. The current public 0.4.0 installer cannot import it.",
+      openSource: "Open official program page",
+      exportWordAction: "Export community plan as Word",
+      exportCsvAction: "Export saved plan as CSV",
+      saveWorkspaceAction: "Save workspace to a file",
+      handoffDownloadAction: "Download plan for RERC-e",
       includeNotes:
         "Include your project notes in the RERC-e handoff? The file stays on this computer unless you share it.",
       installerFallback: "If RERC-e is not installed, download the Windows installer.",
@@ -120,6 +132,8 @@
       status: "Status",
       applicant: "Eligible applicants",
       stage: "Project stage",
+      roadmapPhase: "Your roadmap phase",
+      programStage: "Program-supported project stage: {stage}",
       amount: "Amount or cost",
       match: "Match or cost share",
       deadline: "Deadline or availability",
@@ -165,6 +179,11 @@
       compare: "Comparar",
       comparing: "Comparando",
       savedOnly: "Mostrar solo lo guardado",
+      savedViewCount: "Se muestran {count} opciones guardadas.",
+      savedViewSummary: "Sus opciones guardadas aparecen abajo. Los botones Word y CSV exportan esta vista.",
+      savedViewTitle: "Sus opciones guardadas para {state}",
+      savedOptionsLabel: "Opciones guardadas",
+      allMatchesLabel: "Todas las opciones",
       allMatches: "Mostrar todos los resultados",
       noSaved: "Aún no hay opciones guardadas. Agregue opciones para crear un plan.",
       noDeadlines: "Guarde opciones de financiamiento para ver aquí sus fechas y plazos.",
@@ -208,6 +227,15 @@
       docxExported: "Documento Word del plan exportado.",
       noExportItems: "Guarde al menos un elemento antes de exportar el plan.",
       rercieExported: "Archivo para RERC-e exportado.",
+      handoffNeedsCommunity: "Agregue el nombre de la comunidad antes de descargar un plan para RERC-e.",
+      handoffMissingSource: "Una opción guardada no tiene una dirección segura de la fuente oficial. Quítela o corrija el registro antes de exportar.",
+      handoffTooLarge: "Este plan supera el límite de importación de 256 KB de RERC-e. Guarde menos opciones o acorte sus notas.",
+      handoffNextStep: "Archivo del plan descargado. El código fuente de RERC-e 0.5.1 o un futuro instalador revisado puede importarlo: elija Abrir plan del explorador comunitario y seleccione este archivo .rercie. El instalador público actual 0.4.0 no puede importarlo.",
+      openSource: "Abrir la página oficial del programa",
+      exportWordAction: "Exportar el plan comunitario a Word",
+      exportCsvAction: "Exportar el plan guardado a CSV",
+      saveWorkspaceAction: "Guardar el espacio de trabajo en un archivo",
+      handoffDownloadAction: "Descargar el plan para RERC-e",
       includeNotes:
         "¿Quiere incluir sus notas del proyecto en el archivo para RERC-e? El archivo permanece en este equipo a menos que lo comparta.",
       installerFallback: "Si RERC-e no está instalado, descargue el instalador para Windows.",
@@ -235,6 +263,8 @@
       status: "Estado",
       applicant: "Solicitantes elegibles",
       stage: "Etapa del proyecto",
+      roadmapPhase: "Su fase de planificación",
+      programStage: "Etapa del proyecto aceptada por el programa: {stage}",
       amount: "Monto o costo",
       match: "Aporte local",
       deadline: "Fecha o disponibilidad",
@@ -327,6 +357,7 @@
       projectTitle: "",
       projectNotes: "",
       profile: {},
+      filters: {},
       updatedAt: new Date().toISOString(),
     };
   }
@@ -381,6 +412,50 @@
     return output;
   }
 
+  function sanitizeWorkspaceFilters(input, strict) {
+    if (input === undefined) return {};
+    if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("workspace-filters");
+    const textControls = ["keywordSearch", "stageSelect", "sortSelect", "limitSelect", "caseStudyViewSelect"];
+    const choiceRoots = ["applicantOptions", "topicOptions", "fundingTypeOptions", "resourceTypeOptions", "caseStudyPhaseOptions"];
+    const allowed = new Set(textControls.concat(choiceRoots, ["includeClosed", "mode"]));
+    if (strict && Object.keys(input).some(function (key) { return !allowed.has(key); }))
+      throw new Error("workspace-filter-fields");
+    const filters = {};
+    textControls.forEach(function (id) {
+      const value = input[id];
+      if (value === undefined) return;
+      if (typeof value !== "string" || value.length > (id === "keywordSearch" ? 200 : 100))
+        throw new Error("workspace-filter-value");
+      const control = byId(id);
+      if (id !== "keywordSearch" && control && !Array.from(control.options || []).some(function (option) { return option.value === value; })) {
+        if (strict) throw new Error("workspace-filter-option");
+        return;
+      }
+      filters[id] = value;
+    });
+    choiceRoots.forEach(function (id) {
+      if (input[id] === undefined) return;
+      if (!Array.isArray(input[id]) || input[id].length > 30 ||
+          input[id].some(function (value) { return typeof value !== "string" || value.length > 500; }))
+        throw new Error("workspace-filter-choices");
+      const root = byId(id);
+      const choices = new Set(root ? Array.from(root.querySelectorAll('input[type="checkbox"], input[type="radio"]'))
+        .map(function (control) { return control.value; }) : []);
+      const selected = input[id].filter(function (value) { return choices.has(value); });
+      if (strict && selected.length !== input[id].length) throw new Error("workspace-filter-choice");
+      filters[id] = Array.from(new Set(selected));
+    });
+    if (input.includeClosed !== undefined) {
+      if (typeof input.includeClosed !== "boolean") throw new Error("workspace-filter-closed");
+      filters.includeClosed = input.includeClosed;
+    }
+    if (input.mode !== undefined) {
+      if (!["All", "Funding", "Resource", "Case Study"].includes(input.mode)) throw new Error("workspace-filter-mode");
+      filters.mode = input.mode;
+    }
+    return filters;
+  }
+
   function sanitizeWorkspace(input, strict) {
     if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("workspace-object");
     if (Number(input.schema) !== SCHEMA_VERSION) throw new Error("workspace-version");
@@ -393,6 +468,7 @@
       "projectTitle",
       "projectNotes",
       "profile",
+      "filters",
       "updatedAt",
       "catalogVersion",
       "exportedAt",
@@ -436,6 +512,7 @@
       projectTitle: textValue(input.projectTitle, 200),
       projectNotes: input.projectNotes.trim().slice(0, MAX_NOTES),
       profile: sanitizeProfile(input.profile),
+      filters: sanitizeWorkspaceFilters(input.filters, strict),
       updatedAt: new Date().toISOString(),
     };
   }
@@ -660,6 +737,28 @@
     if (!root) return;
     root.replaceChildren();
     const items = savedItems();
+    const matchElements = explorer().elements || {};
+    const counts = {
+      matchCount: items.length,
+      fundingMatchCount: items.filter(function (item) { return item.item_type === "Funding"; }).length,
+      resourceMatchCount: items.filter(function (item) { return item.item_type === "Resource"; }).length,
+      caseStudyMatchCount: items.filter(function (item) { return item.item_type === "Case Study"; }).length,
+    };
+    Object.keys(counts).forEach(function (key) {
+      if (matchElements[key]) matchElements[key].textContent = counts[key].toLocaleString();
+    });
+    if (matchElements.matchCount && matchElements.matchCount.nextElementSibling)
+      matchElements.matchCount.nextElementSibling.textContent = t("savedOptionsLabel");
+    if (matchElements.matchAnnouncement) matchElements.matchAnnouncement.textContent =
+      t("savedViewCount", { count: items.length });
+    if (matchElements.communitySummary) matchElements.communitySummary.textContent =
+      t("savedViewSummary");
+    if (matchElements.communityTitle) matchElements.communityTitle.textContent =
+      t("savedViewTitle", { state: state.workspace.profile.state || byId("stateSelect")?.value || "" });
+    if (matchElements.nextDeadlinePanel) matchElements.nextDeadlinePanel.hidden = true;
+    [matchElements.sortSelect, matchElements.limitSelect].forEach(function (control) {
+      if (control && control.closest("label")) control.closest("label").hidden = true;
+    });
     if (!items.length) {
       const empty = document.createElement("p");
       empty.className = "empty-state";
@@ -776,11 +875,11 @@
         label.textContent = textValue(item.title, 500);
         const stageLabel = document.createElement("span");
         stageLabel.className = "roadmap-stage-label";
-        stageLabel.textContent = t("stage");
+        stageLabel.textContent = t("roadmapPhase");
         const select = document.createElement("select");
         select.id = selectId;
         select.dataset.roadmapId = itemId(item);
-        select.setAttribute("aria-label", textValue(item.title, 500) + " " + t("stage"));
+        select.setAttribute("aria-label", textValue(item.title, 500) + " " + t("roadmapPhase"));
         PHASES.forEach(function (value) {
           const option = document.createElement("option");
           option.value = value;
@@ -790,6 +889,12 @@
         });
         select.value = phase;
         row.append(label, stageLabel, select);
+        if (item.project_stage) {
+          const programStage = document.createElement("span");
+          programStage.className = "roadmap-program-stage";
+          programStage.textContent = t("programStage", { stage: textValue(item.project_stage, 300) });
+          row.appendChild(programStage);
+        }
         section.appendChild(row);
       });
       root.appendChild(section);
@@ -1152,7 +1257,8 @@
     if ("checked" in control) control.checked = state.savedOnly;
     control.setAttribute("aria-pressed", state.savedOnly ? "true" : "false");
     if (control.tagName === "BUTTON") {
-      control.textContent = state.savedOnly ? t("allMatches") : t("savedOnly");
+      const label = control.querySelector(".saved-only-label");
+      if (label) label.textContent = state.savedOnly ? t("allMatches") : t("savedOnly");
     }
   }
 
@@ -1161,6 +1267,15 @@
     if (state.savedOnly) {
       renderSavedOnly();
     } else if (typeof explorer().render === "function") {
+      const deadlinePanel = explorer().elements && explorer().elements.nextDeadlinePanel;
+      if (deadlinePanel) deadlinePanel.hidden = false;
+      [explorer().elements && explorer().elements.sortSelect,
+        explorer().elements && explorer().elements.limitSelect].forEach(function (control) {
+        if (control && control.closest("label")) control.closest("label").hidden = false;
+      });
+      const matchCount = explorer().elements && explorer().elements.matchCount;
+      if (matchCount && matchCount.nextElementSibling)
+        matchCount.nextElementSibling.textContent = t("allMatchesLabel");
       explorer().render();
       window.requestAnimationFrame(decorateResults);
     }
@@ -1503,6 +1618,42 @@
     return values;
   }
 
+  function captureWorkspaceFilters() {
+    const filters = {};
+    ["keywordSearch", "stageSelect", "sortSelect", "limitSelect", "caseStudyViewSelect"].forEach(function (id) {
+      const control = byId(id);
+      if (control) filters[id] = textValue(control.value, id === "keywordSearch" ? 200 : 100);
+    });
+    ["applicantOptions", "topicOptions", "fundingTypeOptions", "resourceTypeOptions", "caseStudyPhaseOptions"].forEach(function (id) {
+      filters[id] = selectedValues(byId(id)).map(function (value) { return textValue(value, 500); }).slice(0, 30);
+    });
+    const includeClosed = byId("includeClosed");
+    filters.includeClosed = Boolean(includeClosed && includeClosed.checked);
+    filters.mode = typeof explorer().getMode === "function" ? explorer().getMode() : "All";
+    state.workspace.filters = sanitizeWorkspaceFilters(filters, true);
+    schedulePersist();
+  }
+
+  function applyWorkspaceFilters() {
+    const filters = state.workspace.filters || {};
+    if (!Object.keys(filters).length) return;
+    ["keywordSearch", "stageSelect", "sortSelect", "limitSelect", "caseStudyViewSelect"].forEach(function (id) {
+      const control = byId(id);
+      if (control && Object.prototype.hasOwnProperty.call(filters, id)) control.value = filters[id];
+    });
+    ["applicantOptions", "topicOptions", "fundingTypeOptions", "resourceTypeOptions", "caseStudyPhaseOptions"].forEach(function (id) {
+      const root = byId(id);
+      if (!root || !Array.isArray(filters[id])) return;
+      root.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(function (control) {
+        control.checked = filters[id].includes(control.value);
+      });
+    });
+    const includeClosed = byId("includeClosed");
+    if (includeClosed && typeof filters.includeClosed === "boolean") includeClosed.checked = filters.includeClosed;
+    if (filters.mode && typeof explorer().chooseMode === "function") explorer().chooseMode(filters.mode);
+    else if (typeof explorer().render === "function") explorer().render();
+  }
+
   function applyControlledFilters(filters) {
     if (!filters || typeof filters !== "object") return;
     ["stateSelect", "stageSelect", "sortSelect", "limitSelect"].forEach(function (id) {
@@ -1530,14 +1681,15 @@
 
   function captureProfileFromFilters() {
     const stateSelect = byId("stateSelect");
+    const community = textValue(byId("projectCommunity") && byId("projectCommunity").value, 200);
     const profile = {};
     if (stateSelect && stateSelect.value) {
       profile.state = stateSelect.options[stateSelect.selectedIndex]
         ? stateSelect.options[stateSelect.selectedIndex].text.trim().slice(0, 120)
         : stateSelect.value.slice(0, 120);
       profile.stateCode = stateSelect.value.slice(0, 120);
-      profile.community = profile.state;
-      profile.name = profile.state;
+      if (community) profile.community = community;
+      profile.name = community || profile.state;
       profile.placeType = "state_or_territory";
     }
     state.workspace.profile = sanitizeProfile(profile);
@@ -1697,7 +1849,10 @@
     }
   }
 
-  function exportWorkspace() {
+  async function exportWorkspace() {
+    captureWorkspaceFilters();
+    window.clearTimeout(state.saveTimer);
+    try { await persistWorkspace(); } catch (error) { reportError(error); }
     const payload = Object.assign({}, state.workspace, {
       schema: SCHEMA_VERSION,
       catalogVersion: catalogVersion(),
@@ -1830,8 +1985,11 @@
       .replace(/'/g, "&apos;");
   }
 
-  function docxParagraph(text, style, relationshipId) {
-    const styleXml = style ? '<w:pPr><w:pStyle w:val="' + xmlEscape(style) + '"/></w:pPr>' : "";
+  function docxParagraph(text, style, relationshipId, pageBreakBefore) {
+    const styleXml = style || pageBreakBefore
+      ? '<w:pPr>' + (style ? '<w:pStyle w:val="' + xmlEscape(style) + '"/>' : "") +
+        (pageBreakBefore ? '<w:pageBreakBefore/>' : "") + '</w:pPr>'
+      : "";
     const run = '<w:r><w:t xml:space="preserve">' + xmlEscape(text) + "</w:t></w:r>";
     const content = relationshipId
       ? '<w:hyperlink r:id="' + relationshipId + '" w:history="1"><w:r><w:rPr><w:rStyle w:val="Hyperlink"/></w:rPr><w:t>' +
@@ -1854,10 +2012,6 @@
 
   function docxKeyValue(label, value) {
     return docxRichParagraph([{ text: label + ": ", bold: true }, { text: value }], "KeyValue");
-  }
-
-  function docxPageBreak() {
-    return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
   }
 
   async function exportPlanDocx() {
@@ -1910,8 +2064,7 @@
       if (!entries.length) return;
       entries.forEach(function (entry) {
         const item = entry.item;
-        body.push(docxPageBreak());
-        body.push(docxParagraph(t(item.item_type === "Funding" ? "fundingCategory" : item.item_type === "Resource" ? "resourceCategory" : "caseStudyCategory").toUpperCase(), "Category"));
+        body.push(docxParagraph(t(item.item_type === "Funding" ? "fundingCategory" : item.item_type === "Resource" ? "resourceCategory" : "caseStudyCategory").toUpperCase(), "Category", null, true));
         body.push(docxParagraph(t("phaseLabel", { phase: t(phase.toLowerCase()) }), "PhaseLabel"));
         body.push(docxParagraph(textValue(item.title, 500), "Heading2"));
         [
@@ -2100,62 +2253,85 @@
   }
 
   function exportRercie() {
-    const includeNotes = !state.workspace.projectNotes ||
-      window.confirm(t("includeNotes"));
+    const communityInput = byId("projectCommunity");
+    const community = textValue(communityInput && communityInput.value, 200);
+    if (!community) {
+      setStatus("shareStatus", t("handoffNeedsCommunity"), "warning");
+      if (communityInput) communityInput.focus();
+      return;
+    }
+    const includeNotes = Boolean(byId("includeHandoffNotes") && byId("includeHandoffNotes").checked);
     const model = projectExportModel(includeNotes);
     if (!model.items.length) {
       setStatus("shareStatus", t("noExportItems"), "warning");
       return;
     }
+    const profile = {};
+    const profileFields = {
+      geoid: "geoid", place: "community", geography_type: "placeType",
+      population: "population", median_household_income: "medianHouseholdIncome",
+      poverty_rate_percent: "povertyRate", source: "source", year: "vintage",
+      coverage_note: "coverageNote",
+    };
+    if (model.profile.geoid) {
+      Object.keys(profileFields).forEach(function (key) {
+        const value = textValue(model.profile[profileFields[key]], key === "coverage_note" ? 2000 : 300);
+        if (value) profile[key] = value;
+      });
+      const profileSource = safeHttpUrl(model.profile.source_url);
+      if (profileSource) profile.source_url = profileSource;
+    }
+    const selectedRecords = model.items.map(function (entry) {
+      const item = entry.item;
+      return {
+        item_id: itemId(item), item_type: textValue(item.item_type, 40),
+        title: textValue(item.title, 500), organization: textValue(item.organization, 500),
+        status: textValue(item.status, 200), geography: textValue(item.geography, 500),
+        eligible_users: textValue(item.eligible_users, 3000),
+        project_stage: textValue(item.project_stage, 500),
+        amount_or_cost: textValue(item.amount_or_cost, 2000),
+        match_or_cost: textValue(item.match_or_cost, 2000),
+        deadline_or_availability: textValue(item.deadline_or_availability, 2000),
+        summary: textValue(summaryFor(item), 5000), source_url: safeHttpUrl(item.source_url),
+      };
+    });
+    if (selectedRecords.some(function (record) { return !record.source_url; })) {
+      setStatus("shareStatus", t("handoffMissingSource"), "warning");
+      return;
+    }
     const payload = {
       schema: "rercie-handoff",
       version: 1,
-      generatedAt: model.generatedAt,
-      catalogVersion: model.catalogVersion,
-      communityProfile: model.profile,
-      projectTitle: includeNotes ? model.title : "",
-      projectNotes: includeNotes ? model.notes : "",
-      roadmap: PHASES.map(function (phase) {
+      community: community,
+      state: textValue(byId("stateSelect") && byId("stateSelect").value, 100),
+      projectTitle: textValue(model.title, 300),
+      projectNotes: includeNotes ? textValue(model.notes, 12000) : "",
+      profile: profile,
+      roadmap: model.items.slice(0, 50).map(function (entry) {
         return {
-          phase: phase,
-          itemIds: model.items.filter(function (entry) { return entry.phase === phase; })
-            .map(function (entry) { return itemId(entry.item); }),
+          id: itemId(entry.item), stage: entry.phase,
+          title: textValue(entry.item.title, 500),
+          status: "Saved for review",
+          notes: "Your roadmap phase; confirm the program-supported project stage separately.",
+          sourceUrl: safeHttpUrl(entry.item.source_url),
         };
       }),
-      selectedRecords: model.items.map(function (entry) {
-        const item = entry.item;
-        return {
-          item_id: itemId(item),
-          item_type: textValue(item.item_type, 80),
-          title: textValue(item.title, 500),
-          organization: textValue(item.organization, 300),
-          status: textValue(item.status, 120),
-          geography: textValue(item.geography, 300),
-          eligible_users: textValue(item.eligible_users, 2000),
-          project_stage: textValue(item.project_stage, 300),
-          amount_or_cost: textValue(item.amount_or_cost, 500),
-          match_or_cost: textValue(item.match_or_cost, 500),
-          deadline_or_availability: textValue(item.deadline_or_availability, 1000),
-          summary: summaryFor(item),
-          roadmapPhase: entry.phase,
-          source_url: safeHttpUrl(item.source_url),
-        };
-      }),
-      installerUrl: INSTALLER_URL,
-      boundary:
-        "This handoff file contains only user-approved local notes and public catalog data. It is a local file export; RERC-e processes it locally only after you open or import it. It does not contain an API key or session token.",
+      selectedRecords: selectedRecords,
     };
+    const file = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
+    if (file.size > MAX_FILE_BYTES) {
+      setStatus("shareStatus", t("handoffTooLarge"), "warning");
+      return;
+    }
     downloadBlob(
-      new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" }),
+      file,
       fileStem() + ".rercie"
     );
     const status = byId("shareStatus");
     if (status) {
       status.replaceChildren();
       status.dataset.status = "success";
-      status.appendChild(document.createTextNode(t("rercieExported") + " "));
-      const installer = safeAnchor(INSTALLER_URL, t("installerFallback"));
-      if (installer) status.appendChild(installer);
+      status.appendChild(document.createTextNode(t("handoffNextStep") + " "));
     }
   }
 
@@ -2184,10 +2360,10 @@
       showSavedOnly: state.savedOnly ? "allMatches" : "savedOnly",
       openCompare: "compare",
       exportCalendar: "deadlines",
-      exportPlanWord: "projectWorkspace",
-      exportPlanCsv: "projectWorkspace",
-      exportWorkspaceFile: "exported",
-      exportRercie: "rercieExported",
+      exportPlanWord: "exportWordAction",
+      exportPlanCsv: "exportCsvAction",
+      exportWorkspaceFile: "saveWorkspaceAction",
+      exportRercie: "handoffDownloadAction",
       openLanguage: "language",
     };
     Object.keys(labels).forEach(function (id) {
@@ -2246,6 +2422,9 @@
   function hydrateInputs() {
     const title = byId("projectTitle");
     const notes = byId("projectNotes");
+    const community = byId("projectCommunity");
+    if (community) community.value = state.workspace.profile.community === state.workspace.profile.state &&
+      state.workspace.profile.placeType === "state_or_territory" ? "" : (state.workspace.profile.community || "");
     if (title) title.value = state.workspace.projectTitle;
     if (notes) {
       notes.value = state.workspace.projectNotes;
@@ -2254,6 +2433,7 @@
     if (typeof explorer().setStateSelection === "function" && state.workspace.profile.stateCode) {
       explorer().setStateSelection(state.workspace.profile.stateCode);
     }
+    applyWorkspaceFilters();
   }
 
   function setupEventHandlers() {
@@ -2297,6 +2477,10 @@
       });
       state.observer.observe(results, { childList: true, subtree: true });
     }
+    window.addEventListener("rerc:render", function () {
+      if (state.savedOnly) renderSavedOnly();
+      else window.requestAnimationFrame(decorateResults);
+    });
 
     bind("showSavedOnly", "click", function (event) {
       toggleSavedOnly(event.currentTarget.type === "checkbox" ? event.currentTarget.checked : undefined);
@@ -2351,12 +2535,17 @@
         schedulePersist();
       });
     }
+    const projectCommunity = byId("projectCommunity");
+    if (projectCommunity) {
+      projectCommunity.addEventListener("input", captureProfileFromFilters);
+    }
     function emptyStateWorkspace() {
       state.workspace.savedIds = [];
       state.workspace.compareIds = [];
       state.workspace.roadmapAssignments = {};
       state.workspace.projectTitle = "";
       state.workspace.projectNotes = "";
+      state.workspace.filters = {};
       state.savedOnly = false;
     }
 
@@ -2364,7 +2553,7 @@
       const option = control && control.options ? control.options[control.selectedIndex] : null;
       const value = textValue(control && control.value, 120);
       const label = textValue(option && option.text, 120) || value;
-      return sanitizeProfile(value ? { state: label, stateCode: value, community: label, name: label, placeType: "state_or_territory" } : {});
+      return sanitizeProfile(value ? { state: label, stateCode: value, name: label, placeType: "state_or_territory" } : {});
     }
 
     const communityState = byId("stateSelect");
@@ -2377,8 +2566,10 @@
           state.workspace.profile = profileForState(communityState);
           const title = byId("projectTitle");
           const notes = byId("projectNotes");
+          const projectCommunity = byId("projectCommunity");
           if (title) title.value = "";
           if (notes) notes.value = "";
+          if (projectCommunity) projectCommunity.value = "";
           persistWorkspace().then(refreshWorkspaceUI).catch(reportError);
           setStatus("profileStatus", t("stateChanged"), "info");
         }
@@ -2394,8 +2585,10 @@
       state.workspace.profile = sanitizeProfile({});
       const title = byId("projectTitle");
       const notes = byId("projectNotes");
+      const projectCommunity = byId("projectCommunity");
       if (title) title.value = "";
       if (notes) notes.value = "";
+      if (projectCommunity) projectCommunity.value = "";
       if (typeof explorer().setStateSelection === "function") explorer().setStateSelection("");
       persistWorkspace().then(function () {
         if (typeof state.showWizardStep === "function") state.showWizardStep(1, { focus: false });
@@ -2411,9 +2604,17 @@
     if (filters) {
       filters.addEventListener("change", function (event) {
         captureProfileFromFilters();
+        captureWorkspaceFilters();
         syncCommunityGate();
       });
     }
+    const resultsToolbar = byId("resultsToolbar");
+    if (resultsToolbar) resultsToolbar.addEventListener("change", captureWorkspaceFilters);
+    const keywordSearch = byId("keywordSearch");
+    if (keywordSearch) keywordSearch.addEventListener("input", captureWorkspaceFilters);
+    document.querySelectorAll("[data-mode], #resetButton").forEach(function (control) {
+      control.addEventListener("click", function () { window.setTimeout(captureWorkspaceFilters, 0); });
+    });
     const roadmap = byId("roadmap");
     if (roadmap) {
       roadmap.addEventListener("change", function (event) {
@@ -2474,6 +2675,10 @@
       setStatus("shareStatus", t("startupError"), "error");
     });
   }
+
+  window.RERCPlannerView = {
+    getActiveMatches: function () { return state.savedOnly ? savedItems() : null; },
+  };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", start, { once: true });

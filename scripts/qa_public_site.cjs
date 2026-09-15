@@ -41,9 +41,17 @@ async function resultIds(page) {
 }
 
 async function download(page, selector, filename) {
-  const event = page.waitForEvent("download");
+  const event = page.waitForEvent("download", { timeout: 10000 });
   await page.locator(selector).click();
-  const item = await event;
+  let item;
+  try {
+    item = await event;
+  } catch (error) {
+    const choiceLengths = await page.evaluate(() => Object.fromEntries([
+      "applicantOptions", "topicOptions", "fundingTypeOptions", "resourceTypeOptions", "caseStudyPhaseOptions"
+    ].map((id) => [id, [...document.querySelectorAll(`#${id} input:checked`)].map((input) => input.value.length)])));
+    throw new Error(`${selector} did not download: ${error.message}; page errors: ${JSON.stringify(errors.slice(-8))}; selected choice lengths: ${JSON.stringify(choiceLengths)}`);
+  }
   const file = path.join(outDir, filename);
   await item.saveAs(file);
   return { file, name: item.suggestedFilename(), bytes: fs.statSync(file).size };
@@ -404,7 +412,10 @@ async function main() {
     downloads.csv = await download(page, "#exportPlanCsv", "plan.csv");
     downloads.docx = await download(page, "#exportPlanWord", "plan.docx");
     downloads.workspace = await download(page, "#exportWorkspaceFile", "plan.rerc-workspace");
-    page.once("dialog", (dialog) => dialog.accept());
+    await page.locator("#projectCommunity").fill("St. Paul");
+    await page.locator("#projectTitle").fill("QA TEST Community trail connection");
+    await page.locator("#projectNotes").fill("Synthetic browser QA notes.");
+    await page.locator("#includeHandoffNotes").check();
     downloads.rercie = await download(page, "#exportRercie", "plan.rercie");
     checks.rercie = JSON.parse(fs.readFileSync(downloads.rercie.file, "utf8"));
     checks.sequenceCsv = fs.readFileSync(downloads.csv.file, "utf8");
@@ -429,11 +440,17 @@ async function main() {
       const controls = await mobilePage.locator("button, a, input, select").evaluateAll((nodes) => nodes.filter((node) => {
         const style = getComputedStyle(node); const box = node.getBoundingClientRect();
         return !node.matches('input[type="file"]') && style.display !== "none" && style.visibility !== "hidden" && box.width > 0 && box.height > 0;
-      }).map((node) => Math.min(node.getBoundingClientRect().width, node.getBoundingClientRect().height)));
+      }).map((node) => {
+        const target = node.matches('input[type="checkbox"], input[type="radio"]') && node.closest("label") || node;
+        const box = target.getBoundingClientRect();
+        return { name: node.id || node.getAttribute("aria-label") || node.textContent.trim().slice(0,40) || node.tagName,
+          width: Math.round(box.width), height: Math.round(box.height) };
+      }));
       checks.mobile[width] = {
         overflow: await overflow(mobilePage),
         bottomNav: await mobilePage.locator(".mobile-nav").isVisible(),
-        controls44: controls.every((value) => value >= 44),
+        controls44: controls.every((control) => Math.min(control.width, control.height) >= 44),
+        smallControls: controls.filter((control) => Math.min(control.width, control.height) < 44),
         lockedInitially: locked,
         stateSelected: await mobilePage.locator("#stateSelect").inputValue() === "New Mexico",
         results: await mobilePage.locator(".result-card").count() > 0
@@ -443,7 +460,7 @@ async function main() {
       checks.mobile[width].stateSwitch = await mobilePage.locator("#stateSelect").inputValue() === "Colorado";
       await mobilePage.locator("#resetStateSelection").click(); await mobilePage.waitForTimeout(200);
       checks.mobile[width].stateReset = await mobilePage.locator("#stateSelect").inputValue() === "";
-      check(`mobile_${width}`, Object.values(checks.mobile[width]).every(Boolean));
+      check(`mobile_${width}`, Object.entries(checks.mobile[width]).filter(([key]) => key !== "smallControls").every(([, value]) => Boolean(value)));
       await mobilePage.screenshot({ path: path.join(outDir, `mobile-${width}.png`), fullPage: true });
       await mobile.close();
     }

@@ -271,6 +271,7 @@ fieldset legend { margin-bottom: 9px; }
 .roadmap-item { display: grid; gap: 7px; }
 .roadmap-item label { font-weight: 800; overflow-wrap: anywhere; }
 .roadmap-stage-label { color: var(--muted); font-size: 0.8rem; font-weight: 800; }
+.roadmap-program-stage { color: var(--muted); font-size: 0.78rem; line-height: 1.35; }
 .roadmap-item select { min-height: 44px; padding: 8px 10px; color: var(--ink); background: var(--white); border: 1px solid #8d9f97; border-radius: 4px; font: inherit; }
 .deadline-item { display: grid; gap: 8px; min-width: 0; padding: 13px 0; }
 .deadline-item h3 { margin: 0; color: var(--forest); font-size: 0.96rem; line-height: 1.25; overflow-wrap: anywhere; }
@@ -291,6 +292,14 @@ fieldset legend { margin-bottom: 9px; }
 .action-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .action-grid > * { min-width: 0; }
 .action-grid .rercie-button { grid-column: 1 / -1; }
+.handoff-notes { display: flex; min-height: 48px; align-items: center; gap: 9px; margin-top: 9px; padding: 8px 10px; color: var(--muted); background: #f3f7f4; border: 1px solid var(--line); border-radius: 4px; font-size: 0.82rem; cursor: pointer; }
+.handoff-notes input { width: 19px; height: 19px; min-height: 0; margin: 0; accent-color: var(--rerc-green); }
+.handoff-compatibility { margin: 8px 0 0; color: var(--muted); font-size: 0.78rem; line-height: 1.4; }
+.planner-card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.planner-card-action { min-height: 44px; padding: 8px 12px; color: var(--rerc-green); background: var(--white); border: 1px solid var(--rerc-green); border-radius: 4px; font-weight: 800; cursor: pointer; }
+.planner-card-action:hover, .planner-card-action:focus-visible { color: var(--white); background: var(--rerc-green); }
+.planner-card-action.active { color: var(--white); background: var(--rerc-green); }
+.next-deadline[hidden], .results-toolbar label[hidden] { display: none !important; }
 .danger-button { display: inline-flex; min-height: 44px; align-items: center; gap: 7px; margin-top: 12px; padding: 8px 11px; color: var(--danger); background: #fff7f5; border: 1px solid #d8b0aa; border-radius: 4px; font-weight: 800; }
 
 .saved-tray { position: fixed; z-index: 1500; right: 18px; bottom: 18px; display: grid; width: min(420px, calc(100vw - 36px)); max-height: min(640px, calc(100vh - 36px)); overflow: hidden; background: var(--white); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 18px 56px rgba(12,40,31,0.26); }

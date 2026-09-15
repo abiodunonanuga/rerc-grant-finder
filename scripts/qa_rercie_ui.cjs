@@ -16,6 +16,10 @@ async function openPage(context) {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
+  await page.route("**/api/grants", (route) => route.fulfill({
+    status: 200, contentType: "application/json",
+    body: JSON.stringify({ grants: [], updated: "Synthetic UI QA" })
+  }));
   await page.goto(`${baseUrl}#token=${encodeURIComponent(token)}`, { waitUntil: "networkidle", timeout: 60000 });
   return { page, errors };
 }
@@ -46,6 +50,7 @@ async function main() {
     await page.locator("#state").selectOption("Virginia");
     await page.locator("#projectTitle").fill("Downtown trail connection");
     await page.locator("#projectSummary").fill("Connect downtown businesses to the regional trail with safer wayfinding.");
+    await page.locator("#usePublicData").uncheck();
     await page.locator("#provider").selectOption("fallback");
     await page.locator("#draftButton").click();
     await page.waitForFunction(() => document.getElementById("output").textContent.includes("## Fit Summary"), null, { timeout: 30000 });
