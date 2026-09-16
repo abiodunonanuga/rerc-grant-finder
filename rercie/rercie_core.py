@@ -1455,7 +1455,7 @@ HTML_PAGE = r'''<!doctype html>
     let sessionToken=launchToken;
     try{ if(launchToken)sessionStorage.setItem(TOKEN_STORAGE_KEY,launchToken); else sessionToken=sessionStorage.getItem(TOKEN_STORAGE_KEY)||""; }catch{}
     if(location.hash)history.replaceState(null,"",location.pathname+location.search);
-    async function apiFetch(url,options={}){ if(!sessionToken)throw new Error("Open RERC-e from its Start Menu shortcut to connect this tab."); const headers=new Headers(options.headers||{}); headers.set("X-RERCie-Token",sessionToken); const response=await fetch(url,{...options,headers}); if(response.status===403){sessionToken=""; try{sessionStorage.removeItem(TOKEN_STORAGE_KEY);}catch{} throw new Error("The local session expired. Reopen RERC-e from its Start Menu shortcut. Your work in this tab is still saved.");} return response; }
+    async function apiFetch(url,options={}){ if(!sessionToken)throw new Error("Open RERC-e from its Start Menu shortcut to connect this tab."); const headers=new Headers(options.headers||{}); headers.set("X-RERC-e-Token",sessionToken); const response=await fetch(url,{...options,headers}); if(response.status===403){sessionToken=""; try{sessionStorage.removeItem(TOKEN_STORAGE_KEY);}catch{} throw new Error("The local session expired. Reopen RERC-e from its Start Menu shortcut. Your work in this tab is still saved.");} return response; }
     function setStatus(message,warning=false){ status.textContent=message; status.className=warning?"status global-status warning":"status global-status"; }
     const PROJECT_STORAGE_KEY="rercie.tabProject.v1";
     const PROJECT_FIELDS=["community","state","projectTitle","projectSummary","selectedGrant","matchCapacity","sourceNotes","projectNotes","provider","usePublicData"];
@@ -1537,7 +1537,7 @@ HTML_PAGE = r'''<!doctype html>
 </html>'''.replace("__STATE_OPTIONS__", json.dumps([""] + list(STATE_FIPS.keys())))
 
 
-class RERCieHandler(BaseHTTPRequestHandler):
+class RERCeHandler(BaseHTTPRequestHandler):
     server_version = f"RERC-e/{APP_VERSION}"
 
     def log_message(self, format: str, *args: Any) -> None:
@@ -1557,7 +1557,7 @@ class RERCieHandler(BaseHTTPRequestHandler):
             if origin and origin.lower() != EXPECTED_ORIGIN:
                 self.send_json({"error": "Local request rejected."}, status=403)
                 return False
-            provided = self.headers.get("X-RERCie-Token", "")
+            provided = self.headers.get("X-RERC-e-Token", "")
             if not SESSION_TOKEN or not secrets.compare_digest(provided, SESSION_TOKEN):
                 self.send_json({"error": "Local session not authorized."}, status=403)
                 return False
@@ -1675,7 +1675,7 @@ def serve(host: str, port: int) -> int:
     EXPECTED_ORIGIN = f"http://{EXPECTED_HOST}"
     if not SESSION_TOKEN:
         raise RuntimeError("RERC-e needs a local session token.")
-    server = ThreadingHTTPServer((host, port), RERCieHandler)
+    server = ThreadingHTTPServer((host, port), RERCeHandler)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

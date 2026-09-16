@@ -18,7 +18,7 @@ using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
-namespace RERCieDesktop
+namespace RERCeDesktop
 {
     internal static class Config
     {
@@ -69,7 +69,7 @@ namespace RERCieDesktop
         public static readonly string LlamaDir = Path.Combine(RuntimeDir, "llama");
         public static readonly string LlamaExe = Path.Combine(LlamaDir, "llama-server.exe");
         public static readonly string ServiceDir = Path.Combine(Root, "service");
-        public static readonly string ServiceExe = Path.Combine(ServiceDir, "RERCieService.exe");
+        public static readonly string ServiceExe = Path.Combine(ServiceDir, "RERC-eService.exe");
         public static readonly string PidDir = Path.Combine(RuntimeDir, "pids");
         public static readonly string HandoffDir = Path.Combine(RuntimeDir, "handoff");
         public static readonly string PendingHandoffPath = Path.Combine(HandoffDir, "pending.rercie");
@@ -253,7 +253,7 @@ namespace RERCieDesktop
                 request.Timeout = 1800;
                 request.ReadWriteTimeout = 1800;
                 request.Proxy = null;
-                if (!string.IsNullOrWhiteSpace(sessionToken)) request.Headers["X-RERCie-Token"] = sessionToken;
+                if (!string.IsNullOrWhiteSpace(sessionToken)) request.Headers["X-RERC-e-Token"] = sessionToken;
                 using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
                 using (StreamReader reader = new StreamReader(response.GetResponseStream()))
                     return reader.ReadToEnd().IndexOf(expected, StringComparison.OrdinalIgnoreCase) >= 0;
@@ -1168,7 +1168,7 @@ namespace RERCieDesktop
             }
 
             bool created;
-            using (Mutex mutex = new Mutex(true, "Local\\RERCie-Desktop", out created))
+            using (Mutex mutex = new Mutex(true, "Local\\RERC-e-Desktop", out created))
             {
                 if (!created)
                 {

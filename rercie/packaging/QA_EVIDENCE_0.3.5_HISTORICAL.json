@@ -3,7 +3,7 @@
     "status":  "HISTORICAL_SOURCE_PASS",
     "historical":  true,
     "current_release_evidence":  false,
-    "historical_note":  "This records reviewed 0.3.5 source and package evidence. It does not certify RERCie 0.4.0.",
+    "historical_note":  "This records reviewed 0.3.5 source and package evidence. It does not certify RERC-e 0.4.0.",
     "tested_date":  "2026-07-18",
     "checks":  {
                    "source_smoke":  {
@@ -175,8 +175,8 @@
                                   "python rercie/rercie.py --smoke",
                                   "python -m py_compile rercie/rercie.py rercie/rercie_core.py rercie/rercie_quality.py",
                                   "node scripts/qa_public_site.cjs http://127.0.0.1:8875/ QA_OUTPUT",
-                                  "RERCie.exe --smoke-output launcher-smoke.json",
-                                  "RERCie.exe --probe-download-output launcher-download-probe.json",
+                                  "RERC-e.exe --smoke-output launcher-smoke.json",
+                                  "RERC-e.exe --probe-download-output launcher-download-probe.json",
                                   "build_installer.ps1 -AcceptRuntimeDownload"
                               ],
     "evidence_stage":  "historical_source"

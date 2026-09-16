@@ -1,10 +1,10 @@
 {
   "status": "PASS",
-  "tested_date": "2026-09-15",
+  "tested_date": "2026-09-16",
   "app_version": "0.5.1",
   "model": "gemma-3-1b-it-Q4_K_M.gguf",
-  "source_sha256": "f51eeeaeed32c55bce0894ed37a4747e61a08441c24e1a4fd246621f27242ba9",
-  "source_normalized_sha256": "f51eeeaeed32c55bce0894ed37a4747e61a08441c24e1a4fd246621f27242ba9",
+  "source_sha256": "a2a2822cab761ecdff38b28e7c9fa7b2db6cda3fe49b00626b6061784ab402ea",
+  "source_normalized_sha256": "a2a2822cab761ecdff38b28e7c9fa7b2db6cda3fe49b00626b6061784ab402ea",
   "verified_excerpt_count": 1,
   "raw_model_prose_exposed": false,
   "deterministic_scaffold": true,

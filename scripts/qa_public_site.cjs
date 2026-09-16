@@ -394,7 +394,7 @@ async function main() {
       lang: await page.locator("html").getAttribute("lang") === "es",
       stateIntro: /Primero, elija/.test(await page.locator("#communityFilters").innerText()),
       resources: /Recursos/.test(await page.locator("#showResources").innerText()),
-      download: /Descargar RERC-e/.test(await page.locator("#rercieDownload").innerText()),
+      download: /Descargar RERC-e/.test(await page.locator("#rercEDownload").innerText()),
       website: /Sitio web del programa/.test(await spanishCard.innerText()),
       who: /Qui[eé]n:/.test(await spanishCard.innerText()),
       coverage: !/Coverage note:/.test(await page.locator("body").innerText()),
@@ -416,7 +416,7 @@ async function main() {
     await page.locator("#projectTitle").fill("QA TEST Community trail connection");
     await page.locator("#projectNotes").fill("Synthetic browser QA notes.");
     await page.locator("#includeHandoffNotes").check();
-    downloads.rercie = await download(page, "#exportRercie", "plan.rerc-e");
+    downloads.rercie = await download(page, "#exportRercE", "plan.rerc-e");
     checks.rercie = JSON.parse(fs.readFileSync(downloads.rercie.file, "utf8"));
     checks.sequenceCsv = fs.readFileSync(downloads.csv.file, "utf8");
     check("funding_sequence_csv", checks.sequenceCsv.includes("Funding sequence order")

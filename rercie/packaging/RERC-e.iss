@@ -48,7 +48,7 @@ VersionInfoVersion={#AppVersion}.0
 VersionInfoCompany=EPR, P.C. - Timberwing Systems
 VersionInfoDescription=RERC-e local grant-writing guide
 VersionInfoProductName=RERC-e
-AppMutex=Local\RERCie-Desktop
+AppMutex=Local\RERC-e-Desktop
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

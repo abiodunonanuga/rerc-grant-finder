@@ -70,7 +70,7 @@ async function main() {
     const importedProfile = await page.evaluate(async ({ token }) => {
       const response = await fetch("/api/draft", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-RERCie-Token": token },
+        headers: { "Content-Type": "application/json", "X-RERC-e-Token": token },
         body: JSON.stringify({
           community: "St. Paul", state: "Virginia", projectTitle: "Trail", projectNotes: "Connect the trail.",
           publicProfile: { place: "St. Paul town, Virginia", population: "0", source: "Imported profile", source_url: "https://data.census.gov/" },

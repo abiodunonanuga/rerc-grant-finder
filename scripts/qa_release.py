@@ -176,7 +176,7 @@ def main() -> int:
         (
             attrs.get("href", "")
             for tag, attrs in site_contract.elements
-            if tag == "a" and attrs.get("id") == "rercieDownload"
+            if tag == "a" and attrs.get("id") == "rercEDownload"
         ),
         "",
     )
@@ -375,10 +375,10 @@ def main() -> int:
     assert "RERC-e is reviewing your notes with local Gemma" in core
     assert "rawModelProseExposed" in core
     assert "parse_verified_excerpts" in core
-    launcher = (ROOT / "rercie" / "packaging" / "RERCieLauncher.cs").read_text(encoding="utf-8")
+    launcher = (ROOT / "rercie" / "packaging" / "RERC-eLauncher.cs").read_text(encoding="utf-8")
     assert "Read the Gemma Terms" in launcher
     assert "Apache License 2.0" not in launcher
-    installer_script = (ROOT / "rercie" / "packaging" / "RERCie.iss").read_text(encoding="utf-8")
+    installer_script = (ROOT / "rercie" / "packaging" / "RERC-e.iss").read_text(encoding="utf-8")
     assert '[InstallDelete]' not in installer_script
     assert 'Name: "{app}\\models"' in installer_script  # Uninstall cleanup remains intentional.
     assert '#define AppVersion "0.5.1"' in installer_script

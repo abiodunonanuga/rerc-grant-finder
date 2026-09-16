@@ -156,7 +156,7 @@ if (-not (Test-Path -LiteralPath $webView2Package -PathType Leaf) -or (Get-Sha25
     throw "The Microsoft WebView2 SDK package failed its pinned SHA-256 check."
 }
 
-python -m PyInstaller --noconfirm --clean --distpath (Join-Path $PyInstallerRoot "dist") --workpath (Join-Path $PyInstallerRoot "work") .\RERCieService.spec
+python -m PyInstaller --noconfirm --clean --distpath (Join-Path $PyInstallerRoot "dist") --workpath (Join-Path $PyInstallerRoot "work") .\RERC-eService.spec
 if ($LASTEXITCODE -ne 0) { throw "PyInstaller failed." }
 
 if (-not (Test-Path -LiteralPath $ArchivePath -PathType Leaf) -or (Get-Sha256 $ArchivePath) -ne $RuntimeSha256) {
@@ -188,9 +188,9 @@ foreach ($name in $runtimeFiles | Select-Object -Unique) {
     if (-not (Test-Path -LiteralPath $source -PathType Leaf)) { throw "Required llama.cpp runtime file is missing: $name" }
     Copy-Item -LiteralPath $source -Destination (Join-Path $PackageRoot "runtime\llama\$name")
 }
-$ServiceSource = Join-Path $PyInstallerRoot "dist\RERCieService"
+$ServiceSource = Join-Path $PyInstallerRoot "dist\RERC-eService"
 $ServiceDestination = Join-Path $PackageRoot "service"
-if (-not (Test-Path -LiteralPath (Join-Path $ServiceSource "RERCieService.exe") -PathType Leaf)) { throw "The one-folder RERC-e service build was not created." }
+if (-not (Test-Path -LiteralPath (Join-Path $ServiceSource "RERC-eService.exe") -PathType Leaf)) { throw "The one-folder RERC-e service build was not created." }
 Copy-Item -LiteralPath $ServiceSource -Destination $ServiceDestination -Recurse
 
 if (-not (Test-Path -LiteralPath $Csc -PathType Leaf)) { throw "The Windows C# compiler was not found at $Csc." }
@@ -210,12 +210,12 @@ $cscArgs = @(
     "/reference:System.Windows.Forms.dll", "/reference:System.Net.Http.dll",
     "/reference:System.Web.Extensions.dll", "/reference:System.Security.dll",
     "/reference:$webView2Core", "/reference:$webView2WinForms",
-    (Join-Path $Here "packaging\RERCieLauncher.cs")
+    (Join-Path $Here "packaging\RERC-eLauncher.cs")
 )
 & $Csc @cscArgs
 if ($LASTEXITCODE -ne 0) { throw "The native RERC-e launcher build failed." }
 $launcherSignatureStatus = Sign-TimberwingBinary (Join-Path $PackageRoot "RERC-e.exe")
-$serviceSignatureStatus = Sign-TimberwingBinary (Join-Path $PackageRoot "service\RERCieService.exe")
+$serviceSignatureStatus = Sign-TimberwingBinary (Join-Path $PackageRoot "service\RERC-eService.exe")
 
 $PythonRoot = (& python -c "import sys; print(sys.base_prefix)").Trim()
 $PythonLicense = Join-Path $PythonRoot "LICENSE.txt"
@@ -282,7 +282,7 @@ $qa.release_binding.status = "PACKAGE_BOUND"
 
 $serviceQaPort = 18791
 $serviceQaToken = ([Guid]::NewGuid().ToString("N") + [Guid]::NewGuid().ToString("N"))
-$serviceQaExe = Join-Path $PackageRoot "service\RERCieService.exe"
+$serviceQaExe = Join-Path $PackageRoot "service\RERC-eService.exe"
 $serviceQaProcess = $null
 $serviceQaReady = $false
 $oldSessionToken = $env:RERCIE_SESSION_TOKEN
@@ -295,7 +295,7 @@ try {
     $serviceQaProcess = Start-Process -FilePath $serviceQaExe -ArgumentList @("--serve", "--host", "127.0.0.1", "--port", "$serviceQaPort") -WorkingDirectory (Split-Path $serviceQaExe) -PassThru
     for ($attempt = 0; $attempt -lt 60; $attempt++) {
         try {
-            $health = Invoke-RestMethod -Uri "http://127.0.0.1:$serviceQaPort/health" -Headers @{ "X-RERCie-Token" = $serviceQaToken } -TimeoutSec 2
+            $health = Invoke-RestMethod -Uri "http://127.0.0.1:$serviceQaPort/health" -Headers @{ "X-RERC-e-Token" = $serviceQaToken } -TimeoutSec 2
             if ($health.status -eq "ok" -and $health.app -eq "RERC-e") { $serviceQaReady = $true; break }
         } catch { }
         Start-Sleep -Milliseconds 500
@@ -336,7 +336,7 @@ $qa.status = "PACKAGE_PASS"
 [IO.File]::WriteAllText($qaPath, ($qa | ConvertTo-Json -Depth 8), [Text.UTF8Encoding]::new($false))
 if (-not (Test-Path -LiteralPath $InnoCompiler -PathType Leaf)) { throw "Inno Setup was not found at $InnoCompiler." }
 if (Test-Path -LiteralPath $InstallerPath) { Remove-Item -LiteralPath $InstallerPath -Force }
-& $InnoCompiler "/DSourceRoot=$PackageRoot" "/DOutputDir=$OutputDirectory" "/DAppVersion=$Version" (Join-Path $Here "packaging\RERCie.iss")
+& $InnoCompiler "/DSourceRoot=$PackageRoot" "/DOutputDir=$OutputDirectory" "/DAppVersion=$Version" (Join-Path $Here "packaging\RERC-e.iss")
 if ($LASTEXITCODE -ne 0) { throw "The RERC-e installer build failed." }
 if (-not (Test-Path -LiteralPath $InstallerPath -PathType Leaf)) { throw "The RERC-e installer was not created." }
 $installerSignatureStatus = Sign-TimberwingBinary $InstallerPath

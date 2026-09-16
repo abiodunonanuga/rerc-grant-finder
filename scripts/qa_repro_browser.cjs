@@ -143,7 +143,7 @@ async function run() {
     if (!versionNote.includes("0.4.0 installer cannot import")) throw new Error("Handoff hides the current installer incompatibility.");
     let handoffDialogs = 0;
     explorer.on("dialog", async (dialog) => { handoffDialogs += 1; await dialog.dismiss(); });
-    const handoff = await saveDownload(explorer, "#exportRercie", "community-plan.rerc-e");
+    const handoff = await saveDownload(explorer, "#exportRercE", "community-plan.rerc-e");
     if (handoffDialogs) throw new Error("Handoff still requires a native Firefox/JavaScript dialog.");
     const pythonCheck = "import json,sys;sys.path.insert(0,sys.argv[1]);from rercie_core import validate_handoff_text;from pathlib import Path;p=validate_handoff_text(Path(sys.argv[2]).read_bytes());print(json.dumps({'community':p['community'],'state':p['state'],'notes':p['projectNotes'],'records':len(p['selectedRecords'])}))";
     checks.handoff = JSON.parse(execFileSync("python", ["-c", pythonCheck, path.join(root, "rercie"), handoff], { encoding: "utf8" }));
@@ -209,7 +209,7 @@ async function run() {
     await local.reload({ waitUntil: "domcontentloaded" });
     checks.reloadedProject = await local.locator("#projectSummary").inputValue();
     checks.reloadedDraft = (await local.locator("#output").innerText()).includes("Riverfront trail access");
-    const health = await local.evaluate(() => fetch("/health", { headers: { "X-RERCie-Token": sessionStorage.getItem("rercie.tabSessionToken.v1") || "" } }).then((response) => response.status));
+    const health = await local.evaluate(() => fetch("/health", { headers: { "X-RERC-e-Token": sessionStorage.getItem("rercie.tabSessionToken.v1") || "" } }).then((response) => response.status));
     checks.reloadedHealthStatus = health;
     if (health !== 200 || !checks.reloadedDraft ||
         checks.reloadedProject !== "Changed synthetic project scope after drafting.") {

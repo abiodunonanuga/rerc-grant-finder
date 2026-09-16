@@ -26,7 +26,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name="RERCieService",
+    name="RERC-eService",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -47,5 +47,5 @@ collect = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name="RERCieService",
+    name="RERC-eService",
 )

@@ -2252,7 +2252,7 @@
     window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
   }
 
-  function exportRercie() {
+  function exportRercE() {
     const communityInput = byId("projectCommunity");
     const community = textValue(communityInput && communityInput.value, 200);
     if (!community) {
@@ -2363,7 +2363,7 @@
       exportPlanWord: "exportWordAction",
       exportPlanCsv: "exportCsvAction",
       exportWorkspaceFile: "saveWorkspaceAction",
-      exportRercie: "handoffDownloadAction",
+      exportRercE: "handoffDownloadAction",
       openLanguage: "language",
     };
     Object.keys(labels).forEach(function (id) {
@@ -2501,7 +2501,7 @@
     bind("exportPlanWord", "click", function () { exportPlanDocx().catch(reportError); });
     bind("exportPlanCsv", "click", exportPlanCsv);
     bind("exportWorkspaceFile", "click", exportWorkspace);
-    bind("exportRercie", "click", exportRercie);
+    bind("exportRercE", "click", exportRercE);
     bind("deleteLocalData", "click", function () { deleteLocalData().catch(reportError); });
     bind("shareWorkspace", "click", showShareDialog);
     bind("copyShareLink", "click", function () { copyShareLink().catch(reportError); });

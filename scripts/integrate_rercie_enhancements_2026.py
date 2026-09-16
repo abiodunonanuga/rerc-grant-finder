@@ -268,7 +268,7 @@ def update_public_mascot() -> None:
 
 
 def update_launcher() -> None:
-    path = ROOT / "rercie" / "packaging" / "RERCieLauncher.cs"
+    path = ROOT / "rercie" / "packaging" / "RERC-eLauncher.cs"
     text = path.read_text(encoding="utf-8")
     old = '''        private async void StopClicked(object sender, EventArgs args)
         {
@@ -317,8 +317,8 @@ def update_versions() -> None:
         "rercie/rercie.py": [("app.APP_VERSION = \"0.5.0\"", "app.APP_VERSION = \"0.5.1\"")],
         "rercie/rercie_quality.py": [("app.APP_VERSION = \"0.5.0\"", "app.APP_VERSION = \"0.5.1\"")],
         "rercie/build_installer.ps1": [("$Version = \"0.5.0\"", "$Version = \"0.5.1\"")],
-        "rercie/packaging/RERCieLauncher.cs": [("Version = \"0.5.0\"", "Version = \"0.5.1\"")],
-        "rercie/packaging/RERCie.iss": [("AppVersion \"0.5.0\"", "AppVersion \"0.5.1\"")],
+        "rercie/packaging/RERC-eLauncher.cs": [("Version = \"0.5.0\"", "Version = \"0.5.1\"")],
+        "rercie/packaging/RERC-e.iss": [("AppVersion \"0.5.0\"", "AppVersion \"0.5.1\"")],
         "rercie/README.md": [("Current source version: `0.5.0`", "Current source version: `0.5.1`"), ("RERC-e 0.5.0", "RERC-e 0.5.1")],
         "rercie/RERC-e-LICENSE.txt": [("Version 0.5.0", "Version 0.5.1"), ("TIMBERWING-RERC-E-0.5.0-20260719", "TIMBERWING-RERC-E-0.5.1-20260819")],
         "scripts/qa_release.py": [("EXPECTED_RERCIE_VERSION = \"0.5.0\"", "EXPECTED_RERCIE_VERSION = \"0.5.1\""), ('#define AppVersion "0.5.0"', '#define AppVersion "0.5.1"'), ('$Version = "0.5.0"', '$Version = "0.5.1"'), ("rerc_e_0.5.0", "rerc_e_0.5.1")],

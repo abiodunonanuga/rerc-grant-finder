@@ -48,7 +48,7 @@ def current_expected_counts() -> dict[str, int]:
 
 
 def layout_sha256() -> str:
-    source = (PACKAGING / "RERCieLauncher.cs").read_text(encoding="utf-8")
+    source = (PACKAGING / "RERC-eLauncher.cs").read_text(encoding="utf-8")
     pattern = re.compile(
         r"^\s*(?:ClientSize|MinimumSize|AutoScaleMode|\w+\.(?:Location|Size|Font|AutoSize|MinimumSize|MaximumSize))\s*=.*$",
         re.MULTILINE,
@@ -86,7 +86,7 @@ def source_service_identity_check() -> dict[str, int | bool]:
         healthy = False
         while time.time() < deadline:
             try:
-                healthy = status("/health", {"Host": host, "X-RERCie-Token": token}) == 200
+                healthy = status("/health", {"Host": host, "X-RERC-e-Token": token}) == 200
                 if healthy:
                     break
             except (OSError, urllib.error.URLError):
@@ -94,10 +94,10 @@ def source_service_identity_check() -> dict[str, int | bool]:
             time.sleep(0.25)
         assert healthy, "RERC-e source service did not become healthy."
         missing_token = status("/health", {"Host": host})
-        wrong_host = status("/health", {"Host": "example.test", "X-RERCie-Token": token})
+        wrong_host = status("/health", {"Host": "example.test", "X-RERC-e-Token": token})
         wrong_origin = status(
             "/api/community-profile",
-            {"Host": host, "Origin": "https://example.test", "X-RERCie-Token": token, "Content-Type": "application/json"},
+            {"Host": host, "Origin": "https://example.test", "X-RERC-e-Token": token, "Content-Type": "application/json"},
             b"{}",
         )
         assert (missing_token, wrong_host, wrong_origin) == (403, 421, 403)

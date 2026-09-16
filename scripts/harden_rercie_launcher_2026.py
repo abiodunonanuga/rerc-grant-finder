@@ -18,7 +18,7 @@ def replace_once(text: str, old: str, new: str, label: str) -> str:
 
 
 def update_launcher() -> None:
-    path = ROOT / "rercie" / "packaging" / "RERCieLauncher.cs"
+    path = ROOT / "rercie" / "packaging" / "RERC-eLauncher.cs"
     text = path.read_text(encoding="utf-8")
 
     download_anchor = '        public static async Task DownloadAsync(string url, string destination, Action<long, long> progress)\n'
@@ -113,7 +113,7 @@ def update_launcher() -> None:
 
 
 def update_installer() -> None:
-    path = ROOT / "rercie" / "packaging" / "RERCie.iss"
+    path = ROOT / "rercie" / "packaging" / "RERC-e.iss"
     text = path.read_text(encoding="utf-8")
     old = """  if (CurStep = ssInstall) and FileExists(ExpandConstant('{app}\\RERC-e.exe')) then
     Exec(ExpandConstant('{app}\\RERC-e.exe'), '--stop', ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
