@@ -8,7 +8,7 @@
   "catalog_source_commit": "bc435b9c8db32573f852f8dfb3fba71a9fd5e234",
   "release_binding_note": "This is the source commit used to generate the files. The QA report records the generated file hashes.",
   "site_sha256": {
-    "index.html": "81fcbb07213681dc07a59b5b795ea85e1e2addb611fc671b0c36dd0550b23974",
+    "index.html": "ee79b84384fd8734388c5d1e56ced25157dd20c55c8ff8d011166e1724ad2c4d",
     "styles.css": "7566e6d75c5e21b9c9f1bca3a3aad9f7d60687e41fd87ffe177cc1e97575614b",
     "rercie.css": "218bfb2993d46f1c396719bacbbb69cfcef47b6fccb7f76eb1f2c97a73ac475c",
     "app.js": "e3355f6a7ac67b84e1ae165dc6baf4905e04cf62536160509b947bfff30133a2",
@@ -24,7 +24,7 @@
     "vendor/lucide.min.js": "3411692820cb8d47543f69496aa25fd603a358f4498046f41c508a5a3342210e",
     "assets/hero-outdoor.jpg": "c401e10950d2fbc0698ef754003010cc6045b5ecd2ed7ce230fce72715c3983c",
     "assets/rerc-e-eagle.jpg": "a549963e0172f9a8f27f9f78288cb974ef7a567ac0c9818fbb7f35b6d5a2e57a",
-    "README.md": "439c521a6eae11e2015e8232bee99d46bbb7906659c24b2c301f6a56f410431f"
+    "README.md": "02512551f8d597aa210cd80b84bcf0e13641313faf41f6453fd421dcf962d971"
   },
   "source_sha256": {
     "data.js": "5a5bc827ca95418b76353bc2afffad695b2ca3ffeb3378a4695478f4855a6af9",
@@ -47,9 +47,9 @@
   },
   "site_validation": {
     "status": "PASS",
-    "checked_on": "2026-09-15",
-    "site_commit": "e53533a718fce09249b39820e0a430d3e4ba0aaa",
-    "browser_report_sha256": "dce26798f3283f2fa2c31d3d5b8b457fa0ee5ae8944df68f653fb22a0ae2fd4d",
+    "checked_on": "2026-09-16",
+    "site_commit": "dbda7a95f90938a424aa4e3f30da376005bf8adf",
+    "browser_report_sha256": "ada019b408a3ed018c55df899db7b7999bb108541429b56cec5d870ed21915e3",
     "note": "Site interface source and browser QA refreshed; the linked static catalog files and their original package source remain unchanged."
   }
 }
