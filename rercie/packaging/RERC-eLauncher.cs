@@ -15,8 +15,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
+#if RERC_E_ACCEPTANCE_QA
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+#endif
 
 namespace RERCeDesktop
 {
@@ -113,6 +115,12 @@ namespace RERCeDesktop
         public string session_token { get; set; }
     }
 
+    internal sealed class AppWindowCodeResponse
+    {
+        public string code { get; set; }
+        public int expiresInSeconds { get; set; }
+    }
+
     internal static class Runtime
     {
         public static readonly string Root = AppDomain.CurrentDomain.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
@@ -128,6 +136,7 @@ namespace RERCeDesktop
         public static readonly string PendingHandoffPath = Path.Combine(HandoffDir, "pending.rercie");
         public static readonly string IntegrityPath = Path.Combine(Root, "file_integrity.json");
         private static readonly JavaScriptSerializer Json = new JavaScriptSerializer();
+        private static string trustedEdgeExecutable;
 
         public static string Sha256(string path)
         {
@@ -280,13 +289,91 @@ namespace RERCeDesktop
                 && EndpointContains(Config.ModelListUrl, Config.ModelName, null);
         }
 
-        public static string AppBrowserUrl()
+        private static ProcessRecord GetAppProcessRecord()
         {
             ProcessRecord record;
             Process process;
             if (!TryGetOwnedProcess("app", ServiceExe, out record, out process) || string.IsNullOrWhiteSpace(record.session_token))
                 throw new InvalidOperationException("RERC-e's local session is not ready. Start RERC-e again.");
+            return record;
+        }
+
+#if RERC_E_ACCEPTANCE_QA
+        public static string AppBrowserUrl()
+        {
+            ProcessRecord record = GetAppProcessRecord();
             return Config.AppUrl + "/native#token=" + Uri.EscapeDataString(record.session_token);
+        }
+#endif
+
+        public static string CreateAppWindowUrl()
+        {
+            return CreateAppWindowUrl(GetAppProcessRecord().session_token);
+        }
+
+        internal static string CreateAppWindowUrl(string sessionToken)
+        {
+            if (string.IsNullOrWhiteSpace(sessionToken)) throw new InvalidOperationException("RERC-e's local session is not ready. Start RERC-e again.");
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Config.AppUrl + "/api/app-window-code");
+            request.Method = "POST";
+            request.ContentType = "application/json";
+            request.Timeout = 5000;
+            request.ReadWriteTimeout = 5000;
+            request.Proxy = null;
+            request.Headers["X-RERC-e-Token"] = sessionToken;
+            byte[] payload = Encoding.UTF8.GetBytes("{}");
+            request.ContentLength = payload.Length;
+            using (Stream output = request.GetRequestStream()) output.Write(payload, 0, payload.Length);
+            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+            {
+                AppWindowCodeResponse result = Json.Deserialize<AppWindowCodeResponse>(reader.ReadToEnd());
+                if (result == null || string.IsNullOrWhiteSpace(result.code) || result.expiresInSeconds <= 0)
+                    throw new InvalidOperationException("RERC-e could not create a secure app-window link.");
+                return Config.AppUrl + "/app-window?code=" + Uri.EscapeDataString(result.code);
+            }
+        }
+
+        public static string FindEdgeExecutable()
+        {
+            if (!string.IsNullOrWhiteSpace(trustedEdgeExecutable) && File.Exists(trustedEdgeExecutable)) return trustedEdgeExecutable;
+            List<string> candidates = new List<string>();
+            string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+            string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            if (!string.IsNullOrWhiteSpace(programFilesX86)) candidates.Add(Path.Combine(programFilesX86, "Microsoft", "Edge", "Application", "msedge.exe"));
+            if (!string.IsNullOrWhiteSpace(programFiles)) candidates.Add(Path.Combine(programFiles, "Microsoft", "Edge", "Application", "msedge.exe"));
+            if (!string.IsNullOrWhiteSpace(localAppData)) candidates.Add(Path.Combine(localAppData, "Microsoft", "Edge", "Application", "msedge.exe"));
+            foreach (string candidate in candidates)
+            {
+                if (File.Exists(candidate) && AuthenticodeVerifier.IsTrustedMicrosoftFile(candidate))
+                {
+                    trustedEdgeExecutable = Path.GetFullPath(candidate);
+                    return trustedEdgeExecutable;
+                }
+            }
+            throw new InvalidOperationException("RERC-e needs the signed Microsoft Edge app component included with supported versions of Windows. Repair or update Microsoft Edge, then try again.");
+        }
+
+        public static Process StartAppWindow(string address)
+        {
+            Uri target;
+            if (!Uri.TryCreate(address, UriKind.Absolute, out target)
+                || target.Scheme != "http"
+                || target.Host != "127.0.0.1"
+                || target.Port != 8789
+                || target.AbsolutePath != "/app-window")
+                throw new InvalidOperationException("RERC-e refused an invalid local app-window address.");
+            string executable = FindEdgeExecutable();
+            string profile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RERC-e", "EdgeApp");
+            Directory.CreateDirectory(profile);
+            string arguments = "--app=\"" + target.AbsoluteUri + "\" --user-data-dir=\"" + profile + "\" --no-first-run --no-default-browser-check --disable-background-mode --disable-extensions";
+            ProcessStartInfo info = new ProcessStartInfo(executable, arguments);
+            info.WorkingDirectory = Path.GetDirectoryName(executable);
+            info.UseShellExecute = false;
+            Process process = Process.Start(info);
+            if (process == null) throw new InvalidOperationException("The RERC-e app window could not start.");
+            return process;
         }
 
         public static string CreateSessionToken()
@@ -527,6 +614,57 @@ namespace RERCeDesktop
         }
     }
 
+    internal static class AppWindowHost
+    {
+        private delegate bool EnumWindowsCallback(IntPtr window, IntPtr parameter);
+
+        [DllImport("user32.dll")]
+        private static extern bool EnumWindows(EnumWindowsCallback callback, IntPtr parameter);
+
+        [DllImport("user32.dll")]
+        private static extern bool IsWindowVisible(IntPtr window);
+
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr window, out uint processId);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern int GetWindowText(IntPtr window, StringBuilder text, int maximumCount);
+
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr window, int command);
+
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr window);
+
+        public static bool TryActivate(string executable)
+        {
+            IntPtr match = IntPtr.Zero;
+            EnumWindows(delegate(IntPtr window, IntPtr parameter)
+            {
+                if (!IsWindowVisible(window)) return true;
+                uint processId;
+                GetWindowThreadProcessId(window, out processId);
+                if (processId == 0) return true;
+                try
+                {
+                    using (Process process = Process.GetProcessById((int)processId))
+                    {
+                        if (!string.Equals(Path.GetFullPath(process.MainModule.FileName), Path.GetFullPath(executable), StringComparison.OrdinalIgnoreCase)) return true;
+                    }
+                    StringBuilder title = new StringBuilder(512);
+                    GetWindowText(window, title, title.Capacity);
+                    if (title.ToString().IndexOf("RERC-e", StringComparison.OrdinalIgnoreCase) < 0) return true;
+                    match = window;
+                    return false;
+                }
+                catch { return true; }
+            }, IntPtr.Zero);
+            if (match == IntPtr.Zero) return false;
+            ShowWindow(match, 9);
+            return SetForegroundWindow(match);
+        }
+    }
+
     internal sealed class AccessibleStatusLabel : Label
     {
         private int lastDownloadMilestone = -1;
@@ -567,17 +705,18 @@ namespace RERCeDesktop
         private readonly Button stopButton = new Button();
         private readonly Panel setupPanel = new Panel();
         private readonly PictureBox mascotPicture = new PictureBox();
+#if RERC_E_ACCEPTANCE_QA
         private readonly Panel browserPanel = new Panel();
         private readonly WebView2 appView = new WebView2();
-        private readonly Button setupButton = new Button();
         private CoreWebView2Environment appEnvironment;
-        private bool viewConfigured;
-        private bool webViewRuntimeInstallAttempted;
+#endif
         private readonly bool startupPlanStaged;
         private bool busy;
         private CancellationTokenSource activeOperationCancellation;
+        private Process appWindowProcess;
+        private string edgeExecutable;
 
-#if RERC_E_ACCEPTANCE_QA
+#if RERC_E_ACCEPTANCE_NO_ACTIVATION
         protected override bool ShowWithoutActivation { get { return true; } }
 #endif
 
@@ -594,9 +733,6 @@ namespace RERCeDesktop
             BackColor = Color.FromArgb(248, 249, 245);
             Font = new Font("Segoe UI", 9.5f);
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-            DoubleBuffered = true;
-            ResizeRedraw = false;
-
             setupPanel.Dock = DockStyle.Fill;
             setupPanel.AutoScroll = true;
             setupPanel.BackColor = BackColor;
@@ -686,21 +822,15 @@ namespace RERCeDesktop
             AcceptButton = startButton;
             CancelButton = stopButton;
 
+#if RERC_E_ACCEPTANCE_QA
             browserPanel.Dock = DockStyle.Fill;
             browserPanel.BackColor = Color.White;
             browserPanel.Visible = false;
             appView.Dock = DockStyle.Fill;
             browserPanel.Controls.Add(appView);
-            setupButton.Text = "Setup and status";
-            setupButton.Dock = DockStyle.Top;
-            setupButton.Height = 38;
-            setupButton.FlatStyle = FlatStyle.Flat;
-            setupButton.BackColor = Color.FromArgb(243, 247, 244);
-            setupButton.ForeColor = Color.FromArgb(23, 63, 53);
-            setupButton.Click += delegate { ShowSetup(); };
-            browserPanel.Controls.Add(setupButton);
             Controls.Add(browserPanel);
             browserPanel.BringToFront();
+#endif
 
 #if RERC_E_ACCEPTANCE_QA
             Shown += delegate
@@ -714,6 +844,11 @@ namespace RERCeDesktop
             FormClosed += delegate
             {
                 if (mascotPicture.Image != null) mascotPicture.Image.Dispose();
+                try
+                {
+                    if (appWindowProcess != null && !appWindowProcess.HasExited) appWindowProcess.Kill();
+                }
+                catch { }
                 int failures;
                 Runtime.StopOwnedProcesses(out failures);
             };
@@ -878,79 +1013,58 @@ namespace RERCeDesktop
 
         private async Task OpenAppAsync()
         {
-            bool runtimeMissing = false;
             try
             {
                 if (!Runtime.AppReady()) throw new InvalidOperationException("RERC-e's local service is not ready yet.");
-                setupPanel.Visible = false;
-                browserPanel.Visible = true;
-                browserPanel.BringToFront();
-                AcceptButton = null;
-                CancelButton = null;
-                ClientSize = new Size(ScaleLogical(1180), ScaleLogical(780));
-                MinimumSize = new Size(ScaleLogical(700), ScaleLogical(540));
-                // Keep local service credentials inside the app's own WebView2 profile.
-                string profile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RERC-e", "WebView2");
-                Directory.CreateDirectory(profile);
-                if (appView.CoreWebView2 == null)
+                if (appWindowProcess != null)
                 {
-                    if (appEnvironment == null) appEnvironment = await CoreWebView2Environment.CreateAsync(null, profile);
-                    await appView.EnsureCoreWebView2Async(appEnvironment);
-                }
-                if (!viewConfigured)
-                {
-                    appView.CoreWebView2.Settings.AreDevToolsEnabled = false;
-                    appView.CoreWebView2.Settings.IsStatusBarEnabled = false;
-                    appView.CoreWebView2.NewWindowRequested += delegate(object sender, CoreWebView2NewWindowRequestedEventArgs args)
+                    try
                     {
-                        args.Handled = true;
-                        OpenExternalPage(args.Uri);
-                    };
-                    appView.NavigationStarting += delegate(object sender, CoreWebView2NavigationStartingEventArgs args)
-                    {
-                        Uri target;
-                        if (Uri.TryCreate(args.Uri, UriKind.Absolute, out target)
-                            && (target.Scheme != "http" || target.Host != "127.0.0.1" || target.Port != 8789))
+                        if (!appWindowProcess.HasExited)
                         {
-                            args.Cancel = true;
-                            OpenExternalPage(args.Uri);
+                            if (string.IsNullOrWhiteSpace(edgeExecutable)) edgeExecutable = await Task.Run((Func<string>)Runtime.FindEdgeExecutable);
+                            AppWindowHost.TryActivate(edgeExecutable);
+                            Hide();
+                            return;
                         }
-                    };
-                    viewConfigured = true;
+                    }
+                    catch { }
+                    appWindowProcess.Dispose();
+                    appWindowProcess = null;
                 }
-                appView.CoreWebView2.Navigate(Runtime.AppBrowserUrl());
-                appView.Focus();
-            }
-            catch (WebView2RuntimeNotFoundException)
-            {
-                ShowSetup();
-                runtimeMissing = true;
+
+                statusLabel.Text = "Opening the RERC-e app window...";
+                string address = await Task.Run((Func<string>)Runtime.CreateAppWindowUrl);
+                edgeExecutable = await Task.Run((Func<string>)Runtime.FindEdgeExecutable);
+                Process process = Runtime.StartAppWindow(address);
+                await Task.Delay(600);
+                if (process.HasExited)
+                {
+                    process.Dispose();
+                    throw new InvalidOperationException("Microsoft Edge closed before the RERC-e app window was ready.");
+                }
+                appWindowProcess = process;
+                process.Exited += delegate
+                {
+                    try
+                    {
+                        if (!IsDisposed && IsHandleCreated) BeginInvoke(new Action(Close));
+                    }
+                    catch { }
+                };
+                process.EnableRaisingEvents = true;
+                if (process.HasExited)
+                {
+                    Close();
+                    return;
+                }
+                Hide();
             }
             catch (Exception error)
             {
                 ShowSetup();
                 statusLabel.Text = "The app window could not open: " + error.Message;
                 MessageBox.Show(this, statusLabel.Text, "RERC-e app window", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-            if (runtimeMissing)
-            {
-                if (webViewRuntimeInstallAttempted)
-                {
-                    statusLabel.Text = "Microsoft WebView2 is still unavailable after installation. Restart RERC-e or repair the WebView2 Runtime.";
-                    MessageBox.Show(this, statusLabel.Text, "RERC-e app window", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-                try
-                {
-                    await InstallWebView2RuntimeAsync();
-                    webViewRuntimeInstallAttempted = true;
-                    await OpenAppAsync();
-                }
-                catch (Exception error)
-                {
-                    statusLabel.Text = "The app display component could not be installed: " + error.Message;
-                    MessageBox.Show(this, statusLabel.Text, "RERC-e app window", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
             }
         }
 
@@ -1056,41 +1170,15 @@ namespace RERCeDesktop
         }
 #endif
 
-        private async Task InstallWebView2RuntimeAsync()
-        {
-            DialogResult choice = MessageBox.Show(this,
-                "RERC-e needs Microsoft's WebView2 Runtime to display the app in this window. Download and install the official Microsoft component now?",
-                "Install app display component", MessageBoxButtons.OKCancel, MessageBoxIcon.Information);
-            if (choice != DialogResult.OK) throw new InvalidOperationException("The app display component was not installed.");
-            string installer = Path.Combine(Path.GetTempPath(), "RERC-e-WebView2Setup.exe");
-            statusLabel.Text = "Downloading the Microsoft app display component...";
-            await Runtime.DownloadAsync("https://go.microsoft.com/fwlink/p/?LinkId=2124703", installer, null, CancellationToken.None);
-            if (!AuthenticodeVerifier.IsTrustedMicrosoftFile(installer))
-            {
-                try { File.Delete(installer); } catch { }
-                throw new InvalidOperationException("The Microsoft component did not pass its publisher signature check.");
-            }
-            statusLabel.Text = "Installing the Microsoft app display component...";
-            ProcessStartInfo info = new ProcessStartInfo(installer, "/silent /install");
-            info.UseShellExecute = true;
-            Process process = Process.Start(info);
-            if (process == null) throw new InvalidOperationException("The Microsoft component could not start.");
-            await Task.Run((Action)(() => process.WaitForExit()));
-            try { File.Delete(installer); } catch { }
-            if (process.ExitCode != 0) throw new InvalidOperationException("The Microsoft component returned error " + process.ExitCode + ".");
-            CoreWebView2Environment.GetAvailableBrowserVersionString();
-        }
-
-        private static void OpenExternalPage(string address)
-        {
-            Uri target;
-            if (Uri.TryCreate(address, UriKind.Absolute, out target) && (target.Scheme == "https" || target.Scheme == "http"))
-                Runtime.OpenBrowser(target.AbsoluteUri);
-        }
-
         private void ShowSetup()
         {
+#if RERC_E_ACCEPTANCE_QA
             browserPanel.Visible = false;
+#else
+            if (!Visible) Show();
+            if (WindowState == FormWindowState.Minimized) WindowState = FormWindowState.Normal;
+            Activate();
+#endif
             setupPanel.Visible = true;
             setupPanel.BringToFront();
             AcceptButton = startButton;
@@ -1275,20 +1363,13 @@ namespace RERCeDesktop
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         private static extern IntPtr FindWindow(string className, string windowName);
         [DllImport("user32.dll")]
-        private static extern bool ShowWindow(IntPtr window, int command);
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr window);
-        [DllImport("user32.dll")]
         private static extern bool PostMessage(IntPtr window, int message, IntPtr wParam, IntPtr lParam);
 
         private static bool ActivateExistingWindow()
         {
             IntPtr window = FindWindow(null, "RERC-e");
             if (window == IntPtr.Zero) return false;
-            ShowWindow(window, 9);
-            SetForegroundWindow(window);
-            PostMessage(window, OpenAppMessage, IntPtr.Zero, IntPtr.Zero);
-            return true;
+            return PostMessage(window, OpenAppMessage, IntPtr.Zero, IntPtr.Zero);
         }
         [STAThread]
         private static int Main(string[] args)
@@ -1321,6 +1402,7 @@ namespace RERCeDesktop
                 try
                 {
                     Runtime.VerifyPackage();
+                    string edgeExecutable = Runtime.FindEdgeExecutable();
                     string json = new JavaScriptSerializer().Serialize(new
                     {
                         status = "PASS",
@@ -1335,6 +1417,10 @@ namespace RERCeDesktop
                         plan_version = Config.PlanVersion,
                         plan_max_bytes = Config.MaxPlanBytes,
                         plan_extensions = new[] { ".rerc-e", ".rercie", ".json" },
+                        app_window_mode = "Microsoft Edge --app",
+                        edge_executable = edgeExecutable,
+                        edge_publisher_trusted = AuthenticodeVerifier.IsTrustedMicrosoftFile(edgeExecutable),
+                        full_session_token_in_command_line = false,
                         launcher = Application.ExecutablePath
                     });
                     File.WriteAllText(args[smokeIndex + 1], json, new UTF8Encoding(false));

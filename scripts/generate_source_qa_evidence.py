@@ -8,7 +8,9 @@ import re
 import subprocess
 import sys
 import time
+import http.cookiejar
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -77,7 +79,9 @@ def current_native_windows_evidence() -> tuple[bool, dict]:
     simulated = evidence.get("simulated_geometry") or []
     scales_pass = {row.get("scale") for row in simulated if row.get("status") == "PASS"} == {"100%", "150%", "200%"}
     actual = evidence.get("actual_monitor") or {}
-    embedded = evidence.get("embedded_app") or {}
+    app_window = evidence.get("app_window_host") or {}
+    app_window_security = app_window.get("security") or {}
+    web_content = evidence.get("web_content") or {}
     current = all((
         evidence.get("status") == "PASS",
         evidence.get("evidence_stage") == "source",
@@ -89,10 +93,18 @@ def current_native_windows_evidence() -> tuple[bool, dict]:
         not actual.get("outside_parent"),
         not actual.get("unnamed_interactive"),
         scales_pass,
-        embedded.get("status") == "PASS",
-        embedded.get("step_count") == 3,
-        embedded.get("token_stored") is True,
-        embedded.get("page_overflow") is False,
+        app_window.get("status") == "PASS",
+        app_window.get("mode") == "Microsoft Edge --app",
+        app_window.get("microsoft_publisher_trusted") is True,
+        app_window.get("address_bar_visible") is False,
+        app_window_security.get("launch_code_ttl_seconds") == 60,
+        app_window_security.get("full_session_token_in_url") is False,
+        app_window_security.get("httponly_cookie") is True,
+        app_window_security.get("replay_status") == 403,
+        web_content.get("status") == "PASS",
+        web_content.get("step_count") == 3,
+        web_content.get("token_stored") is True,
+        web_content.get("page_overflow") is False,
         hashes_current,
     ))
     return current, evidence
@@ -142,7 +154,35 @@ def source_service_identity_check() -> dict[str, int | bool]:
             b"{}",
         )
         assert (missing_token, wrong_host, wrong_origin) == (403, 421, 403)
-        return {"loopback_only": True, "missing_token_status": missing_token, "wrong_host_status": wrong_host, "wrong_origin_status": wrong_origin}
+        code_request = urllib.request.Request(
+            f"http://127.0.0.1:{port}/api/app-window-code",
+            data=b"{}",
+            headers={"Host": host, "X-RERC-e-Token": token, "Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(code_request, timeout=3) as response:
+            code_payload = json.loads(response.read().decode("utf-8"))
+        assert code_payload["expiresInSeconds"] == 60 and code_payload["code"]
+        cookie_jar = http.cookiejar.CookieJar()
+        browser = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookie_jar))
+        launch_path = "/app-window?code=" + urllib.parse.quote(code_payload["code"], safe="")
+        with browser.open(urllib.request.Request(f"http://127.0.0.1:{port}{launch_path}", headers={"Host": host}), timeout=3) as response:
+            assert response.status == 200 and response.geturl().endswith("/native")
+        session_cookie = next((cookie for cookie in cookie_jar if cookie.name == "RERCeSession"), None)
+        assert session_cookie is not None and session_cookie.has_nonstandard_attr("HttpOnly")
+        with browser.open(urllib.request.Request(f"http://127.0.0.1:{port}/health", headers={"Host": host}), timeout=3) as response:
+            assert response.status == 200
+        replay_status = status(launch_path, {"Host": host})
+        assert replay_status == 403
+        return {
+            "loopback_only": True,
+            "missing_token_status": missing_token,
+            "wrong_host_status": wrong_host,
+            "wrong_origin_status": wrong_origin,
+            "app_window_code_ttl_seconds": code_payload["expiresInSeconds"],
+            "app_window_cookie_httponly": True,
+            "app_window_cookie_health_status": 200,
+            "app_window_code_replay_status": replay_status,
+        }
     finally:
         process.terminate()
         try:
@@ -260,7 +300,7 @@ def main() -> int:
         "evidence_stage": "source",
         "checks": {
             "source_smoke": {"status": "PASS", **smoke_contract, "docx_minimum_bytes": 3000},
-            "native_launcher": {"status": "PASS" if native_current else "PENDING_BUILD", "powershell_required": False, "plan_handoff_supported": True, "per_monitor_v2": native_evidence.get("per_monitor_v2") if native_current else False, "embedded_webview": (native_evidence.get("embedded_app") or {}).get("status") if native_current else "PENDING"},
+            "native_launcher": {"status": "PASS" if native_current else "PENDING_BUILD", "powershell_required": False, "plan_handoff_supported": True, "per_monitor_v2": native_evidence.get("per_monitor_v2") if native_current else False, "app_window_host": (native_evidence.get("app_window_host") or {}).get("status") if native_current else "PENDING", "one_time_launch_code": ((native_evidence.get("app_window_host") or {}).get("security") or {}).get("replay_status") == 403 if native_current else False, "web_content_acceptance": (native_evidence.get("web_content") or {}).get("status") if native_current else "PENDING"},
             "display_scaling": {"status": "PASS" if native_current else "PENDING_RETEST", "tested_scales": ([f"{(native_evidence.get('actual_monitor') or {}).get('scale_percent')}% actual", "100% simulated", "150% simulated", "200% simulated"] if native_current else []), "historical_tested_scales": display["tested_scales"], "layout_geometry_sha256": current_layout_sha256, "historical_reviewed_geometry_sha256": LAYOUT_SHA256, "historical_layout_hash_matches": layout_review_current, "dpi_autoscaling_and_scroll_enabled": True},
             "installer_wizard": {"status": "PENDING_RELEASE_TEST", "per_user_install": True, "uninstall_entry": True},
             "package_integrity": {"status": "PENDING_BUILD", "integrity_checked_binaries": 0},
@@ -277,7 +317,7 @@ def main() -> int:
             "The public installer is not code-signed, so Windows may show a safety notice.",
             "The isolated installer test runs on the build computer rather than a clean Windows virtual machine.",
             "Users must review every generated draft and verify current funding rules at the official source.",
-            "The redesigned native launcher and embedded Windows window need current native acceptance and signed-package testing." if not native_current else "The native window passed at 150% actual display scaling; 100% and 200% were geometry simulations. Signed-package and clean-machine Windows 10/11 testing remain required.",
+            "The redesigned native setup and Edge app window need current native acceptance and signed-package testing." if not native_current else "The native setup passed at 150% actual display scaling; 100% and 200% were geometry simulations. The signed Edge app host and one-time cookie handoff passed locally. Signed-package and clean-machine Windows 10/11 testing remain required.",
         ],
         "release_binding": {"source_commit": None, "integrity_manifest_sha256": None, "installer_sha256": None, "status": "PENDING_BUILD"},
         "verification_inputs": {"browser_contract_sha256": hashlib.sha256(json.dumps(browser_contract, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest(), "local_gemma_report_sha256": git_blob_sha256(head_commit, "rercie/packaging/LOCAL_GEMMA_QA.json"), "native_windows_report_sha256": sha256(PACKAGING / "NATIVE_WINDOWS_QA.json") if native_current else None},

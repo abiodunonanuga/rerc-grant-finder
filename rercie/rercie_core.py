@@ -8,12 +8,14 @@ import os
 import re
 import secrets
 import sys
+import threading
 import time
 import unicodedata
 import urllib.parse
 import urllib.request
 import zipfile
 import xml.etree.ElementTree as ET
+from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
@@ -39,6 +41,33 @@ LOCAL_MODELS_URL = os.environ.get("RERCIE_LOCAL_MODELS_URL", "http://127.0.0.1:8
 SESSION_TOKEN = os.environ.get("RERCIE_SESSION_TOKEN", "")
 EXPECTED_HOST = os.environ.get("RERCIE_EXPECTED_HOST", "127.0.0.1:8789").lower()
 EXPECTED_ORIGIN = f"http://{EXPECTED_HOST}"
+APP_WINDOW_COOKIE = "RERCeSession"
+APP_WINDOW_CODE_TTL_SECONDS = 60
+APP_WINDOW_CODES: dict[str, float] = {}
+APP_WINDOW_CODE_LOCK = threading.Lock()
+
+
+def create_app_window_code() -> str:
+    now = time.monotonic()
+    code = secrets.token_urlsafe(32)
+    with APP_WINDOW_CODE_LOCK:
+        expired = [value for value, deadline in APP_WINDOW_CODES.items() if deadline <= now]
+        for value in expired:
+            APP_WINDOW_CODES.pop(value, None)
+        APP_WINDOW_CODES[code] = now + APP_WINDOW_CODE_TTL_SECONDS
+    return code
+
+
+def consume_app_window_code(code: str) -> bool:
+    if not code:
+        return False
+    now = time.monotonic()
+    with APP_WINDOW_CODE_LOCK:
+        deadline = APP_WINDOW_CODES.pop(code, None)
+        expired = [value for value, value_deadline in APP_WINDOW_CODES.items() if value_deadline <= now]
+        for value in expired:
+            APP_WINDOW_CODES.pop(value, None)
+    return deadline is not None and deadline > now
 
 
 def _require_loopback_runtime_url(name: str, value: str) -> str:
@@ -1458,9 +1487,11 @@ HTML_PAGE = r'''<!doctype html>
     const TOKEN_STORAGE_KEY="rercie.tabSessionToken.v1";
     const launchToken=new URLSearchParams(location.hash.slice(1)).get("token")||"";
     let sessionToken=launchToken;
-    try{ if(launchToken)sessionStorage.setItem(TOKEN_STORAGE_KEY,launchToken); else sessionToken=sessionStorage.getItem(TOKEN_STORAGE_KEY)||""; }catch{}
+    const nativeCookieAuth=location.pathname==="/native";
+    const hasLocalSession=()=>Boolean(sessionToken||nativeCookieAuth);
+    try{ if(launchToken)sessionStorage.setItem(TOKEN_STORAGE_KEY,launchToken); else if(nativeCookieAuth){sessionToken="";sessionStorage.removeItem(TOKEN_STORAGE_KEY);} else sessionToken=sessionStorage.getItem(TOKEN_STORAGE_KEY)||""; }catch{}
     if(location.hash)history.replaceState(null,"",location.pathname+location.search);
-    async function apiFetch(url,options={}){ if(!sessionToken)throw new Error("Open RERC-e from its Start Menu shortcut to connect this tab."); const headers=new Headers(options.headers||{}); headers.set("X-RERC-e-Token",sessionToken); const response=await fetch(url,{...options,headers}); if(response.status===403){sessionToken=""; try{sessionStorage.removeItem(TOKEN_STORAGE_KEY);}catch{} throw new Error("The local session expired. Reopen RERC-e from its Start Menu shortcut. Your work in this tab is still saved.");} return response; }
+    async function apiFetch(url,options={}){ if(!hasLocalSession())throw new Error("Open RERC-e from its Start Menu shortcut to connect this tab."); const headers=new Headers(options.headers||{}); if(sessionToken)headers.set("X-RERC-e-Token",sessionToken); const response=await fetch(url,{...options,headers,credentials:"same-origin"}); if(response.status===403){sessionToken=""; try{sessionStorage.removeItem(TOKEN_STORAGE_KEY);}catch{} throw new Error("The local session expired. Reopen RERC-e from its Start Menu shortcut. Your work in this tab is still saved.");} return response; }
     function setStatus(message,warning=false){ status.textContent=message; status.className=warning?"status global-status warning":"status global-status"; }
     const PROJECT_STORAGE_KEY="rercie.tabProject.v1";
     const PROJECT_FIELDS=["community","state","projectTitle","projectSummary","selectedGrant","matchCapacity","sourceNotes","projectNotes","provider","usePublicData"];
@@ -1480,7 +1511,7 @@ HTML_PAGE = r'''<!doctype html>
     function applyImportedPlan(data){ document.getElementById("community").value=data.community||""; stateSelect.value=data.state||""; document.getElementById("projectTitle").value=data.projectTitle||""; document.getElementById("projectNotes").value=data.projectNotes||""; document.getElementById("selectedGrant").value=data.selectedFundingDetails||""; lastDraft="";draftInputVersion=-1;output.textContent="Create a first draft from the imported plan."; if(data.profile&&Object.keys(data.profile).length){renderProfile(data.profile,"Community facts imported from the plan.","found");}else{activePublicProfile={};document.getElementById("communityProfile").hidden=true;} renderFundingSummary();markInputsChanged();saveProjectState(); const message=(data.message||"Community Explorer plan opened.")+" Review the imported facts and official funding pages before drafting."; const importStatus=document.getElementById("planImportStatus"); importStatus.textContent=message; importStatus.className="status"; setStatus(message); }
     async function importPlanText(text){ const response=await apiFetch("/api/import-plan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({packageText:text})}); const data=await response.json(); if(!response.ok)throw new Error(data.error||"The plan could not be opened."); applyImportedPlan(data); }
     async function openPlanFile(file){ if(!file)return; const importStatus=document.getElementById("planImportStatus"); if(!/\.(rerc-e|rercie|json)$/i.test(file.name)){throw new Error("Choose a RERC-e Community Explorer plan file.");} if(file.size<=0||file.size>MAX_PLAN_BYTES){throw new Error("The plan must be a non-empty file no larger than 256 KB.");} importStatus.textContent="Checking the Community Explorer plan..."; const text=await file.text(); if(new TextEncoder().encode(text).length>MAX_PLAN_BYTES)throw new Error("The plan must be no larger than 256 KB."); let parsed; try{parsed=JSON.parse(text);}catch{throw new Error("The plan is not valid JSON.");} if(!parsed||Array.isArray(parsed)||typeof parsed!=="object"||!(["rerc-e-handoff","rercie-handoff"].includes(parsed.schema))||parsed.version!==1){throw new Error("This is not a supported RERC-e Community Explorer plan.");} await importPlanText(text); }
-    async function checkStartupPlan(){ if(!sessionToken){setStatus("Open RERC-e from its Start Menu shortcut to connect this tab.",true);return;} try{ const response=await apiFetch("/api/startup-plan"); const data=await response.json(); if(data.status==="none")return; if(!response.ok)throw new Error(data.error||"The plan could not be opened."); applyImportedPlan(data); }catch(error){ const importStatus=document.getElementById("planImportStatus"); importStatus.textContent=error.message.includes("session")?error.message:"The plan passed from Windows could not be opened: "+error.message; importStatus.className="status warning"; setStatus(importStatus.textContent,true); } }
+    async function checkStartupPlan(){ if(!hasLocalSession()){setStatus("Open RERC-e from its Start Menu shortcut to connect this tab.",true);return;} try{ const response=await apiFetch("/api/startup-plan"); const data=await response.json(); if(data.status==="none")return; if(!response.ok)throw new Error(data.error||"The plan could not be opened."); applyImportedPlan(data); }catch(error){ const importStatus=document.getElementById("planImportStatus"); importStatus.textContent=error.message.includes("session")?error.message:"The plan passed from Windows could not be opened: "+error.message; importStatus.className="status warning"; setStatus(importStatus.textContent,true); } }
     async function lookupCommunityFacts(){ const button=document.getElementById("lookupCommunity"); button.disabled=true; setStatus("Looking up community facts..."); try{ const body={community:document.getElementById("community").value,state:stateSelect.value,censusApiKey:document.getElementById("censusApiKey").value}; const response=await apiFetch("/api/community-profile",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}); const data=await response.json(); if(!response.ok)throw new Error(data.error||"Lookup failed."); renderProfile(data.profile,data.message,data.status); markInputsChanged();setStatus(data.message,data.status!=="found"); }catch(error){renderProfile({},"Community facts could not be reached right now.","unavailable");markInputsChanged();setStatus("Community lookup failed: "+error.message,true);}finally{button.disabled=false;} }
     function collectPayload(){ return {community:document.getElementById("community").value,state:stateSelect.value,projectTitle:document.getElementById("projectTitle").value,projectSummary:document.getElementById("projectSummary").value,selectedGrant:document.getElementById("selectedGrant").value,matchCapacity:document.getElementById("matchCapacity").value,sourceNotes:document.getElementById("sourceNotes").value,projectNotes:document.getElementById("projectNotes").value,publicProfile:activePublicProfile,usePublicData:document.getElementById("usePublicData").checked,provider:document.getElementById("provider").value,model:"gemma-3-1b-it-Q4_K_M.gguf",censusApiKey:document.getElementById("censusApiKey").value}; }
     function validateDraftInputs(){ const required=[["community","community"],["state","state or territory"],["projectTitle","project title"]]; for(const [id,label] of required){ const control=document.getElementById(id); if(!control.value.trim()){ setStatus(`Add the ${label} before creating a draft.`,true); showStep("project"); control.focus(); return false; } } const hasContext=["projectSummary","projectNotes","selectedGrant"].some((id)=>document.getElementById(id).value.trim()); if(!hasContext){ setStatus("Add a project summary, imported project notes, or funding details before creating a draft.",true); showStep("project"); document.getElementById("projectSummary").focus(); return false; } return true; }
@@ -1535,7 +1566,7 @@ HTML_PAGE = r'''<!doctype html>
     document.getElementById("selectedGrant").addEventListener("input",()=>{const select=document.getElementById("grantSelect");if(select.value!=="manual"){let manual=[...select.options].find((option)=>option.value==="manual");if(!manual){manual=document.createElement("option");manual.value="manual";manual.textContent="Using pasted funding details";select.appendChild(manual);}select.value="manual";}renderFundingSummary();markInputsChanged();});
     window.addEventListener("pagehide",saveProjectState);
     restoreProjectState();
-    if(sessionToken){checkRuntime(); runtimePoll=window.setInterval(checkRuntime,5000); checkStartupPlan(); loadGrants().catch((error)=>setStatus(error.message.includes("session")?error.message:"The public funding list is not available right now. You can paste funding details instead.",true));}
+    if(hasLocalSession()){checkRuntime(); runtimePoll=window.setInterval(checkRuntime,5000); checkStartupPlan(); loadGrants().catch((error)=>setStatus(error.message.includes("session")?error.message:"The public funding list is not available right now. You can paste funding details instead.",true));}
     else setStatus("Open RERC-e from its Start Menu shortcut to connect this tab. Your saved work in this tab is available below.",true);
   </script>
 </body>
@@ -1562,13 +1593,20 @@ class RERCeHandler(BaseHTTPRequestHandler):
             if origin and origin.lower() != EXPECTED_ORIGIN:
                 self.send_json({"error": "Local request rejected."}, status=403)
                 return False
-            provided = self.headers.get("X-RERC-e-Token", "")
-            if not SESSION_TOKEN or not secrets.compare_digest(provided, SESSION_TOKEN):
+            provided_header = self.headers.get("X-RERC-e-Token", "")
+            try:
+                cookies = SimpleCookie(self.headers.get("Cookie", ""))
+                provided_cookie = cookies[APP_WINDOW_COOKIE].value if APP_WINDOW_COOKIE in cookies else ""
+            except Exception:
+                provided_cookie = ""
+            header_valid = bool(SESSION_TOKEN and provided_header and secrets.compare_digest(provided_header, SESSION_TOKEN))
+            cookie_valid = bool(SESSION_TOKEN and provided_cookie and secrets.compare_digest(provided_cookie, SESSION_TOKEN))
+            if not header_valid and not cookie_valid:
                 self.send_json({"error": "Local session not authorized."}, status=403)
                 return False
         return True
 
-    def _headers(self, status: int, content_type: str, length: int, disposition: str | None = None) -> None:
+    def _headers(self, status: int, content_type: str, length: int, disposition: str | None = None, extra_headers: dict[str, str] | None = None) -> None:
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(length))
@@ -1577,6 +1615,8 @@ class RERCeHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Security-Policy", "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
         if disposition:
             self.send_header("Content-Disposition", disposition)
+        for name, value in (extra_headers or {}).items():
+            self.send_header(name, value)
         self.end_headers()
 
     def send_json(self, payload: dict[str, Any], status: int = 200) -> None:
@@ -1603,12 +1643,23 @@ class RERCeHandler(BaseHTTPRequestHandler):
         return payload
 
     def do_GET(self) -> None:
-        require_token = self.path == "/health" or self.path.startswith("/api/")
+        parsed = urllib.parse.urlsplit(self.path)
+        path = parsed.path
+        require_token = path == "/health" or path.startswith("/api/")
         if not self._authorize(require_token=require_token):
             return
-        if self.path in {"/", "/index.html", "/native"}:
+        if path == "/app-window":
+            code = urllib.parse.parse_qs(parsed.query, keep_blank_values=True).get("code", [""])[0]
+            if not consume_app_window_code(code):
+                self.send_json({"error": "This RERC-e app-window link has expired or was already used."}, status=403)
+                return
+            self._headers(303, "text/plain; charset=utf-8", 0, extra_headers={
+                "Location": "/native",
+                "Set-Cookie": f"{APP_WINDOW_COOKIE}={SESSION_TOKEN}; Path=/; HttpOnly; SameSite=Strict",
+            })
+        elif path in {"/", "/index.html", "/native"}:
             self.send_text(HTML_PAGE)
-        elif self.path == "/assets/rerc-e-eagle.jpg":
+        elif path == "/assets/rerc-e-eagle.jpg":
             asset_path = ASSET_DIR / "rerc-e-eagle.jpg"
             if not asset_path.is_file():
                 self.send_json({"error": "Not found"}, status=404)
@@ -1616,9 +1667,9 @@ class RERCeHandler(BaseHTTPRequestHandler):
             body = asset_path.read_bytes()
             self._headers(200, "image/jpeg", len(body))
             self.wfile.write(body)
-        elif self.path == "/health":
+        elif path == "/health":
             self.send_json({"status": "ok", "app": "RERC-e", "version": APP_VERSION})
-        elif self.path == "/api/runtime":
+        elif path == "/api/runtime":
             try:
                 health = request_json(LOCAL_HEALTH_URL, timeout=3)
                 models = request_json(LOCAL_MODELS_URL, timeout=3)
@@ -1627,12 +1678,12 @@ class RERCeHandler(BaseHTTPRequestHandler):
                 self.send_json({"ready": ready})
             except Exception:
                 self.send_json({"ready": False})
-        elif self.path == "/api/grants":
+        elif path == "/api/grants":
             try:
                 self.send_json(fetch_public_catalog())
             except Exception as exc:
                 self.send_json({"error": html.escape(str(exc))}, status=502)
-        elif self.path == "/api/startup-plan":
+        elif path == "/api/startup-plan":
             try:
                 imported = consume_startup_handoff()
                 self.send_json(imported or {"status": "none"})
@@ -1649,7 +1700,9 @@ class RERCeHandler(BaseHTTPRequestHandler):
             return
         try:
             payload = self.read_payload()
-            if self.path == "/api/community-profile":
+            if self.path == "/api/app-window-code":
+                self.send_json({"code": create_app_window_code(), "expiresInSeconds": APP_WINDOW_CODE_TTL_SECONDS})
+            elif self.path == "/api/community-profile":
                 self.send_json(lookup_community_profile(
                     str(payload.get("community") or ""),
                     str(payload.get("state") or ""),
@@ -1691,6 +1744,9 @@ def serve(host: str, port: int) -> int:
 
 
 def smoke() -> int:
+    launch_code = create_app_window_code()
+    assert consume_app_window_code(launch_code) is True
+    assert consume_app_window_code(launch_code) is False
     current = parse_public_catalog('window.RERC_CATALOG = {"items":[{"item_type":"Funding","title":"One"},{"item_type":"Resource","title":"Two"}]};')
     assert len(current["grants"]) == 1 and len(current["resources"]) == 1
     legacy = parse_public_catalog('window.GRANT_EXPLORER_DATA = {"grants":[{"title":"Legacy"}]};')

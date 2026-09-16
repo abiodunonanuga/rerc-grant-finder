@@ -26,9 +26,6 @@ $RuntimeSha256 = "6847d537b3cd5099051989d08c7eca4296e7a0f1755dbf0540c82e37768320
 $LicenseUrl = "https://raw.githubusercontent.com/ggml-org/llama.cpp/b9987/LICENSE"
 $BuildRoot = Join-Path $Here "build\installer-$Version"
 $CacheDir = Join-Path $Here "build-cache"
-$WebView2Version = "1.0.4191.47"
-$WebView2PackageSha256 = "f492bbf547d0da329553b6727435b677579b1e9f91cc9e4a1ad029366d5f23d0"
-$WebView2PackageDir = Join-Path $CacheDir "nuget\microsoft.web.webview2\$WebView2Version"
 $ArchivePath = Join-Path $CacheDir $RuntimeName
 $Extracted = Join-Path $BuildRoot "llama-extracted"
 $PyInstallerRoot = Join-Path $BuildRoot "pyinstaller"
@@ -167,21 +164,6 @@ if (Test-Path -LiteralPath $BuildRoot) { Remove-Item -LiteralPath $BuildRoot -Re
 [IO.Directory]::CreateDirectory($OutputDirectory) | Out-Null
 [IO.Directory]::CreateDirectory($PackageRoot) | Out-Null
 
-$dotnetCommand = Get-Command dotnet -ErrorAction SilentlyContinue
-if (-not $dotnetCommand) { throw "The .NET SDK is required to restore the pinned Microsoft WebView2 package." }
-$oldDotnetHome = $env:DOTNET_CLI_HOME
-try {
-    $env:DOTNET_CLI_HOME = Join-Path $CacheDir "dotnet-home"
-    & $dotnetCommand.Source restore (Join-Path $Here "packaging\WebView2Sdk.csproj") --packages (Join-Path $CacheDir "nuget") --configfile (Join-Path $Here "packaging\NuGet.Config") --verbosity quiet
-    if ($LASTEXITCODE -ne 0) { throw "The pinned Microsoft WebView2 SDK restore failed." }
-} finally {
-    $env:DOTNET_CLI_HOME = $oldDotnetHome
-}
-$webView2Package = Join-Path $WebView2PackageDir "microsoft.web.webview2.$WebView2Version.nupkg"
-if (-not (Test-Path -LiteralPath $webView2Package -PathType Leaf) -or (Get-Sha256 $webView2Package) -ne $WebView2PackageSha256) {
-    throw "The Microsoft WebView2 SDK package failed its pinned SHA-256 check."
-}
-
 python -m PyInstaller --noconfirm --clean --distpath (Join-Path $PyInstallerRoot "dist") --workpath (Join-Path $PyInstallerRoot "work") .\RERC-eService.spec
 if ($LASTEXITCODE -ne 0) { throw "PyInstaller failed." }
 
@@ -220,16 +202,8 @@ if (-not (Test-Path -LiteralPath (Join-Path $ServiceSource "RERC-eService.exe") 
 Copy-Item -LiteralPath $ServiceSource -Destination $ServiceDestination -Recurse
 
 if (-not (Test-Path -LiteralPath $Csc -PathType Leaf)) { throw "The Windows C# compiler was not found at $Csc." }
-$webView2Lib = Join-Path $WebView2PackageDir "lib\net462"
-$webView2Core = Join-Path $webView2Lib "Microsoft.Web.WebView2.Core.dll"
-$webView2WinForms = Join-Path $webView2Lib "Microsoft.Web.WebView2.WinForms.dll"
-$webView2Loader = Join-Path $WebView2PackageDir "runtimes\win-x64\native\WebView2Loader.dll"
 $launcherConfig = Join-Path $Here "packaging\RERC-e.exe.config"
 $launcherManifest = Join-Path $Here "packaging\RERC-e.exe.manifest"
-foreach ($file in @($webView2Core, $webView2WinForms, $webView2Loader)) {
-    if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { throw "The pinned Microsoft WebView2 SDK is missing $file." }
-    Copy-Item -LiteralPath $file -Destination $PackageRoot
-}
 $cscArgs = @(
     "/nologo", "/target:winexe", "/optimize+", "/platform:x64",
     "/out:$(Join-Path $PackageRoot 'RERC-e.exe')",
@@ -238,7 +212,6 @@ $cscArgs = @(
     "/reference:System.dll", "/reference:System.Core.dll", "/reference:System.Drawing.dll",
     "/reference:System.Windows.Forms.dll", "/reference:System.Net.Http.dll",
     "/reference:System.Web.Extensions.dll", "/reference:System.Security.dll",
-    "/reference:$webView2Core", "/reference:$webView2WinForms",
     (Join-Path $Here "packaging\RERC-eLauncher.cs")
 )
 & $Csc @cscArgs
@@ -253,8 +226,6 @@ if (-not (Test-Path -LiteralPath $PythonLicense -PathType Leaf)) { throw "The Py
 Copy-Item -LiteralPath $PythonLicense -Destination (Join-Path $PackageRoot "LICENSE-PYTHON.txt")
 [IO.Directory]::CreateDirectory((Join-Path $PackageRoot "licenses")) | Out-Null
 Copy-Item -LiteralPath (Join-Path $Here "licenses\GEMMA_TERMS.txt") -Destination (Join-Path $PackageRoot "licenses\GEMMA_TERMS.txt")
-Copy-Item -LiteralPath (Join-Path $WebView2PackageDir "LICENSE.txt") -Destination (Join-Path $PackageRoot "licenses\WEBVIEW2-LICENSE.txt")
-Copy-Item -LiteralPath (Join-Path $WebView2PackageDir "NOTICE.txt") -Destination (Join-Path $PackageRoot "licenses\WEBVIEW2-NOTICE.txt")
 curl.exe -L --fail --retry 3 --output (Join-Path $PackageRoot "runtime\llama\LICENSE-llama.cpp") $LicenseUrl
 if ($LASTEXITCODE -ne 0) { throw "The llama.cpp license download failed." }
 
@@ -316,6 +287,7 @@ $serviceQaToken = ([Guid]::NewGuid().ToString("N") + [Guid]::NewGuid().ToString(
 $serviceQaExe = Join-Path $PackageRoot "service\RERC-eService.exe"
 $serviceQaProcess = $null
 $serviceQaReady = $false
+$serviceAppWindowSecurity = $false
 $oldSessionToken = $env:RERCIE_SESSION_TOKEN
 $oldExpectedHost = $env:RERCIE_EXPECTED_HOST
 $oldAppRoot = $env:RERCIE_APP_ROOT
@@ -331,6 +303,19 @@ try {
         } catch { }
         Start-Sleep -Milliseconds 500
     }
+    if ($serviceQaReady) {
+        $launchCode = Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:$serviceQaPort/api/app-window-code" -Headers @{ "X-RERC-e-Token" = $serviceQaToken } -ContentType "application/json" -Body "{}" -TimeoutSec 3
+        $browserSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+        $launchAddress = "http://127.0.0.1:$serviceQaPort/app-window?code=$([Uri]::EscapeDataString([string]$launchCode.code))"
+        $launchResponse = Invoke-WebRequest -UseBasicParsing -Uri $launchAddress -WebSession $browserSession -MaximumRedirection 5 -TimeoutSec 3
+        $launchFinalUri = if ($launchResponse.BaseResponse.PSObject.Properties["ResponseUri"]) { $launchResponse.BaseResponse.ResponseUri } else { $launchResponse.BaseResponse.RequestMessage.RequestUri }
+        $cookie = $browserSession.Cookies.GetCookies([Uri]"http://127.0.0.1:$serviceQaPort/")["RERCeSession"]
+        $cookieHealth = Invoke-RestMethod -Uri "http://127.0.0.1:$serviceQaPort/health" -WebSession $browserSession -TimeoutSec 3
+        $replayStatus = 0
+        try { Invoke-WebRequest -UseBasicParsing -Uri $launchAddress -MaximumRedirection 0 -TimeoutSec 3 | Out-Null }
+        catch { if ($_.Exception.Response) { $replayStatus = [int]$_.Exception.Response.StatusCode } }
+        $serviceAppWindowSecurity = $launchCode.expiresInSeconds -eq 60 -and $launchFinalUri.AbsolutePath -eq "/native" -and $cookie.HttpOnly -and $cookieHealth.status -eq "ok" -and $replayStatus -eq 403
+    }
 } finally {
     if ($serviceQaProcess -and -not $serviceQaProcess.HasExited) {
         Stop-Process -Id $serviceQaProcess.Id -Force -ErrorAction SilentlyContinue
@@ -341,9 +326,11 @@ try {
     $env:RERCIE_APP_ROOT = $oldAppRoot
 }
 if (-not $serviceQaReady) { throw "The packaged authenticated RERC-e service health check failed." }
+if (-not $serviceAppWindowSecurity) { throw "The packaged RERC-e one-time app-window handoff failed." }
 if ($serviceQaProcess -and -not $serviceQaProcess.HasExited) { throw "The packaged RERC-e service did not stop cleanly." }
 $qa.checks.service_identity_checks.status = "PASS"
 $qa.checks.service_identity_checks | Add-Member -NotePropertyName packaged_authenticated_health -NotePropertyValue $true -Force
+$qa.checks.service_identity_checks | Add-Member -NotePropertyName packaged_app_window_handoff -NotePropertyValue $true -Force
 [IO.File]::WriteAllText($qaPath, ($qa | ConvertTo-Json -Depth 8), [Text.UTF8Encoding]::new($false))
 
 $smokePath = Join-Path $BuildRoot "launcher-smoke.json"
@@ -353,6 +340,7 @@ if (-not (Test-Path -LiteralPath $smokePath -PathType Leaf)) { throw "The native
 $smoke = Get-Content -LiteralPath $smokePath -Raw | ConvertFrom-Json
 if ($smoke.status -ne "PASS" -or $smoke.version -ne $Version -or $smoke.powershell_required -ne $false) { throw "The native launcher smoke report was not valid for RERC-e $Version." }
 if ($smoke.model_name -ne "gemma-3-1b-it-Q4_K_M.gguf" -or $smoke.model_sha256 -ne "8ccc5cd1f1b3602548715ae25a66ed73fd5dc68a210412eea643eb20eb75a135") { throw "The launcher smoke report does not identify the approved Gemma model." }
+if ($smoke.app_window_mode -ne "Microsoft Edge --app" -or $smoke.edge_publisher_trusted -ne $true -or $smoke.full_session_token_in_command_line -ne $false) { throw "The native launcher smoke report does not validate the secure Edge app-window host." }
 
 $downloadProbePath = Join-Path $BuildRoot "launcher-download-probe.json"
 $downloadProbeProcess = Start-Process -FilePath (Join-Path $PackageRoot "RERC-e.exe") -ArgumentList @("--probe-download-output", ('"' + $downloadProbePath + '"')) -Wait -PassThru

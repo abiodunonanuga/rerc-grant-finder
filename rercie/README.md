@@ -18,11 +18,11 @@ The first model download is about 0.81 GB. RERC-e checks the model before using 
 
 Upgrades keep a verified local Gemma model, so people do not have to download it again.
 
-No command line is needed. Open RERC-e from the Start Menu. The newer launcher opens the guide inside its own Windows window, with no browser address bar. **Setup and status** returns to the download/start controls. Closing RERC-e stops the local services it started. Official funding and publisher pages still open in the default browser so their real web addresses remain visible for verification.
+No command line is needed. Open RERC-e from the Start Menu. The launcher opens the guide in a dedicated Microsoft Edge app window with no browser address bar or visible local link. The lightweight native window handles first-run download and startup, then stays hidden while the guide is open. Closing the app window stops the local services RERC-e started. Official funding and publisher pages still expose their real web addresses for verification.
 
 RERC-e source can also open a Community Explorer plan. Use **Open Community Explorer plan** inside RERC-e, or open an installed `.rerc-e` file from Windows. RERC-e checks the file before filling any fields and shows what it imported. Older plan files remain readable.
 
-RERC-e 0.5.1 source now includes a three-step interface, a complete first-run **Download and start** button, embedded Microsoft WebView2 display, Per-Monitor V2 scaling, and RERC-e-branded new plan files. The public 0.4.0 installer does not include these changes. The source-built native window passed on Windows 10 at the computer's actual 150% display scale, with additional 100%, 150%, and 200% geometry checks. A signed-package and clean-machine Windows 10/11 test is still required before release. No authorized RERC-e code-signing identity was available on this computer, so verified-publisher distribution remains on hold.
+RERC-e 0.5.1 source now includes a three-step interface, a complete first-run **Download and start** button, a dedicated Edge app window, Per-Monitor V2 scaling, and RERC-e-branded new plan files. The app-window handoff uses a one-time 60-second code, exchanges it for an HttpOnly same-site cookie, and never places the full local service token in the Edge command line. The public 0.4.0 installer does not include these changes. The source-built native setup window passed on Windows 10 at the computer's actual 150% display scale, with additional 100%, 150%, and 200% geometry checks. A signed-package and clean-machine Windows 10/11 test is still required before release. No authorized RERC-e code-signing identity was available on this computer, so verified-publisher distribution remains on hold.
 
 ## What RERC-e Does
 

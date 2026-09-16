@@ -304,9 +304,11 @@ namespace RERCeDesktop
                     bool nativePass = !currentControls.Any(control => control.visible && (control.text_clipped || control.outside_parent))
                         && currentControls.Any(control => control.visible && control.type == "Button" && control.text == "Download and start" && !control.text_clipped)
                         && !currentControls.Any(control => control.visible && control.tab_stop && IsInteractiveName(control.type) && string.IsNullOrWhiteSpace(control.accessible_name));
+                    string edgeExecutable = Runtime.FindEdgeExecutable();
+                    bool edgePublisherTrusted = AuthenticodeVerifier.IsTrustedMicrosoftFile(edgeExecutable);
                     object report = new
                     {
-                        status = perMonitorDpiAware && nativePass && geometryPass && embeddedPass && embeddedContentVisible ? "PASS" : "FAIL",
+                        status = perMonitorDpiAware && nativePass && geometryPass && embeddedPass && embeddedContentVisible && edgePublisherTrusted ? "PASS" : "FAIL",
                         app = "RERC-e",
                         version = Config.Version,
                         os = Environment.OSVersion.VersionString,
@@ -316,11 +318,18 @@ namespace RERCeDesktop
                         per_monitor_dpi_aware = perMonitorDpiAware,
                         native_layout_pass = nativePass,
                         simulated_geometry_pass = geometryPass,
-                        embedded_app_pass = embeddedPass,
-                        embedded_content_visible = embeddedContentVisible,
+                        web_content_pass = embeddedPass,
+                        web_content_visible = embeddedContentVisible,
+                        app_window_host = new
+                        {
+                            mode = "Microsoft Edge --app",
+                            executable = edgeExecutable,
+                            microsoft_publisher_trusted = edgePublisherTrusted,
+                            address_bar_visible = false,
+                        },
                         current,
                         geometry = new[] { scale100, scale150, scale200 },
-                        embedded = new
+                        web_content = new
                         {
                             url = address,
                             dom = embeddedDom,
