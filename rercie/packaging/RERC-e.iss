@@ -5,7 +5,7 @@
   #error OutputDir must be defined by the build script.
 #endif
 #ifndef AppVersion
-  #define AppVersion "0.5.1"
+  #define AppVersion "0.5.2"
 #endif
 
 #define AppName "RERC-e"

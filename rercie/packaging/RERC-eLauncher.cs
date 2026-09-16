@@ -76,17 +76,17 @@ namespace RERCeDesktop
 
     internal static class Config
     {
-        public const string Version = "0.5.1";
+        public const string Version = "0.5.2";
         public const string AppUrl = "http://127.0.0.1:8789";
         public const string AppHealthUrl = AppUrl + "/health";
         public const string ModelHealthUrl = "http://127.0.0.1:8788/health";
         public const string ModelListUrl = "http://127.0.0.1:8788/v1/models";
-        public const string ModelName = "gemma-3-1b-it-Q4_K_M.gguf";
-        public const string ModelUrl = "https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-Q4_K_M.gguf?download=true";
-        public const long ModelBytes = 806058240L;
-        public const string ModelSha256 = "8ccc5cd1f1b3602548715ae25a66ed73fd5dc68a210412eea643eb20eb75a135";
+        public const string ModelName = "gemma-3-4b-it-Q4_K_M.gguf";
+        public const string ModelUrl = "https://huggingface.co/ggml-org/gemma-3-4b-it-GGUF/resolve/cd758c0fb3b2a759bb29acf4499f9e1dc460193a/gemma-3-4b-it-Q4_K_M.gguf?download=true";
+        public const long ModelBytes = 2489757856L;
+        public const string ModelSha256 = "882e8d2db44dc554fb0ea5077cb7e4bc49e7342a1f0da57901c0802ea21a0863";
         public const string VcRuntimeUrl = "https://aka.ms/vs/17/release/vc_redist.x64.exe";
-        public const string ModelPageUrl = "https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF";
+        public const string ModelPageUrl = "https://huggingface.co/ggml-org/gemma-3-4b-it-GGUF";
         public const string ModelLicenseUrl = "https://ai.google.dev/gemma/terms";
         public const int MaxPlanBytes = 256 * 1024;
         public const string PlanSchema = "rerc-e-handoff";
@@ -682,7 +682,7 @@ namespace RERCeDesktop
             accent.BackColor = Color.FromArgb(222, 181, 97);
             setupPanel.Controls.Add(accent);
 
-            Label modelNote = MakeLabel("First use: download Google Gemma (about 0.81 GB)", 32, 265, 696, 28, 11f, true, Color.FromArgb(23, 63, 53));
+            Label modelNote = MakeLabel("First use: download Google Gemma (about 2.49 GB)", 32, 265, 696, 28, 11f, true, Color.FromArgb(23, 63, 53));
             setupPanel.Controls.Add(modelNote);
 
             LinkLabel modelLink = MakeLink("View the model page", 32, 324, 190, Config.ModelPageUrl);
@@ -1343,7 +1343,7 @@ namespace RERCeDesktop
             if (!Runtime.ModelServerReady())
             {
                 if (Runtime.PortInUse(8788)) throw new InvalidOperationException("Another program is blocking RERC-e. Close it, then start RERC-e again.");
-                int threads = Math.Max(2, Environment.ProcessorCount - 1);
+                int threads = Math.Min(8, Math.Max(2, Environment.ProcessorCount / 2));
                 string llamaArgs = "-m \"" + Runtime.ModelPath + "\" --host 127.0.0.1 --port 8788 -c 8192 -t " + threads;
                 Runtime.StartHidden("llama", Runtime.LlamaExe, llamaArgs, Runtime.LlamaDir, null, null);
                 statusLabel.Text = "Starting the local writing model...";

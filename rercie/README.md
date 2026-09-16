@@ -2,7 +2,7 @@
 
 RERC-e Local Grant-Writing Guide is an optional app for the Recreation Economy *for* Rural Communities funding and resource explorer.
 
-Current source version: `0.5.1`.
+Current source version: `0.5.2`.
 
 The Windows installer includes the RERC-e app and the pinned `llama.cpp` runtime. The local Gemma writer does not require a command line, an account, or an API key. The Gemma model is downloaded only when the person selects **Download and start**.
 
@@ -14,7 +14,7 @@ The Windows installer includes the RERC-e app and the pinned `llama.cpp` runtime
 4. Select **Meet RERC-e** on the last screen.
 5. Select **Download and start**. RERC-e downloads the local model and checks it before opening.
 
-The first model download is about 0.81 GB. RERC-e checks the model before using it. Later starts use the model already on the computer.
+The first model download is about 2.49 GB. RERC-e checks the model before using it. Later starts use the model already on the computer.
 
 Upgrades keep a verified local Gemma model, so people do not have to download it again.
 
@@ -22,7 +22,7 @@ No command line is needed. Open RERC-e from the Start Menu. The native start scr
 
 RERC-e source can also open a Community Explorer plan. Use **Open Community Explorer plan** inside RERC-e, or open an installed `.rerc-e` file from Windows. RERC-e checks the file before filling any fields and shows what it imported. Older plan files remain readable.
 
-RERC-e 0.5.1 source now includes a three-step interface, a complete first-run **Download and start** button, a same-window WebView2 composition host, Per-Monitor V2 scaling, and RERC-e-branded new plan files. The embedded handoff uses a one-time 60-second code, exchanges it for an HttpOnly same-site cookie, and never places the full local service token in a URL or process command line. The public 0.4.0 installer does not include these changes. The source-built native setup window passed on Windows 10 at the computer's actual 150% display scale, with additional 100%, 150%, and 200% geometry checks. A signed-package and clean-machine Windows 10/11 test is still required before release. No authorized RERC-e code-signing identity was available on this computer, so verified-publisher distribution remains on hold.
+RERC-e 0.5.2 source now includes a three-step interface, a complete first-run **Download and start** button, a same-window WebView2 composition host, Per-Monitor V2 scaling, and RERC-e-branded new plan files. Its local writer uses the tested Gemma 3 4B Q4_K_M model, edits narrative sections in one structured request, preserves protected facts verbatim, validates each section, and substitutes source-bound text whenever generated wording fails a check. The embedded handoff uses a one-time 60-second code, exchanges it for an HttpOnly same-site cookie, and never places the full local service token in a URL or process command line. The public 0.4.0 installer does not include these changes. A signed-package and clean-machine Windows 10/11 test is still required before release. No authorized RERC-e code-signing identity was available on this computer, so verified-publisher distribution remains on hold.
 
 ## What RERC-e Does
 
@@ -30,7 +30,7 @@ RERC-e 0.5.1 source now includes a three-step interface, a complete first-run **
 - Accepts project notes and selected text files.
 - Opens a checked Community Explorer plan with its community, state or territory, project title, project notes, profile, roadmap, and selected public records.
 - Looks up community profiles from the public prebuilt `community_profiles.js` dataset by exact community + state/territory match first, then by a unique town/city/village name in that state. If no unambiguous match is present, RERC-e can use a provided Census API key to query the Census API for fallback place/county matching (including territory-level context for American Samoa, Guam, Northern Mariana Islands, and U.S. Virgin Islands).
-- Creates a first-draft grant narrative with clear fact-check markers.
+- Creates a first-draft grant narrative with section-level evidence checks and clear fact-check markers.
 - Exports a real Word `.docx` file or Markdown.
 - Includes all 50 states, the District of Columbia, and five U.S. territories.
 

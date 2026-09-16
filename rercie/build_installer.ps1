@@ -19,7 +19,7 @@ $RepoRoot = Split-Path -Parent $Here
 $AssetRoot = Join-Path $RepoRoot "assets"
 if (-not (Test-Path -LiteralPath $AssetRoot -PathType Container)) { $AssetRoot = Join-Path $RepoRoot "site-src\assets" }
 Set-Location -LiteralPath $Here
-$Version = "0.5.1"
+$Version = "0.5.2"
 $RuntimeName = "llama-b9987-bin-win-cpu-x64.zip"
 $RuntimeUrl = "https://github.com/ggerganov/llama.cpp/releases/download/b9987/$RuntimeName"
 $RuntimeSha256 = "6847d537b3cd5099051989d08c7eca4296e7a0f1755dbf0540c82e37768320f3"
@@ -138,7 +138,7 @@ $localQaPath = Join-Path $Here "packaging\LOCAL_GEMMA_QA.json"
 $localQa = Get-Content -LiteralPath $localQaPath -Raw | ConvertFrom-Json
 if ($localQa.status -ne "PASS" -or $localQa.app_version -ne $Version) { throw "LOCAL_GEMMA_QA.json must contain a current PASS for RERC-e $Version." }
 if ($localQa.PSObject.Properties["historical"] -and $localQa.historical) { throw "Historical local Gemma evidence cannot authorize a current release build." }
-if ($localQa.model -ne "gemma-3-1b-it-Q4_K_M.gguf") { throw "LOCAL_GEMMA_QA.json does not identify the approved Gemma model." }
+if ($localQa.model -ne "gemma-3-4b-it-Q4_K_M.gguf") { throw "LOCAL_GEMMA_QA.json does not identify the approved Gemma model." }
 if ($localQa.source_sha256 -ne (Get-Sha256 (Join-Path $Here "rercie_core.py"))) { throw "LOCAL_GEMMA_QA.json does not match the current RERC-e source." }
 
 $licensePath = Join-Path $Here "RERC-e-LICENSE.txt"
@@ -382,7 +382,7 @@ if ($smokeProcess.ExitCode -ne 0) { throw "The native launcher smoke test failed
 if (-not (Test-Path -LiteralPath $smokePath -PathType Leaf)) { throw "The native launcher smoke report was not created." }
 $smoke = Get-Content -LiteralPath $smokePath -Raw | ConvertFrom-Json
 if ($smoke.status -ne "PASS" -or $smoke.version -ne $Version -or $smoke.powershell_required -ne $false) { throw "The native launcher smoke report was not valid for RERC-e $Version." }
-if ($smoke.model_name -ne "gemma-3-1b-it-Q4_K_M.gguf" -or $smoke.model_sha256 -ne "8ccc5cd1f1b3602548715ae25a66ed73fd5dc68a210412eea643eb20eb75a135") { throw "The launcher smoke report does not identify the approved Gemma model." }
+if ($smoke.model_name -ne "gemma-3-4b-it-Q4_K_M.gguf" -or $smoke.model_sha256 -ne "882e8d2db44dc554fb0ea5077cb7e4bc49e7342a1f0da57901c0802ea21a0863") { throw "The launcher smoke report does not identify the approved Gemma model." }
 if ($smoke.app_window_mode -ne "embedded WebView2 composition" -or $smoke.composition_visual_host -ne $true -or $smoke.same_window_transition -ne $true -or $smoke.address_bar_visible -ne $false -or $smoke.full_session_token_in_url -ne $false -or $smoke.full_session_token_in_command_line -ne $false) { throw "The native launcher smoke report does not validate the embedded composition host." }
 
 $downloadProbePath = Join-Path $BuildRoot "launcher-download-probe.json"
@@ -390,7 +390,7 @@ $downloadProbeProcess = Start-Process -FilePath (Join-Path $PackageRoot "RERC-e.
 if ($downloadProbeProcess.ExitCode -ne 0) { throw "The native launcher could not reach the Gemma download endpoint." }
 if (-not (Test-Path -LiteralPath $downloadProbePath -PathType Leaf)) { throw "The Gemma download probe report was not created." }
 $downloadProbe = Get-Content -LiteralPath $downloadProbePath -Raw | ConvertFrom-Json
-if ($downloadProbe.status -ne "PASS" -or $downloadProbe.http_status -notin @(200, 206) -or $downloadProbe.bytes -ne 1024 -or $downloadProbe.model -ne "gemma-3-1b-it-Q4_K_M.gguf") { throw "The Gemma download probe report was not valid." }
+if ($downloadProbe.status -ne "PASS" -or $downloadProbe.http_status -notin @(200, 206) -or $downloadProbe.bytes -ne 1024 -or $downloadProbe.model -ne "gemma-3-4b-it-Q4_K_M.gguf") { throw "The Gemma download probe report was not valid." }
 $qa.checks.native_launcher | Add-Member -NotePropertyName download_probe_http_status -NotePropertyValue $downloadProbe.http_status -Force
 $qa.checks.native_launcher | Add-Member -NotePropertyName download_probe_bytes -NotePropertyValue $downloadProbe.bytes -Force
 $qa.checks.native_launcher.status = "PASS"
@@ -423,7 +423,7 @@ try {
     $installedSmokeProcess = Start-Process -FilePath (Join-Path $testInstallDir "RERC-e.exe") -ArgumentList @("--smoke-output", ('"' + $installedSmokePath + '"')) -Wait -PassThru
     if ($installedSmokeProcess.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $installedSmokePath)) { throw "The installed launcher smoke test failed." }
     $installedSmoke = Get-Content -LiteralPath $installedSmokePath -Raw | ConvertFrom-Json
-    if ($installedSmoke.status -ne "PASS" -or $installedSmoke.version -ne $Version -or $installedSmoke.powershell_required -ne $false -or $installedSmoke.model_name -ne "gemma-3-1b-it-Q4_K_M.gguf") { throw "The installed launcher smoke evidence is invalid for RERC-e $Version." }
+    if ($installedSmoke.status -ne "PASS" -or $installedSmoke.version -ne $Version -or $installedSmoke.powershell_required -ne $false -or $installedSmoke.model_name -ne "gemma-3-4b-it-Q4_K_M.gguf") { throw "The installed launcher smoke evidence is invalid for RERC-e $Version." }
     $modelDir = Join-Path $testInstallDir "models"
     [IO.Directory]::CreateDirectory($modelDir) | Out-Null
     $modelSentinel = Join-Path $modelDir "upgrade-preservation-test.txt"

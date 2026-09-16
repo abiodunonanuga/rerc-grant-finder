@@ -3,7 +3,7 @@ RERC-e Local Grant-Writing Guide is an optional app for rural communities.
 What happens after installation
 
 - RERC-e opens with a friendly setup screen. You do not need to run a command.
-- On first use, RERC-e downloads the Google Gemma 3 1B writing model after you select Download and start. The download is about 0.81 GB.
+- On first use, RERC-e downloads the Google Gemma 3 4B writing model after you select Download and start. The download is about 2.49 GB.
 - Upgrades keep a verified Google Gemma model already stored on the computer.
 - The Gemma model, local reference files, and writing stay on this computer. Community facts and current catalog details use public U.S. government websites.
 

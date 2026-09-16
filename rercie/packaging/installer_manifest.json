@@ -1,7 +1,7 @@
 {
   "package": {
     "name": "RERC-e",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "installer": "RERC-e-Setup.exe",
     "entrypoint": "RERC-e.exe",
     "powershell_required": false,
@@ -16,12 +16,12 @@
     "sha256": "6847d537b3cd5099051989d08c7eca4296e7a0f1755dbf0540c82e37768320f3"
   },
   "model": {
-    "name": "gemma-3-1b-it-Q4_K_M.gguf",
+    "name": "gemma-3-4b-it-Q4_K_M.gguf",
     "downloaded_on_first_run": true,
-    "bytes": 806058240,
-    "sha256": "8ccc5cd1f1b3602548715ae25a66ed73fd5dc68a210412eea643eb20eb75a135",
-    "source": "https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF",
-    "download_url": "https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-Q4_K_M.gguf?download=true",
+    "bytes": 2489757856,
+    "sha256": "882e8d2db44dc554fb0ea5077cb7e4bc49e7342a1f0da57901c0802ea21a0863",
+    "source": "https://huggingface.co/ggml-org/gemma-3-4b-it-GGUF",
+    "download_url": "https://huggingface.co/ggml-org/gemma-3-4b-it-GGUF/resolve/cd758c0fb3b2a759bb29acf4499f9e1dc460193a/gemma-3-4b-it-Q4_K_M.gguf?download=true",
     "license": "Gemma Terms"
   }
 }

@@ -9,4 +9,4 @@ Review the prohibited use policy:
 https://ai.google.dev/gemma/prohibited_use_policy
 
 Model page:
-https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF
+https://huggingface.co/ggml-org/gemma-3-4b-it-GGUF

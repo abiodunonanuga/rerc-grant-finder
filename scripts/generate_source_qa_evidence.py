@@ -17,6 +17,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 RERCIE = ROOT / "rercie"
 PACKAGING = RERCIE / "packaging"
+APP_VERSION = "0.5.2"
+MODEL_NAME = "gemma-3-4b-it-Q4_K_M.gguf"
+MODEL_LABEL = "Google Gemma 3 4B Instruct Q4_K_M"
 LAYOUT_SHA256 = "df70b1e32a489edfa0fa82309dccd30207a2ae1e1876ae11d4623766e3f7b697"
 TERRITORIES = {"Puerto Rico", "U.S. Virgin Islands", "Guam", "American Samoa", "Northern Mariana Islands"}
 
@@ -86,7 +89,7 @@ def current_native_windows_evidence() -> tuple[bool, dict]:
         evidence.get("status") == "PASS",
         evidence.get("evidence_stage") == "source",
         evidence.get("app") == "RERC-e",
-        evidence.get("app_version") == "0.5.1",
+        evidence.get("app_version") == APP_VERSION,
         evidence.get("per_monitor_v2") is True,
         actual.get("layout_pass") is True,
         not actual.get("clipped_text"),
@@ -209,20 +212,28 @@ def main() -> int:
         text=True,
     )
     smoke = json.loads(smoke_process.stdout)
-    assert smoke["status"] == "PASS" and smoke["version"] == "0.5.1"
+    assert smoke["status"] == "PASS" and smoke["version"] == APP_VERSION
     assert smoke["docx_bytes"] >= 3000
     smoke_contract = {key: value for key, value in smoke.items() if key != "docx_bytes"}
 
     local_gemma = json.loads((PACKAGING / "LOCAL_GEMMA_QA.json").read_text(encoding="utf-8"))
-    assert local_gemma["status"] == "PASS" and local_gemma["app_version"] == "0.5.1"
-    assert local_gemma["model"] == "gemma-3-1b-it-Q4_K_M.gguf"
+    assert local_gemma["status"] == "PASS" and local_gemma["app_version"] == APP_VERSION
+    assert local_gemma["model"] == MODEL_NAME
     head_commit = subprocess.check_output(
         ['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True
     ).strip()
     assert local_gemma['source_normalized_sha256'] == git_blob_sha256(
         head_commit, 'rercie/rercie_core.py'
     )
-    assert local_gemma["raw_model_prose_exposed"] is False
+    assert local_gemma["raw_model_prose_exposed"] is True
+    assert local_gemma["schema_constrained_batch"] is True
+    assert local_gemma["protected_statement_validation"] is True
+    assert local_gemma["section_level_fallback"] is True
+    assert set(local_gemma["scenarios"]["developed"]["model_written_sections"]) == {"Project Need", "Proposed Work"}
+    assert set(local_gemma["scenarios"]["detailed"]["model_written_sections"]) == {
+        "Project Need", "Proposed Work", "Community Benefit"
+    }
+    assert local_gemma["scenarios"]["mismatch"]["fit_status"] == "conflict"
     assert local_gemma["unsupported_eligibility_claim_absent"] is True
     assert local_gemma["later_standalone_rerun"]["status"] == "PASS"
 
@@ -290,14 +301,14 @@ def main() -> int:
     native_current, native_evidence = current_native_windows_evidence()
 
     installer_manifest = json.loads((PACKAGING / "installer_manifest.json").read_text(encoding="utf-8"))
-    assert installer_manifest["package"]["version"] == "0.5.1"
+    assert installer_manifest["package"]["version"] == APP_VERSION
     build_script = (RERCIE / "build_installer.ps1").read_text(encoding="utf-8")
-    assert "gemma-3-1b-it-Q4_K_M.gguf" in build_script and "b9987" in build_script
+    assert MODEL_NAME in build_script and "b9987" in build_script
     assert (PACKAGING / "INSTALLER_NOTICE.txt").is_file()
     identity = source_service_identity_check()
 
     evidence = {
-        "app_version": "0.5.1",
+        "app_version": APP_VERSION,
         "status": "SOURCE_PASS" if native_current else "SOURCE_PENDING_NATIVE_QA",
         "tested_date": local_gemma["tested_date"],
         "evidence_stage": "source",
@@ -308,7 +319,18 @@ def main() -> int:
             "installer_wizard": {"status": "PENDING_RELEASE_TEST", "per_user_install": True, "uninstall_entry": True},
             "package_integrity": {"status": "PENDING_BUILD", "integrity_checked_binaries": 0},
             "live_catalog": {"status": "PASS", "total_items": counts["public_total"], "funding_items": counts["funding"], "resource_items": counts["resources"], "case_study_items": counts["case_studies"], "territory_filter_checked": True, "case_study_unique_urls_checked": source_health["unique_urls"], "case_study_hard_failed_urls": source_health["counts"]["hard_failure"], "case_study_reachable_urls": source_health["counts"]["reachable"], "case_study_restricted_urls": source_health["counts"]["restricted_but_present"], "case_study_manual_review_urls": source_health["counts"]["manual_review"]},
-            "local_generation": {"status": "PASS", "model": "Google Gemma 3 1B Instruct Q4_K_M", "source_sha256": local_gemma["source_sha256"], "source_normalized_sha256": local_gemma["source_normalized_sha256"], "verified_excerpt_count": local_gemma["verified_excerpt_count"], "raw_model_prose_exposed": False, "later_standalone_rerun_status": "PASS"},
+            "local_generation": {
+                "status": "PASS",
+                "model": MODEL_LABEL,
+                "source_sha256": local_gemma["source_sha256"],
+                "source_normalized_sha256": local_gemma["source_normalized_sha256"],
+                "raw_model_prose_exposed": True,
+                "schema_constrained_batch": True,
+                "protected_statement_validation": True,
+                "section_level_fallback": True,
+                "scenarios": local_gemma["scenarios"],
+                "later_standalone_rerun_status": "PASS",
+            },
             "docx_export": {"status": "PASS", "minimum_bytes": 3000, "office_open_xml": True},
             "api_privacy_regression": {"status": "PASS", "key_sent_to_gemma": False, "handoff_checks": smoke["handoff_checks"], "https_profile_check": "https_only_bounded" in smoke["profile_checks"]},
             "service_identity_checks": {"status": "PASS", **identity, "packaged_authenticated_health": "PENDING_BUILD"},
@@ -327,7 +349,7 @@ def main() -> int:
     }
     output = PACKAGING / "QA_EVIDENCE.json"
     output.write_text(json.dumps(evidence, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(json.dumps({"status": evidence["status"], "output": str(output), "app_version": "0.5.1", "counts": counts, "profile_count": len(profile_rows), "layout_geometry_sha256": current_layout_sha256, "service_identity": identity}, indent=2))
+    print(json.dumps({"status": evidence["status"], "output": str(output), "app_version": APP_VERSION, "counts": counts, "profile_count": len(profile_rows), "layout_geometry_sha256": current_layout_sha256, "service_identity": identity}, indent=2))
     return 0
 
 

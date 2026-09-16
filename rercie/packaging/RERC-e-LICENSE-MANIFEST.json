@@ -1,12 +1,12 @@
 {
   "schema": "timberwing-license-manifest-v1",
   "product": "RERC-e",
-  "version": "0.5.1",
-  "license_identifier": "TIMBERWING-RERC-E-0.5.1-20260819",
+  "version": "0.5.2",
+  "license_identifier": "TIMBERWING-RERC-E-0.5.2-20260916",
   "publisher": "Timberwing Systems, an EPR, P.C. initiative",
-  "issued_date": "2026-08-19",
+  "issued_date": "2026-09-16",
   "license_file": "RERC-e-LICENSE.txt",
-  "license_sha256": "b1c8f7f8fdc4d6ef906f6e8684f7a958e069bb111b434f119229b4a10c044da4",
+  "license_sha256": "9d1fca49b54865ee943f2f6750f4ef5f0084896db2f555e5779dd260eda9c5a1",
   "installer_acceptance_required": true,
   "authenticode_status": "pending_authorized_code_signing_certificate",
   "authenticode_note": "No authorized EPR, P.C. or Timberwing Systems code-signing certificate was available on the build computer."

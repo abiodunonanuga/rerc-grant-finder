@@ -22,7 +22,7 @@ from typing import Any
 from xml.sax.saxutils import escape
 
 
-APP_VERSION = "0.5.1"
+APP_VERSION = "0.5.2"
 APP_DIR = Path(os.environ.get("RERCIE_APP_ROOT") or (Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent))
 ASSET_DIR = APP_DIR / "assets"
 if not ASSET_DIR.is_dir() and not getattr(sys, "frozen", False):
@@ -34,7 +34,7 @@ COMMUNITY_PROFILE_PREFIX = "window.RERC_COMMUNITY_PROFILES="
 MAX_COMMUNITY_PROFILE_BYTES = 16 * 1024 * 1024
 MAX_COMMUNITY_PROFILE_RECORDS = 50000
 CATALOG_PREFIXES = ("window.RERC_CATALOG = ", "window.GRANT_EXPLORER_DATA = ")
-DEFAULT_MODEL = "gemma-3-1b-it-Q4_K_M.gguf"
+DEFAULT_MODEL = "gemma-3-4b-it-Q4_K_M.gguf"
 LOCAL_CHAT_URL = os.environ.get("RERCIE_LOCAL_CHAT_URL", "http://127.0.0.1:8788/v1/chat/completions")
 LOCAL_HEALTH_URL = os.environ.get("RERCIE_LOCAL_HEALTH_URL", "http://127.0.0.1:8788/health")
 LOCAL_MODELS_URL = os.environ.get("RERCIE_LOCAL_MODELS_URL", "http://127.0.0.1:8788/v1/models")
@@ -174,13 +174,37 @@ HANDOFF_RECORD_FIELD_LIMITS = {
 }
 HTML_MARKUP_PATTERN = re.compile(r"<\s*/?\s*[A-Za-z!][^>]*>")
 
-SYSTEM_PROMPT = """You are an evidence-extraction assistant. Return JSON only.
+EXCERPT_SYSTEM_PROMPT = """You are an evidence-extraction assistant. Return JSON only.
 
 Select up to six useful excerpts copied exactly from the supplied evidence. Do not
 paraphrase, summarize, correct, combine, or add text. Each excerpt must be a
 complete sentence or a short self-contained phrase. Return this shape:
 {"excerpts":[{"text":"exact copied text"}]}
 If there is no useful evidence, return {"excerpts":[]}."""
+
+WRITER_SYSTEM_PROMPT = """You are RERC-e's source-bound grant editor.
+
+Edit the supplied statements into one concise professional grant paragraph. Every
+statement is verified evidence. Use each statement once unless it duplicates
+another statement. Use no outside facts or assumptions.
+
+A protected statement contains a digit, dollar amount, percentage, date, target,
+baseline, request, match, deadline, funding status, the word "typical," or a
+condition such as "if," "unless," or "subject to." Copy every protected statement
+word for word as its own sentence. Do not shorten, combine, paraphrase, or change
+its punctuation. For other statements, you may reorder them, remove repetition,
+join closely related ideas, and make small grammatical changes.
+
+Do not add, infer, explain, characterize, or predict any fact, benefit, condition,
+task, cost, requirement, commitment, or missing detail. Preserve each actor,
+action, amount role, funding status, uncertainty, future condition, baseline, and
+target. A target must remain a target. Typical guidance must not become a
+requirement. Delete any sentence you cannot support from the supplied statements.
+Output only the paragraph, with no heading, greeting, bullets, note, or offer to
+help."""
+
+# Compatibility alias for the exact-excerpt QA helpers retained below.
+SYSTEM_PROMPT = EXCERPT_SYSTEM_PROMPT
 
 
 def _plain_object(value: Any, label: str) -> dict[str, Any]:
@@ -872,16 +896,26 @@ Writing requirements:
 """.strip()
 
 
-def call_local_writer(prompt: str, model: str, system_prompt: str = SYSTEM_PROMPT) -> str:
+def call_local_writer(
+    prompt: str,
+    model: str,
+    system_prompt: str = WRITER_SYSTEM_PROMPT,
+    max_tokens: int = 900,
+    response_format: dict[str, Any] | None = None,
+) -> str:
     payload = {
         "model": model or DEFAULT_MODEL,
         "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}],
         "temperature": 0.0,
+        "top_k": 40,
         "top_p": 0.9,
         "repeat_penalty": 1.08,
-        "max_tokens": 900,
+        "chat_template_kwargs": {"enable_thinking": False},
+        "max_tokens": max(80, min(int(max_tokens), 2600)),
         "stream": False,
     }
+    if response_format:
+        payload["response_format"] = response_format
     data = request_json(LOCAL_CHAT_URL, payload=payload, timeout=300)
     choices = data.get("choices") or []
     return choices[0].get("message", {}).get("content", "").strip() if choices else ""
@@ -948,7 +982,7 @@ def select_evidence_excerpts(
         "Select the most useful evidence for a grant-writing outline. "
         "Copy every excerpt exactly. Return JSON only.\n\nEVIDENCE:\n" + evidence
     )
-    raw = call_local_writer(prompt, model, SYSTEM_PROMPT)
+    raw = call_local_writer(prompt, model, EXCERPT_SYSTEM_PROMPT)
     return parse_verified_excerpts(raw, evidence)
 
 
@@ -985,89 +1019,609 @@ def _as_sentence(value: str) -> str:
     return text if text.endswith((".", "!", "?")) else text + "."
 
 
-def deterministic_scaffold(payload: dict[str, Any], public_profile: dict[str, str], excerpts: list[str] | None = None) -> str:
+def _funding_record_data(value: Any) -> dict[str, Any]:
+    raw = str(value or "").strip()
+    if not raw:
+        return {}
+    try:
+        parsed = json.loads(raw)
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def _fact_sentences(value: Any, limit: int = 80) -> list[str]:
+    text = unicodedata.normalize("NFKC", str(value or "")).replace("\r\n", "\n").replace("\r", "\n")
+    facts: list[str] = []
+    seen: set[str] = set()
+    for block in text.split("\n"):
+        block = re.sub(r"^\s*(?:[-*]|\d+[.)])\s+", "", block).strip()
+        if not block or block.startswith("--- File:"):
+            continue
+        for part in re.split(r"(?<=[.!?])\s+(?=[A-Z0-9\[])", block):
+            fact = re.sub(r"\s+", " ", part).strip()
+            normalized = _normalized_text(fact).lower()
+            if len(fact) < 3 or normalized in seen:
+                continue
+            seen.add(normalized)
+            facts.append(fact[:1200])
+            if len(facts) >= limit:
+                return facts
+    return facts
+
+
+def _unique_facts(*groups: list[str], limit: int = 8) -> list[str]:
+    output: list[str] = []
+    seen: set[str] = set()
+    for group in groups:
+        for fact in group:
+            key = _normalized_text(fact).lower()
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            output.append(fact)
+            if len(output) >= limit:
+                return output
+    return output
+
+
+def _facts_matching(facts: list[str], pattern: str, limit: int = 6) -> list[str]:
+    regex = re.compile(pattern, re.IGNORECASE)
+    return [fact for fact in facts if regex.search(fact)][:limit]
+
+
+_FIELD_MATCH_STOP_WORDS = {"a", "an", "and", "as", "no", "of", "or", "the", "to", "yes"}
+
+
+def _field_match_tokens(value: str) -> set[str]:
+    normalized = unicodedata.normalize("NFKC", str(value or "")).lower().replace("%", " percent ")
+    tokens: set[str] = set()
+    for token in re.findall(r"\d[\d,]*(?:\.\d+)?|[a-z]+", normalized):
+        token = token.replace(",", "")
+        token = {"typically": "typical", "cycles": "cycle"}.get(token, token)
+        if token not in _FIELD_MATCH_STOP_WORDS:
+            tokens.add(token)
+    return tokens
+
+
+def _field_represented(value: str, supplied_text: str) -> bool:
+    required = _field_match_tokens(value)
+    supplied = _field_match_tokens(supplied_text)
+    if not required:
+        return False
+    required_numbers = {token for token in required if token.replace(".", "", 1).isdigit()}
+    if not required_numbers.issubset(supplied):
+        return False
+    return required.issubset(supplied) or len(required & supplied) / len(required) >= 0.8
+
+
+_NEED_PATTERN = r"\b(?:need|problem|unsafe|lack|barrier|confus\w*|congest\w*|crash\w*|risk\w*|existing|current|recorded|average|observed|traffic counts?|no accessible|limited|shortage|condition|deteriorat\w*|flood\w*|erosion|unmet)\b"
+_ACTION_PATTERN = r"\b(?:plans? to|propos\w*|add\w*|construct(?:s|ed|ing)?|install\w*|replace\w*|reconstruct\w*|develop\w*|create\w*|repair\w*|renovat\w*|acquir\w*)\b"
+_WORK_PATTERN = r"\b(?:if funding|by (?:january|february|march|april|may|june|july|august|september|october|november|december)|proposed for (?:january|february|march|april|may|june|july|august|september|october|november|december)|will manage|will oversee|responsib\w*|procurement|grant administration|advertis\w*|open\w* by|design drawings|cost estimate|repeat\w*|one year after|timeline|schedule)\b"
+_BENEFIT_PATTERN = r"\b(?:benefit\w*|target|goal|intended|aim\w*|reduce\w*|increase\w*|eliminate\w*|provide\w*|protect\w*|improv\w*|accessib\w*|people served|visitor\w*|resident\w*|result\w*)\b"
+
+
+def section_evidence(
+    payload: dict[str, Any],
+    public_profile: dict[str, str],
+    local_knowledge: str = "",
+) -> dict[str, list[str]]:
+    summary = _fact_sentences(payload.get("projectSummary"), 8)
+    notes = _fact_sentences(payload.get("projectNotes"), 100)
+    local = _fact_sentences(local_knowledge, 30)
+    combined_notes = notes + local
+    match = _fact_sentences(payload.get("matchCapacity"), 20)
+    source = _fact_sentences(payload.get("sourceNotes"), 20)
+    record = _funding_record_data(payload.get("selectedGrant"))
+    supplied_budget_text = "\n".join([str(payload.get("matchCapacity") or ""), str(payload.get("sourceNotes") or "")]).lower()
+    record_budget: list[str] = []
+    status = str(record.get("status") or "").strip()
+    amount = str(record.get("amount_or_cost") or "").strip()
+    record_match = str(record.get("match_or_cost") or "").strip()
+    deadline = str(record.get("deadline_or_availability") or "").strip()
+    if status and not _field_represented(status, supplied_budget_text):
+        record_budget.append(f"The supplied funding record lists the program status as {status}.")
+    if amount and amount.lower() not in {"varies", "variable", "n/a", "unknown"} and not _field_represented(amount, supplied_budget_text):
+        record_budget.append(f"The supplied funding record lists the award amount or support as {amount}.")
+    if record_match and not _field_represented(record_match, supplied_budget_text):
+        record_budget.append(f"The supplied funding record lists the match or cost share as {record_match}.")
+    if deadline and not _field_represented(deadline, supplied_budget_text):
+        record_budget.append(f"The supplied funding record lists the deadline or availability as {deadline}.")
+
+    need = _unique_facts(_facts_matching(combined_notes, _NEED_PATTERN, 6), limit=6)
+    if len(need) < 2:
+        need = _unique_facts(need, _facts_matching(summary, _NEED_PATTERN, 2), limit=6)
+    proposed = _unique_facts(
+        _facts_matching(summary, _ACTION_PATTERN, 3),
+        _facts_matching(combined_notes, _ACTION_PATTERN, 4),
+        _facts_matching(combined_notes, r"\b(?:owns? the (?:site|property)|design drawings|preliminary cost estimate)\b", 2),
+        limit=6,
+    )
+    benefit = _unique_facts(
+        _facts_matching(combined_notes, r"\b(?:existing|average|baseline)\b", 2),
+        _facts_matching(summary, _BENEFIT_PATTERN, 2),
+        _facts_matching(combined_notes, r"\b(?:target|goal|benefit\w*|people served|one year after|reduce\w*|increase\w*)\b", 4),
+        limit=5,
+    )
+    work = _unique_facts(
+        _facts_matching(match, r"\b(?:manage\w*|oversee\w*|responsib\w*|staff|director|officer|partner)\b", 4),
+        _facts_matching(combined_notes, _WORK_PATTERN, 7),
+        limit=8,
+    )
+    budget = _unique_facts(
+        _facts_matching(match, r"(?:\$|\b(?:budget|cost|request|match|local share|capital funds?|award)\b)", 6),
+        record_budget,
+        _facts_matching(source, r"\b(?:budget|match|cost|award|request|fund\w*|cycle|deadline)\b", 3),
+        limit=8,
+    )
+    # Keep the model away from irrelevant catalog metadata when no financial facts were supplied.
+    if not match and not record_budget:
+        budget = []
+    return {
+        "Project Need": need,
+        "Proposed Work": proposed,
+        "Community Benefit": benefit,
+        "Work Plan": work,
+        "Budget and Match Notes": budget,
+    }
+
+
+_MODEL_SECTION_INSTRUCTIONS = {
+    "Project Need": "Explain the documented problem and its scale. Do not present proposed construction as an existing condition.",
+    "Proposed Work": "Describe the supplied activities and scope. Preserve every condition tied to funding or timing.",
+    "Community Benefit": "Describe only explicitly supplied intended benefits and the supplied baseline and target. Keep the words baseline or target when the evidence uses them; do not present a target as an achieved result.",
+    "Work Plan": "Organize the supplied implementation tasks, dates, and responsible parties. Do not add application-preparation steps.",
+    "Budget and Match Notes": "State the supplied budget, request, local share, capacity, and funding caveats without changing the role of any amount.",
+}
+_MODEL_DRAFT_HEADINGS = {"Project Need", "Proposed Work", "Community Benefit"}
+
+
+_GROUNDING_STOP_WORDS = set("""
+a an and are as at be because been before being both but by can could did do does during each for from had has have
+having he her hers him his how i if in into is it its itself may more most no nor not of on once only or other our
+ours out over own same she should so some such than that the their theirs them themselves then there these they this
+those through to too under until up very was we were what when where which while who whom why will with would you your
+""".split())
+_GROUNDING_GLUE_WORDS = set("""
+according after also based combined describes documented following includes including lists notes proposed respectively
+states supplied together project program community county town city applicant work grant funding plan paragraph
+aiming baseline baseline-to-target change completion enhance accessibility offering
+maximum contains giving measured
+""".split())
+
+
+def _content_words(value: str) -> set[str]:
+    return {word.lower().strip("'-") for word in re.findall(r"[A-Za-z][A-Za-z'-]{2,}", value or "")}
+
+
+_PROTECTED_FACT_PATTERN = re.compile(
+    r"(?:\d|[$%]|\b(?:target|baseline|request|match|deadline|closed|open|typical|average|recorded|"
+    r"if|unless|subject to|no more than|at least|at most)\b)",
+    re.IGNORECASE,
+)
+
+
+def _normalized_fact_span(value: str) -> str:
+    return _normalized_text(value).replace("’", "'").replace("“", '"').replace("”", '"').lower()
+
+
+def _protected_facts(facts: list[str]) -> list[str]:
+    return [fact for fact in facts if _PROTECTED_FACT_PATTERN.search(fact)]
+
+
+def _word_is_grounded(word: str, evidence_words: set[str]) -> bool:
+    if word in _GROUNDING_STOP_WORDS or word in _GROUNDING_GLUE_WORDS or word in evidence_words:
+        return True
+    if len(word) < 5:
+        return False
+    prefix = word[:6] if len(word) >= 7 else word[:5]
+    return any(len(candidate) >= 5 and (candidate.startswith(prefix) or word.startswith(candidate[: len(prefix)])) for candidate in evidence_words)
+
+
+def _money_relation_issues(draft: str, evidence: str) -> list[str]:
+    issues: list[str] = []
+    evidence_lower = evidence.lower()
+    draft_lower = draft.lower()
+    local_amounts: set[str] = set()
+    for pattern in (
+        r"\$([0-9][0-9,]*(?:\.\d+)?)\b[^.]{0,100}\b(?:local share|local match|match funds?)\b",
+        r"\b(?:local share|local match|match funds?)\b[^.]{0,100}\$([0-9][0-9,]*(?:\.\d+)?)",
+    ):
+        local_amounts.update(match.replace(",", "") for match in re.findall(pattern, evidence_lower))
+    if local_amounts:
+        for match in re.finditer(r"\b(?:local share|local match|match funds?)\b", draft_lower):
+            window = draft_lower[max(0, match.start() - 70): match.end() + 70]
+            nearby = {item.replace(",", "") for item in re.findall(r"\$([0-9][0-9,]*(?:\.\d+)?)", window)}
+            wrong = nearby - local_amounts
+            if wrong:
+                issues.append("amount assigned to the wrong local-share role: " + ", ".join(sorted(wrong)))
+    if "plans to request" in evidence_lower:
+        requested = re.findall(r"plans? to request[^$]{0,50}\$([0-9][0-9,]*(?:\.\d+)?)", evidence_lower)
+        for amount in requested:
+            normalized = amount.replace(",", "")
+            if normalized in _number_tokens(draft) and not re.search(
+                rf"(?:plans? to request|request(?:ing)?|seek(?:ing)?)\b[^$]{{0,60}}\${re.escape(amount)}",
+                draft_lower,
+            ):
+                issues.append(f"requested amount lost its request status: {normalized}")
+    return issues
+
+
+def model_section_issues(draft: str, facts: list[str], metadata: list[str] | None = None) -> list[str]:
+    text = (draft or "").strip()
+    evidence = "\n".join([*(metadata or []), *facts])
+    evidence_lower = evidence.lower()
+    issues: list[str] = []
+    if len(text) < 25:
+        issues.append("section is empty or too short")
+    if len(text) > 1800:
+        issues.append("section is too long")
+    if re.search(r"(?m)^\s*(?:#|[-*]\s|\d+[.)]\s)", text):
+        issues.append("section contains headings or list formatting")
+    if re.search(r"\b(?:here(?:'s| is)|let me know|i can|happy to)\b", text, re.IGNORECASE):
+        issues.append("section contains conversational framing")
+    if re.search(r"\[(?:add local fact|check official source)\]", text, re.IGNORECASE):
+        issues.append("section contains an unapproved placeholder")
+    normalized_draft = _normalized_fact_span(text)
+    for fact in _protected_facts(facts):
+        if _normalized_fact_span(_as_sentence(fact)) not in normalized_draft:
+            issues.append("protected statement changed or omitted: " + _normalized_text(fact)[:180])
+    draft_words = _content_words(text)
+    for fact in facts:
+        if _PROTECTED_FACT_PATTERN.search(fact):
+            continue
+        required_words = {
+            word for word in _content_words(fact)
+            if word not in _GROUNDING_STOP_WORDS and word not in _GROUNDING_GLUE_WORDS
+        }
+        if not required_words:
+            continue
+        matched = sum(1 for word in required_words if _word_is_grounded(word, draft_words))
+        minimum_ratio = 0.67 if len(required_words) <= 3 else 0.55
+        if matched / len(required_words) < minimum_ratio:
+            issues.append("supplied statement changed or omitted: " + _normalized_text(fact)[:180])
+    if metadata and metadata[0]:
+        community = re.escape(metadata[0])
+        for match in re.finditer(rf"\b{community}\s+(?:County|Town|City|Village)\b", text, re.IGNORECASE):
+            if match.group(0).lower() not in evidence_lower:
+                issues.append("unsupported jurisdiction name: " + match.group(0))
+        for match in re.finditer(rf"\b{community}\s+(?:will|has|plans? to)\b", text, re.IGNORECASE):
+            if match.group(0).lower() not in evidence_lower:
+                issues.append("unsupported project actor: " + match.group(0))
+    for match in re.finditer(r"\bthe project will\s+[A-Za-z'-]+", text, re.IGNORECASE):
+        if match.group(0).lower() not in evidence_lower:
+            issues.append("unsupported project actor or action: " + match.group(0))
+    unexpected_numbers = sorted(_number_tokens(text) - _number_tokens(evidence))
+    issues.extend(f"unsupported number: {number}" for number in unexpected_numbers)
+    high_risk_patterns = (
+        r"\b(?:is|was|has been|will be)\s+(?:eligible|funded|awarded|approved)\b",
+        r"\b(?:popular|critical|significant|outdated|comprehensive)\b",
+        r"\b(?:boost|generate|increase)\w*\s+(?:tourism|revenue|economy|jobs?)\b",
+        r"\b(?:hikers?|bikers?|equestrians?)\b",
+        r"\b(?:ada|americans with disabilities act)\b",
+        r"\b(?:guarantee|ensure)\w*\b",
+    )
+    for pattern in high_risk_patterns:
+        for match in re.finditer(pattern, text, re.IGNORECASE):
+            phrase = match.group(0).lower()
+            if phrase not in evidence_lower:
+                issues.append(f"unsupported claim: {phrase}")
+    if "if funding" in evidence_lower and not re.search(r"\b(?:if|contingent|subject to)\b[^.]{0,80}\bfund\w*", text, re.IGNORECASE):
+        issues.append("funding condition was removed")
+    if "typical" in evidence_lower and re.search(r"\b(?:require|required|requires)\b", text, re.IGNORECASE) and "require" not in evidence_lower:
+        issues.append("a typical rule was changed into a requirement")
+    if re.search(r"\btarget\b", evidence_lower) and not re.search(r"\b(?:target|aim\w*|goal)\b", text, re.IGNORECASE):
+        issues.append("a target was changed into an achieved result")
+    if "cycle closed" in evidence_lower and re.search(r"\b(?:current|open|available)\s+(?:cycle|funding|opportunity)\b", text, re.IGNORECASE):
+        issues.append("closed funding was described as open or current")
+    evidence_words = _content_words(evidence)
+    novel = sorted(word for word in _content_words(text) if not _word_is_grounded(word, evidence_words))
+    if novel:
+        issues.append("unsupported wording: " + ", ".join(novel[:12]))
+    issues.extend(_money_relation_issues(text, evidence))
+    return sorted(set(issues))
+
+
+def _clean_model_paragraph(value: str) -> str:
+    text = (value or "").strip()
+    text = re.sub(r"^```(?:markdown|text)?\s*", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s*```$", "", text)
+    text = re.sub(r"^#{1,6}\s+[^\n]+\n+", "", text)
+    return text.strip().strip('"')
+
+
+def _model_section_prompt(heading: str, facts: list[str], payload: dict[str, Any], repair: str = "") -> str:
+    metadata = (
+        f"Community: {payload.get('community') or '[not supplied]'}\n"
+        f"State or territory: {payload.get('state') or '[not supplied]'}\n"
+        f"Project title: {payload.get('projectTitle') or '[not supplied]'}"
+    )
+    repair_block = ""
+    if repair:
+        repair_block = (
+            "\n\nThe previous paragraph failed validation. Remove every unsupported word or claim named below; "
+            "delete any unsupported sentence, and copy the supplied wording when needed. One accurate sentence is "
+            "better than several unsupported sentences.\n" + repair
+        )
+    return (
+        f"Write the {heading} section. {_MODEL_SECTION_INSTRUCTIONS[heading]}\n\n"
+        + metadata
+        + "\n\nSUPPLIED STATEMENTS:\n"
+        + "\n".join(f"- {fact}" for fact in facts)
+        + repair_block
+    )
+
+
+def draft_model_section(
+    heading: str,
+    facts: list[str],
+    payload: dict[str, Any],
+    model: str,
+) -> tuple[str, list[str], bool]:
+    if not facts:
+        return "", ["no supporting facts were supplied"], False
+    metadata = [str(payload.get(key) or "") for key in ("community", "state", "projectTitle")]
+    last_issues: list[str] = []
+    repair = ""
+    for _attempt in range(2):
+        raw = call_local_writer(
+            _model_section_prompt(heading, facts, payload, repair),
+            model,
+            WRITER_SYSTEM_PROMPT,
+            max_tokens=420,
+        )
+        paragraph = _clean_model_paragraph(raw)
+        last_issues = model_section_issues(paragraph, facts, metadata)
+        if not last_issues:
+            return paragraph, [], True
+        repair = "Validation findings: " + "; ".join(last_issues[:6]) + "\nPrevious paragraph: " + paragraph[:1800]
+    return "", last_issues, False
+
+
+def draft_model_sections(
+    sections: dict[str, list[str]],
+    payload: dict[str, Any],
+    model: str,
+) -> tuple[dict[str, str], dict[str, list[str]]]:
+    if not sections:
+        return {}, {}
+    properties = {heading: {"type": "string"} for heading in sections}
+    schema = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "rerc_e_grant_sections",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "properties": properties,
+                "required": list(sections),
+                "additionalProperties": False,
+            },
+        },
+    }
+    section_blocks = []
+    for heading, facts in sections.items():
+        section_blocks.append(
+            f"SECTION: {heading}\nPURPOSE: {_MODEL_SECTION_INSTRUCTIONS[heading]}\nSUPPLIED STATEMENTS:\n"
+            + "\n".join(f"- {fact}" for fact in facts)
+        )
+    prompt = (
+        "Edit each section independently. Return one JSON string value for each named section. "
+        "Each value must be one paragraph and must follow all source-bound rules.\n\n"
+        f"Community: {payload.get('community') or '[not supplied]'}\n"
+        f"State or territory: {payload.get('state') or '[not supplied]'}\n"
+        f"Project title: {payload.get('projectTitle') or '[not supplied]'}\n\n"
+        + "\n\n".join(section_blocks)
+    )
+    batch_system_prompt = WRITER_SYSTEM_PROMPT.replace(
+        "Output only the paragraph, with no heading, greeting, bullets, note, or offer to\nhelp.",
+        "Return only the JSON object required by the response schema. Each value must contain only the paragraph, with no heading, greeting, bullets, note, or offer to help.",
+    )
+    raw = call_local_writer(
+        prompt,
+        model,
+        batch_system_prompt,
+        max_tokens=1400,
+        response_format=schema,
+    )
+    candidate = raw.strip()
+    if candidate.startswith("```"):
+        candidate = re.sub(r"^```(?:json)?\s*", "", candidate, flags=re.IGNORECASE)
+        candidate = re.sub(r"\s*```$", "", candidate)
+    parsed = json.loads(candidate)
+    if not isinstance(parsed, dict):
+        raise ValueError("The local model did not return a section object.")
+    metadata = [str(payload.get(key) or "") for key in ("community", "state", "projectTitle")]
+    accepted: dict[str, str] = {}
+    validation: dict[str, list[str]] = {}
+    for heading, facts in sections.items():
+        paragraph = _clean_model_paragraph(str(parsed.get(heading) or ""))
+        issues = model_section_issues(paragraph, facts, metadata)
+        validation[heading] = issues
+        if not issues:
+            accepted[heading] = paragraph
+    return accepted, validation
+
+
+def _fallback_section(heading: str, facts: list[str]) -> str:
+    if facts:
+        return " ".join(_as_sentence(fact) for fact in facts)
+    prompts = {
+        "Project Need": "[add local fact] Add checked evidence that defines the problem, its scale, and the people affected.",
+        "Proposed Work": "[add local fact] Add the confirmed location, tasks, deliverables, approvals, and responsible parties.",
+        "Community Benefit": "[add local fact] Add the intended beneficiaries, measurable outcomes, baseline, and target.",
+        "Work Plan": "[add local fact] Add implementation tasks, responsible parties, milestone dates, and an evaluation schedule.",
+        "Budget and Match Notes": "[add local fact] Add the task-level budget, request, committed match, and basis for each cost.",
+    }
+    return prompts[heading]
+
+
+def _project_label(title: str) -> str:
+    return title if re.search(r"\bproject\s*$", title, re.IGNORECASE) else f"{title} project"
+
+
+def _explicit_fit_conflict(payload: dict[str, Any]) -> bool:
+    notes = str(payload.get("sourceNotes") or "")
+    return bool(re.search(
+        r"\b(?:mismatch|does not (?:fit|match)|not (?:a fit|eligible)|project (?:contains|includes|has) no .{0,80}(?:activity|work)|no .{0,80}(?:activity|work) is proposed)\b",
+        notes,
+        re.IGNORECASE,
+    ))
+
+
+def _fit_summary(payload: dict[str, Any]) -> tuple[str, str]:
     community = str(payload.get("community") or "[add community]").strip()
     state = str(payload.get("state") or "[add state or territory]").strip()
     title = str(payload.get("projectTitle") or "[add project title]").strip()
     summary = _as_sentence(str(payload.get("projectSummary") or "[add project summary]"))
-    project_notes = str(payload.get("projectNotes") or "").strip()[:1800]
-    grant = _funding_record_text(payload.get("selectedGrant"))
-    match = str(payload.get("matchCapacity") or "[add match, staff, and partner capacity facts]").strip()
-    source = str(payload.get("sourceNotes") or "[add the official source link and current funding details]").strip()
-    profile = format_public_profile(public_profile)
-    verified_excerpts = [item for item in (excerpts or []) if item]
-    evidence_block = ""
-    if verified_excerpts:
-        evidence_block = (
-            "\n\nExact excerpts selected from the supplied material (the underlying claims still require human review):\n\n"
-            + "\n".join(f"- \"{item}\"" for item in verified_excerpts)
-        )
-    notes_block = (
-        f"\n\nProject notes supplied by the community:\n\n{project_notes}"
-        if project_notes
-        else "\n\n[add local fact] Add confirmed project tasks, locations, partners, and expected results."
+    record = _funding_record_data(payload.get("selectedGrant"))
+    paragraphs = [f"{community}, {state}, is developing the {_project_label(title)}. {summary}"]
+    status = str(record.get("status") or "").strip()
+    if record:
+        program = str(record.get("title") or record.get("program") or "the selected funding program").strip()
+        organization = str(record.get("organization") or record.get("agency") or "").strip()
+        description = _as_sentence(str(record.get("summary") or record.get("description") or record.get("why_it_matters") or ""))
+        sentence = f"The supplied funding record identifies {program}"
+        if organization:
+            sentence += f", administered by {organization}"
+        if status:
+            sentence += f", with the status listed as {status}"
+        sentence += "."
+        if description:
+            sentence += f' The supplied catalog description reads: "{description}"'
+        paragraphs.append(sentence)
+    fit_status = "conflict" if _explicit_fit_conflict(payload) else ("closed" if "closed" in status.lower() else "screening")
+    source_notes = str(payload.get("sourceNotes") or "").strip()
+    if fit_status == "conflict":
+        paragraphs.append("The supplied source notes identify a potential funding mismatch that must be resolved before application drafting: " + source_notes)
+    elif fit_status == "closed":
+        paragraphs.append("The selected record is closed as supplied. Use this narrative only for planning unless the official program source confirms a new application cycle.")
+    return "\n\n".join(paragraphs), fit_status
+
+
+def _community_context(public_profile: dict[str, str]) -> str:
+    if not public_profile:
+        return "[add local fact] Add a verified community profile and explain which facts are relevant to the proposed project."
+    place = public_profile.get("place") or "The verified geography"
+    pieces = [f"The supplied public profile identifies {place}"]
+    geography_type = str(public_profile.get("geography_type") or "").strip()
+    if geography_type:
+        pieces[0] += f" as a {geography_type}"
+    pieces[0] += "."
+    facts = []
+    population = str(public_profile.get("population") or "").strip()
+    median_age = str(public_profile.get("median_age") or "").strip()
+    income = str(public_profile.get("median_household_income") or "").strip()
+    poverty = str(public_profile.get("poverty_rate_percent") or "").strip()
+    if population.lstrip("-").isdigit():
+        facts.append(f"a population of {int(population):,}")
+    if median_age:
+        facts.append(f"a median age of {median_age} years")
+    if income.lstrip("-").isdigit():
+        facts.append(f"a median household income of ${int(income):,}")
+    if poverty:
+        facts.append(f"{poverty}% of people below the poverty line")
+    if facts:
+        pieces.append("The profile reports " + ", ".join(facts[:-1]) + ((", and " if len(facts) > 1 else "") + facts[-1]) + ".")
+    source = str(public_profile.get("source") or "U.S. Census Bureau").strip()
+    pieces.append(f"The listed source is {source}.")
+    if public_profile.get("coverage_note"):
+        pieces.append(_as_sentence(str(public_profile["coverage_note"])))
+    return " ".join(pieces)
+
+
+def _source_checks(payload: dict[str, Any]) -> str:
+    record = _funding_record_data(payload.get("selectedGrant"))
+    notes = str(payload.get("sourceNotes") or "").strip()
+    lines = []
+    if notes:
+        lines.append("Supplied source notes:\n\n" + notes)
+    if record.get("source_url") or record.get("url"):
+        lines.append(f"- Official page supplied in the record: {record.get('source_url') or record.get('url')}")
+    lines.extend((
+        "- [check official source] Confirm the current cycle, deadline, eligible applicant, geography, activities, costs, and scoring criteria.",
+        "- [check official source] Confirm the award range, match calculation, attachments, environmental review, and procurement requirements that apply.",
+    ))
+    return "\n\n".join(lines[:1]) + ("\n\n" if lines[:1] else "") + "\n".join(lines[1:] if lines[:1] else lines)
+
+
+def _missing_details(payload: dict[str, Any], sections: dict[str, list[str]]) -> str:
+    combined = "\n".join(
+        str(payload.get(key) or "") for key in ("projectSummary", "projectNotes", "matchCapacity", "sourceNotes")
     )
+    missing = ["- [add local fact] Applicant legal name and the confirmed project location or limits."]
+    if not sections["Project Need"] or not _number_tokens(" ".join(sections["Project Need"])):
+        missing.append("- [add local fact] Checked evidence showing the scale of the need and the people affected.")
+    if not sections["Proposed Work"]:
+        missing.append("- [add local fact] Confirmed scope, tasks, approvals, and deliverables.")
+    if not re.search(r"\b(?:january|february|march|april|may|june|july|august|september|october|november|december|20\d{2}|timeline|schedule)\b", combined, re.IGNORECASE):
+        missing.append("- [add local fact] Implementation start, finish, and milestone dates.")
+    if not re.search(r"\b(?:manage|oversee|responsib|staff|director|officer|partner)\w*\b", combined, re.IGNORECASE):
+        missing.append("- [add local fact] Responsible staff, partner roles, and relevant delivery capacity.")
+    if not re.search(r"\b(?:target|baseline|measure|track|repeat|evaluate|evaluation|outcome)\w*\b", combined, re.IGNORECASE):
+        missing.append("- [add local fact] Measurable outcomes, baseline, target, collection method, timing, and owner.")
+    if not re.search(r"(?:\$\s*\d|\bbudget\b|\bmatch\b|\blocal share\b)", combined, re.IGNORECASE):
+        missing.append("- [add local fact] Total budget, grant request, committed match, and task-level cost basis.")
+    if not re.search(r"\b(?:maintain|maintenance|sustain|ongoing cost|operations?)\w*\b", combined, re.IGNORECASE):
+        missing.append("- [add local fact] Operations, maintenance, and financial sustainability after the grant period.")
+    missing.append("- [check official source] Current notice, scoring criteria, funding rules, and application instructions.")
+    return "\n".join(missing)
+
+
+def _render_draft(
+    payload: dict[str, Any],
+    public_profile: dict[str, str],
+    section_text: dict[str, str],
+    sections: dict[str, list[str]],
+) -> tuple[str, str]:
+    title = str(payload.get("projectTitle") or "[add project title]").strip()
+    fit, fit_status = _fit_summary(payload)
     return f"""# {title}
 
 ## Fit Summary
 
-{community}, {state}, is considering the {title} project. The community describes the project as follows: {summary}
-
-The funding record supplied below may be worth screening for this project. [check official source] Confirm that the applicant, location, proposed work, costs, schedule, and attachments meet the current rules.
-
-{grant}
+{fit}
 
 ## Project Need
 
-The community has identified the following need: {summary}
-
-Use the final application to explain the size and effect of this need with checked local evidence. [add local fact]
+{section_text['Project Need']}
 
 ## Community Context
 
-{profile}
+{_community_context(public_profile)}
 
 ## Proposed Work
 
-The current concept is based on the project summary and the community-supplied notes below.{notes_block}{evidence_block}
-
-Before submission, turn this concept into a confirmed scope with clear tasks, locations, responsible parties, approvals, deliverables, and measures of success.
+{section_text['Proposed Work']}
 
 ## Community Benefit
 
-If completed as described, {title} is intended to help {community} advance the purpose stated in the project summary. The final application should identify who would benefit, explain how they would benefit, and support those statements with local plans, records, or partner documentation. [add local fact]
+{section_text['Community Benefit']}
 
 ## Work Plan
 
-1. Confirm the project scope, location, applicant, and responsible staff.
-2. Check the funding program's current eligibility and application requirements.
-3. Define the tasks, approvals, partners, deliverables, and measures that apply to this project.
-4. Build a supported budget, schedule, and match plan.
-5. Complete the application and establish a practical method for tracking results.
+{section_text['Work Plan']}
 
 ## Budget and Match Notes
 
-{match}
-
-[check official source] Confirm allowed costs, award limits, match rules, and required budget documentation before finalizing the budget.
+{section_text['Budget and Match Notes']}
 
 ## Source and Eligibility Checks
 
-Community notes about the official source:
-
-{source}
-
-- [check official source] Confirm eligible applicants, locations, activities, and costs.
-- [check official source] Confirm the current deadline, award range, match, and required attachments.
+{_source_checks(payload)}
 
 ## Missing Details
 
-- [add local fact] Applicant legal name and confirmed project location.
-- [add local fact] Checked evidence showing the need and people served.
-- [add local fact] Confirmed scope, schedule, staff, partners, and expected results.
-- [add local fact] Total budget and committed match.
-- [check official source] Current funding rules and application instructions.
-"""
+{_missing_details(payload, sections)}
+""", fit_status
+
+
+def deterministic_scaffold(payload: dict[str, Any], public_profile: dict[str, str], excerpts: list[str] | None = None) -> str:
+    del excerpts
+    sections = section_evidence(payload, public_profile)
+    section_text = {heading: _fallback_section(heading, facts) for heading, facts in sections.items()}
+    draft, _fit_status = _render_draft(payload, public_profile, section_text, sections)
+    return draft
 
 
 _NUMBER_WORDS = {
@@ -1099,11 +1653,36 @@ def grounding_issues(
     payload: dict[str, Any],
     public_profile: dict[str, str],
     excerpts: list[str] | None = None,
+    local_knowledge: str = "",
 ) -> list[str]:
-    expected = deterministic_scaffold(payload, public_profile, excerpts)
-    if _normalized_text(draft) == _normalized_text(expected):
-        return []
-    return ["draft differs from the deterministic evidence scaffold"]
+    del excerpts
+    evidence = evidence_text(payload, public_profile, local_knowledge)
+    evidence_lower = evidence.lower()
+    reviewable = "\n".join(
+        line for line in (draft or "").splitlines()
+        if "[add local fact]" not in line.lower() and "[check official source]" not in line.lower()
+    )
+    draft_without_list_numbers = re.sub(r"(?m)^\s*\d+[.)]\s+", "", reviewable)
+    issues = [
+        f"unsupported number: {number}"
+        for number in sorted(_number_tokens(draft_without_list_numbers) - _number_tokens(evidence))
+    ]
+    suspicious_patterns = (
+        r"\b(?:is|was|has been|will be)\s+(?:eligible|funded|awarded|approved)\b",
+        r"\b(?:study|survey|poll)\b",
+        r"\b(?:recent growth|has experienced|have experienced)\b",
+        r"\b(?:boost|generate|increase)\w*\s+(?:tourism|revenue|economy|jobs?)\b",
+        r"\b(?:popular|critical|significant|outdated)\b",
+        r"\b(?:acquir\w*|purchas\w*|consult\w*|hir\w*|contract\w*|approval\w*|permit\w*)\b",
+        r"\b(?:community|resident|public) support\b",
+        r"\b(?:has|have|will) (?:secured|committed|approved|funded)\b",
+    )
+    for pattern in suspicious_patterns:
+        for match in re.finditer(pattern, reviewable, re.IGNORECASE):
+            phrase = match.group(0).lower()
+            if phrase not in evidence_lower:
+                issues.append(f"unsupported detail: {phrase}")
+    return sorted(set(issues))
 
 
 DRAFT_FIELD_LIMITS = {
@@ -1175,27 +1754,86 @@ def build_draft(payload: dict[str, Any]) -> dict[str, Any]:
     local_knowledge = load_local_knowledge()
     model = DEFAULT_MODEL
     warnings: list[str] = []
-    excerpts: list[str] = []
-    if provider == "local":
-        try:
-            excerpts = select_evidence_excerpts(payload, public_profile, local_knowledge, model)
-        except Exception:
-            warnings.append(
-                "The local Gemma evidence review could not finish. "
-                "RERC-e still made a structured outline from the supplied facts."
-            )
-    draft = deterministic_scaffold(payload, public_profile, excerpts)
-    issues = grounding_issues(draft, payload, public_profile, excerpts)
-    if issues:
-        excerpts = []
-        draft = deterministic_scaffold(payload, public_profile)
-        warnings.append("RERC-e removed an unverified evidence selection.")
-    safety_notice = (
-        f"Gemma selected {len(excerpts)} exact supplied excerpt"
-        f"{'s' if len(excerpts) != 1 else ''}; RERC-e checked that they were copied exactly and placed them in a fixed outline. Review the underlying claims."
-        if excerpts
-        else "RERC-e used a fixed evidence-based outline. Add and verify the marked details before submission."
-    )
+    sections = section_evidence(payload, public_profile, local_knowledge)
+    section_text = {heading: _fallback_section(heading, facts) for heading, facts in sections.items()}
+    section_validation: dict[str, list[str]] = {}
+    model_written: list[str] = []
+    attempted_sections: list[str] = []
+    fit_conflict = _explicit_fit_conflict(payload)
+    thresholds = {
+        "Project Need": 2,
+        "Proposed Work": 2,
+        "Community Benefit": 2,
+        "Work Plan": 2,
+        "Budget and Match Notes": 1,
+    }
+    if provider == "local" and not fit_conflict:
+        candidates: dict[str, list[str]] = {}
+        for heading, facts in sections.items():
+            if heading not in _MODEL_DRAFT_HEADINGS:
+                continue
+            if len(facts) < thresholds[heading]:
+                section_validation[heading] = ["insufficient section-specific evidence"]
+                section_text[heading] = _fallback_section(heading, [])
+                continue
+            candidates[heading] = facts
+        attempted_sections = list(candidates)
+        if candidates:
+            try:
+                accepted, batch_validation = draft_model_sections(candidates, payload, model)
+            except Exception as exc:
+                accepted = {}
+                batch_validation = {heading: [f"local model error: {type(exc).__name__}"] for heading in candidates}
+            section_validation.update(batch_validation)
+            for heading, paragraph in accepted.items():
+                section_text[heading] = paragraph
+                model_written.append(heading)
+    elif fit_conflict:
+        section_validation = {heading: ["drafting stopped for explicit funding-fit conflict"] for heading in sections}
+
+    if fit_conflict:
+        fit_text, fit_status = _fit_summary(payload)
+        title = str(payload.get("projectTitle") or "[add project title]").strip()
+        draft = f"""# {title}
+
+## Funding Fit Decision
+
+{fit_text}
+
+RERC-e stopped narrative generation because the supplied project and funding notes identify a conflict. Select a better-matched opportunity or revise the project facts before creating a proposal narrative.
+
+## Source and Eligibility Checks
+
+{_source_checks(payload)}
+"""
+    else:
+        draft, fit_status = _render_draft(payload, public_profile, section_text, sections)
+
+    issues = grounding_issues(draft, payload, public_profile, local_knowledge=local_knowledge)
+    if issues and model_written:
+        model_written = []
+        section_text = {heading: _fallback_section(heading, facts) for heading, facts in sections.items()}
+        draft, fit_status = _render_draft(payload, public_profile, section_text, sections)
+        warnings.append("RERC-e removed model-written text that did not pass the final evidence check.")
+    fallback_sections = [heading for heading in sections if heading not in model_written]
+    rejected = [heading for heading in attempted_sections if heading not in model_written]
+    if provider == "local" and rejected and not fit_conflict:
+        warnings.append(
+            "RERC-e used source-bound text for " + ", ".join(rejected) + " because Gemma's wording did not pass every evidence check."
+        )
+    if fit_conflict:
+        safety_notice = "RERC-e stopped narrative generation because the supplied source notes identify a funding mismatch."
+    elif model_written:
+        safety_notice = (
+            f"Gemma wrote {len(model_written)} source-bound section{'s' if len(model_written) != 1 else ''}. "
+            "RERC-e checked the wording, numbers, funding status, conditions, and amount roles against the supplied evidence; review every claim before submission."
+        )
+    elif provider == "local" and attempted_sections:
+        safety_notice = "Gemma did not produce a section that passed the evidence checks, so RERC-e used source-bound text instead."
+    elif provider == "local":
+        safety_notice = "RERC-e used source-bound text because the supplied facts were not sufficient for model editing."
+    else:
+        safety_notice = "RERC-e used a fixed source-bound outline. Add and verify the marked details before submission."
     return {
         "draft": draft,
         "provider": provider,
@@ -1206,8 +1844,12 @@ def build_draft(payload: dict[str, Any]) -> dict[str, Any]:
         "localKnowledgeChars": len(local_knowledge),
         "warnings": warnings,
         "safetyNotice": safety_notice,
-        "evidenceExcerpts": excerpts,
-        "rawModelProseExposed": False,
+        "evidenceExcerpts": [],
+        "modelWrittenSections": model_written,
+        "fallbackSections": fallback_sections,
+        "sectionValidation": section_validation,
+        "fitStatus": fit_status,
+        "rawModelProseExposed": bool(model_written),
         "generatedAt": int(time.time()),
     }
 
@@ -1513,7 +2155,7 @@ HTML_PAGE = r'''<!doctype html>
     async function openPlanFile(file){ if(!file)return; const importStatus=document.getElementById("planImportStatus"); if(!/\.(rerc-e|rercie|json)$/i.test(file.name)){throw new Error("Choose a RERC-e Community Explorer plan file.");} if(file.size<=0||file.size>MAX_PLAN_BYTES){throw new Error("The plan must be a non-empty file no larger than 256 KB.");} importStatus.textContent="Checking the Community Explorer plan..."; const text=await file.text(); if(new TextEncoder().encode(text).length>MAX_PLAN_BYTES)throw new Error("The plan must be no larger than 256 KB."); let parsed; try{parsed=JSON.parse(text);}catch{throw new Error("The plan is not valid JSON.");} if(!parsed||Array.isArray(parsed)||typeof parsed!=="object"||!(["rerc-e-handoff","rercie-handoff"].includes(parsed.schema))||parsed.version!==1){throw new Error("This is not a supported RERC-e Community Explorer plan.");} await importPlanText(text); }
     async function checkStartupPlan(){ if(!hasLocalSession()){setStatus("Open RERC-e from its Start Menu shortcut to connect this tab.",true);return;} try{ const response=await apiFetch("/api/startup-plan"); const data=await response.json(); if(data.status==="none")return; if(!response.ok)throw new Error(data.error||"The plan could not be opened."); applyImportedPlan(data); }catch(error){ const importStatus=document.getElementById("planImportStatus"); importStatus.textContent=error.message.includes("session")?error.message:"The plan passed from Windows could not be opened: "+error.message; importStatus.className="status warning"; setStatus(importStatus.textContent,true); } }
     async function lookupCommunityFacts(){ const button=document.getElementById("lookupCommunity"); button.disabled=true; setStatus("Looking up community facts..."); try{ const body={community:document.getElementById("community").value,state:stateSelect.value,censusApiKey:document.getElementById("censusApiKey").value}; const response=await apiFetch("/api/community-profile",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}); const data=await response.json(); if(!response.ok)throw new Error(data.error||"Lookup failed."); renderProfile(data.profile,data.message,data.status); markInputsChanged();setStatus(data.message,data.status!=="found"); }catch(error){renderProfile({},"Community facts could not be reached right now.","unavailable");markInputsChanged();setStatus("Community lookup failed: "+error.message,true);}finally{button.disabled=false;} }
-    function collectPayload(){ return {community:document.getElementById("community").value,state:stateSelect.value,projectTitle:document.getElementById("projectTitle").value,projectSummary:document.getElementById("projectSummary").value,selectedGrant:document.getElementById("selectedGrant").value,matchCapacity:document.getElementById("matchCapacity").value,sourceNotes:document.getElementById("sourceNotes").value,projectNotes:document.getElementById("projectNotes").value,publicProfile:activePublicProfile,usePublicData:document.getElementById("usePublicData").checked,provider:document.getElementById("provider").value,model:"gemma-3-1b-it-Q4_K_M.gguf",censusApiKey:document.getElementById("censusApiKey").value}; }
+    function collectPayload(){ return {community:document.getElementById("community").value,state:stateSelect.value,projectTitle:document.getElementById("projectTitle").value,projectSummary:document.getElementById("projectSummary").value,selectedGrant:document.getElementById("selectedGrant").value,matchCapacity:document.getElementById("matchCapacity").value,sourceNotes:document.getElementById("sourceNotes").value,projectNotes:document.getElementById("projectNotes").value,publicProfile:activePublicProfile,usePublicData:document.getElementById("usePublicData").checked,provider:document.getElementById("provider").value,model:"gemma-3-4b-it-Q4_K_M.gguf",censusApiKey:document.getElementById("censusApiKey").value}; }
     function validateDraftInputs(){ const required=[["community","community"],["state","state or territory"],["projectTitle","project title"]]; for(const [id,label] of required){ const control=document.getElementById(id); if(!control.value.trim()){ setStatus(`Add the ${label} before creating a draft.`,true); showStep("project"); control.focus(); return false; } } const hasContext=["projectSummary","projectNotes","selectedGrant"].some((id)=>document.getElementById(id).value.trim()); if(!hasContext){ setStatus("Add a project summary, imported project notes, or funding details before creating a draft.",true); showStep("project"); document.getElementById("projectSummary").focus(); return false; } return true; }
     let runtimePoll=0;
     async function checkRuntime(){ const badge=document.getElementById("runtime"); try{ const response=await apiFetch("/api/runtime"); const data=await response.json(); badge.textContent=data.ready?"Local model ready":"Local model is starting"; badge.className=data.ready?"runtime":"runtime offline"; if(data.ready&&runtimePoll){clearInterval(runtimePoll);runtimePoll=0;} }catch{ badge.textContent="Could not check local writer"; badge.className="runtime offline"; } }
@@ -1761,7 +2403,7 @@ def smoke() -> int:
     profile_text = format_public_profile(sample_profile)
     assert "Population: 1,046" in profile_text and "Median household income: $29,554" in profile_text
     assert "CENSUS_KEY_SENTINEL" not in compose_prompt({"projectTitle": "Test"}, sample_profile, "")
-    assert DEFAULT_MODEL == "gemma-3-1b-it-Q4_K_M.gguf"
+    assert DEFAULT_MODEL == "gemma-3-4b-it-Q4_K_M.gguf"
     valid_handoff = {
         "schema": HANDOFF_SCHEMA,
         "version": HANDOFF_VERSION,
@@ -1897,7 +2539,7 @@ def smoke() -> int:
     }
     imported_profile_result = build_draft(imported_profile_payload)
     assert imported_profile_result["profileStatus"] == "imported"
-    assert "Population: 1,046" in imported_profile_result["draft"]
+    assert "a population of 1,046" in imported_profile_result["draft"]
     try:
         _require_loopback_runtime_url("test", "https://example.com/v1/chat")
         raise AssertionError("A non-loopback writer URL was accepted.")
