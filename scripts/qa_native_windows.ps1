@@ -14,13 +14,14 @@ $WebView2PackageSha256 = "f492bbf547d0da329553b6727435b677579b1e9f91cc9e4a1ad029
 $WebView2Package = Join-Path $RepoRoot "rercie\build-cache\nuget\microsoft.web.webview2\$WebView2Version"
 $WebView2Lib = Join-Path $WebView2Package "lib\net462"
 $WebView2Core = Join-Path $WebView2Lib "Microsoft.Web.WebView2.Core.dll"
-$WebView2WinForms = Join-Path $WebView2Lib "Microsoft.Web.WebView2.WinForms.dll"
+$WebView2Wpf = Join-Path $WebView2Lib "Microsoft.Web.WebView2.Wpf.dll"
 $WebView2Loader = Join-Path $WebView2Package "runtimes\win-x64\native\WebView2Loader.dll"
+$FrameworkReferences = "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2"
 $Python = Get-Command python -ErrorAction SilentlyContinue
 
 if (-not (Test-Path -LiteralPath $Csc -PathType Leaf)) { throw "The .NET Framework C# compiler is unavailable: $Csc" }
 if (-not $Python) { throw "Python is unavailable." }
-$MissingWebView2 = @(@($WebView2Core, $WebView2WinForms, $WebView2Loader) | Where-Object { -not (Test-Path -LiteralPath $_ -PathType Leaf) })
+$MissingWebView2 = @(@($WebView2Core, $WebView2Wpf, $WebView2Loader) | Where-Object { -not (Test-Path -LiteralPath $_ -PathType Leaf) })
 if ($MissingWebView2.Count -gt 0) {
     $DotNet = Get-Command dotnet -ErrorAction SilentlyContinue
     if (-not $DotNet) { throw "The .NET SDK is required to restore the acceptance-only WebView2 test dependency." }
@@ -37,8 +38,11 @@ $WebView2Nupkg = Join-Path $WebView2Package "microsoft.web.webview2.$WebView2Ver
 if (-not (Test-Path -LiteralPath $WebView2Nupkg -PathType Leaf) -or (Get-FileHash -LiteralPath $WebView2Nupkg -Algorithm SHA256).Hash.ToLowerInvariant() -ne $WebView2PackageSha256) {
     throw "The acceptance-only WebView2 test package failed its pinned SHA-256 check."
 }
-foreach ($required in @($WebView2Core, $WebView2WinForms, $WebView2Loader)) {
+foreach ($required in @($WebView2Core, $WebView2Wpf, $WebView2Loader)) {
     if (-not (Test-Path -LiteralPath $required -PathType Leaf)) { throw "The acceptance-only WebView2 test dependency is missing: $required" }
+}
+foreach ($assembly in @("WindowsFormsIntegration.dll", "PresentationCore.dll", "PresentationFramework.dll", "WindowsBase.dll", "System.Xaml.dll")) {
+    if (-not (Test-Path -LiteralPath (Join-Path $FrameworkReferences $assembly) -PathType Leaf)) { throw "The native acceptance reference assembly is missing: $assembly" }
 }
 
 if (-not $OutputDirectory) { $OutputDirectory = Join-Path $RepoRoot "rercie\build-cache\native-acceptance" }
@@ -60,7 +64,12 @@ $CompilerArguments = @(
     "/reference:System.dll", "/reference:System.Core.dll", "/reference:System.Drawing.dll",
     "/reference:System.Windows.Forms.dll", "/reference:System.Net.Http.dll",
     "/reference:System.Web.Extensions.dll", "/reference:System.Security.dll",
-    "/reference:$WebView2Core", "/reference:$WebView2WinForms",
+    "/reference:$(Join-Path $FrameworkReferences 'WindowsFormsIntegration.dll')",
+    "/reference:$(Join-Path $FrameworkReferences 'PresentationCore.dll')",
+    "/reference:$(Join-Path $FrameworkReferences 'PresentationFramework.dll')",
+    "/reference:$(Join-Path $FrameworkReferences 'WindowsBase.dll')",
+    "/reference:$(Join-Path $FrameworkReferences 'System.Xaml.dll')",
+    "/reference:$WebView2Core", "/reference:$WebView2Wpf",
     (Join-Path $RepoRoot "rercie\packaging\RERC-eLauncher.cs"),
     (Join-Path $RepoRoot "rercie\packaging\NativeAcceptanceHarness.cs")
 )
@@ -68,7 +77,7 @@ $CompilerArguments = @(
 if ($LASTEXITCODE -ne 0) { throw "The RERC-e native acceptance harness did not compile." }
 
 Copy-Item -LiteralPath $WebView2Core -Destination $OutputDirectory -Force
-Copy-Item -LiteralPath $WebView2WinForms -Destination $OutputDirectory -Force
+Copy-Item -LiteralPath $WebView2Wpf -Destination $OutputDirectory -Force
 Copy-Item -LiteralPath $WebView2Loader -Destination $OutputDirectory -Force
 Copy-Item -LiteralPath (Join-Path $RepoRoot "rercie\packaging\RERC-e.exe.config") -Destination (Join-Path $OutputDirectory "RERC-e.exe.config") -Force
 Copy-Item -LiteralPath (Join-Path $RepoRoot "assets\rerc-e-eagle.jpg") -Destination (Join-Path $OutputDirectory "assets\rerc-e-eagle.jpg") -Force
@@ -112,6 +121,9 @@ try {
         if ($_.Exception.Response) { $ReplayStatus = [int]$_.Exception.Response.StatusCode }
     }
     if ($ReplayStatus -ne 403) { throw "The one-time app-window code could be reused." }
+    $EmbeddedLaunchCodeResponse = Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:$Port/api/app-window-code" -Headers @{ "X-RERC-e-Token" = $Token; Host = "127.0.0.1:$Port" } -ContentType "application/json" -Body "{}" -TimeoutSec 3
+    if (-not $EmbeddedLaunchCodeResponse.code -or $EmbeddedLaunchCodeResponse.expiresInSeconds -ne 60) { throw "The embedded-view launch code endpoint returned an invalid response." }
+    $EmbeddedLaunchAddress = "http://127.0.0.1:$Port/app-window?code=$([Uri]::EscapeDataString([string]$EmbeddedLaunchCodeResponse.code))"
     $AppWindowSecurity = [ordered]@{
         launch_code_ttl_seconds = [int]$LaunchCodeResponse.expiresInSeconds
         full_session_token_in_url = $false
@@ -121,7 +133,7 @@ try {
         replay_status = $ReplayStatus
     }
 
-    $App = Start-Process -FilePath (Join-Path $OutputDirectory "RERC-e.exe") -ArgumentList @("http://127.0.0.1:$Port/native#token=$Token", ('"' + $EvidenceDirectory + '"')) -PassThru -Wait
+    $App = Start-Process -FilePath (Join-Path $OutputDirectory "RERC-e.exe") -ArgumentList @($EmbeddedLaunchAddress, ('"' + $EvidenceDirectory + '"')) -PassThru -Wait
     if ($App.ExitCode -ne 0) { throw "The RERC-e native acceptance harness exited with code $($App.ExitCode)." }
     $ReportPath = Join-Path $EvidenceDirectory "native-acceptance.json"
     if (-not (Test-Path -LiteralPath $ReportPath -PathType Leaf)) { throw "The native acceptance report was not created." }
@@ -166,10 +178,11 @@ try {
             }
         })
         app_window_host = [ordered]@{
-            status = if ($Report.app_window_host.microsoft_publisher_trusted) { "PASS" } else { "FAIL" }
+            status = if ($Report.app_window_host.same_window_transition -and $Report.app_window_host.composition_visual_host) { "PASS" } else { "FAIL" }
             mode = $Report.app_window_host.mode
-            executable = $Report.app_window_host.executable
-            microsoft_publisher_trusted = [bool]$Report.app_window_host.microsoft_publisher_trusted
+            same_window_transition = [bool]$Report.app_window_host.same_window_transition
+            composition_visual_host = [bool]$Report.app_window_host.composition_visual_host
+            control_type = $Report.app_window_host.control_type
             address_bar_visible = [bool]$Report.app_window_host.address_bar_visible
             security = $AppWindowSecurity
         }
@@ -178,6 +191,8 @@ try {
             title = $Report.web_content.dom.title
             step_count = $Report.web_content.dom.stepCount
             token_stored = $Report.web_content.dom.tokenStored
+            cookie_auth = $Report.web_content.dom.cookieAuth
+            local_session = $Report.web_content.dom.localSession
             page_overflow = $Report.web_content.dom.pageOverflow
             live_content_visible = [bool]$Report.web_content_visible
             acceptance_runtime = $Report.web_content.webview_runtime
@@ -187,7 +202,7 @@ try {
         limitations = @(
             "The actual native-window run used this computer's 150% display scale.",
             "The 100% and 200% results are off-monitor geometry and font simulations; final release acceptance still requires clean Windows 10 and Windows 11 machines.",
-            "The browser-content capture uses an off-screen WebView2 acceptance control; the shipped launcher uses the signed Microsoft Edge app-window host recorded above.",
+            "The embedded browser-content run uses the same WebView2 composition host as the shipped launcher, but movement feel still requires a visible user acceptance pass on the target computer.",
             "The source-built executable is unsigned and is not a public release candidate."
         )
     }
@@ -203,7 +218,7 @@ try {
         per_monitor_v2 = $Report.per_monitor_dpi_aware
         native_layout = $Report.native_layout_pass
         simulated_geometry = $Report.simulated_geometry_pass
-        app_window_host = $Report.app_window_host.microsoft_publisher_trusted
+        app_window_host = ($Report.app_window_host.same_window_transition -and $Report.app_window_host.composition_visual_host)
         app_window_security = ($ReplayStatus -eq 403 -and [bool]$SessionCookie.HttpOnly)
         web_content = $Report.web_content_pass
         acceptance_runtime = $Report.web_content.webview_runtime

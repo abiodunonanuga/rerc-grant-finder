@@ -378,7 +378,9 @@ def main() -> int:
     launcher = (ROOT / "rercie" / "packaging" / "RERC-eLauncher.cs").read_text(encoding="utf-8")
     assert "Read the Gemma Terms" in launcher
     assert "Apache License 2.0" not in launcher
-    assert r'--app=\"' in launcher and "/api/app-window-code" in launcher
+    assert "WebView2CompositionControl" in launcher and "CreateAppWindowUrl" in launcher and "/api/app-window-code" in launcher
+    assert r'--app=\"' not in launcher
+    assert "same_window_transition = true" in launcher and "composition_visual_host = true" in launcher
     assert "full_session_token_in_command_line = false" in launcher
     installer_script = (ROOT / "rercie" / "packaging" / "RERC-e.iss").read_text(encoding="utf-8")
     assert '[InstallDelete]' not in installer_script
@@ -386,7 +388,8 @@ def main() -> int:
     assert '#define AppVersion "0.5.1"' in installer_script
     build_script = (ROOT / "rercie" / "build_installer.ps1").read_text(encoding="utf-8")
     assert '$Version = "0.5.1"' in build_script
-    assert "Microsoft.Web.WebView2" not in build_script and "WEBVIEW2-LICENSE" not in build_script
+    assert "Microsoft.Web.WebView2.Core.dll" in build_script and "Microsoft.Web.WebView2.Wpf.dll" in build_script
+    assert "WEBVIEW2-LICENSE.txt" in build_script and "WebView2Loader.dll" in build_script
     installer_manifest = json.loads(
         (ROOT / "rercie" / "packaging" / "installer_manifest.json").read_text(
             encoding="utf-8"
@@ -404,8 +407,9 @@ def main() -> int:
         assert native_qa["per_monitor_v2"] is True and native_qa["actual_monitor"]["layout_pass"] is True
         assert {row["scale"] for row in native_qa["simulated_geometry"] if row["status"] == "PASS"} == {"100%", "150%", "200%"}
         assert native_qa["app_window_host"]["status"] == "PASS"
-        assert native_qa["app_window_host"]["mode"] == "Microsoft Edge --app"
-        assert native_qa["app_window_host"]["microsoft_publisher_trusted"] is True
+        assert native_qa["app_window_host"]["mode"] == "embedded WebView2 composition"
+        assert native_qa["app_window_host"]["same_window_transition"] is True
+        assert native_qa["app_window_host"]["composition_visual_host"] is True
         assert native_qa["app_window_host"]["address_bar_visible"] is False
         assert native_qa["app_window_host"]["security"]["full_session_token_in_url"] is False
         assert native_qa["app_window_host"]["security"]["httponly_cookie"] is True

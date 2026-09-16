@@ -34,6 +34,14 @@ if (-not $OutputDirectory) { $OutputDirectory = Join-Path $Here "dist" }
 $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
 $InstallerPath = Join-Path $OutputDirectory "RERC-e-Setup.exe"
 $Csc = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
+$FrameworkReferences = "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2"
+$WebView2Version = "1.0.4191.47"
+$WebView2PackageSha256 = "f492bbf547d0da329553b6727435b677579b1e9f91cc9e4a1ad029366d5f23d0"
+$WebView2Package = Join-Path $CacheDir "nuget\microsoft.web.webview2\$WebView2Version"
+$WebView2Lib = Join-Path $WebView2Package "lib\net462"
+$WebView2Core = Join-Path $WebView2Lib "Microsoft.Web.WebView2.Core.dll"
+$WebView2Wpf = Join-Path $WebView2Lib "Microsoft.Web.WebView2.Wpf.dll"
+$WebView2Loader = Join-Path $WebView2Package "runtimes\win-x64\native\WebView2Loader.dll"
 if (-not $InnoCompiler) { $InnoCompiler = Join-Path $env:LOCALAPPDATA "Programs\Inno Setup 6\ISCC.exe" }
 $ArtifactSigningRequested = [bool]($ArtifactSigningDlib -or $ArtifactSigningMetadata)
 $PublisherSignatureRequested = [bool]($CodeSigningThumbprint -or $ArtifactSigningRequested)
@@ -202,6 +210,30 @@ if (-not (Test-Path -LiteralPath (Join-Path $ServiceSource "RERC-eService.exe") 
 Copy-Item -LiteralPath $ServiceSource -Destination $ServiceDestination -Recurse
 
 if (-not (Test-Path -LiteralPath $Csc -PathType Leaf)) { throw "The Windows C# compiler was not found at $Csc." }
+foreach ($assembly in @("WindowsFormsIntegration.dll", "PresentationCore.dll", "PresentationFramework.dll", "WindowsBase.dll", "System.Xaml.dll")) {
+    if (-not (Test-Path -LiteralPath (Join-Path $FrameworkReferences $assembly) -PathType Leaf)) { throw "The .NET Framework 4.7.2 reference assembly is missing: $assembly" }
+}
+$MissingWebView2 = @(@($WebView2Core, $WebView2Wpf, $WebView2Loader) | Where-Object { -not (Test-Path -LiteralPath $_ -PathType Leaf) })
+if ($MissingWebView2.Count -gt 0) {
+    $DotNet = Get-Command dotnet -ErrorAction SilentlyContinue
+    if (-not $DotNet) { throw "The .NET SDK is required to restore the pinned WebView2 dependency." }
+    $OldDotNetHome = $env:DOTNET_CLI_HOME
+    try {
+        $env:DOTNET_CLI_HOME = Join-Path $CacheDir "dotnet-home"
+        [IO.Directory]::CreateDirectory($env:DOTNET_CLI_HOME) | Out-Null
+        & $DotNet.Source restore (Join-Path $Here "packaging\WebView2Sdk.csproj") --packages (Join-Path $CacheDir "nuget") --configfile (Join-Path $Here "packaging\NuGet.Config") --verbosity quiet
+        if ($LASTEXITCODE -ne 0) { throw "The pinned WebView2 dependency restore failed." }
+    } finally {
+        $env:DOTNET_CLI_HOME = $OldDotNetHome
+    }
+}
+$WebView2Nupkg = Join-Path $WebView2Package "microsoft.web.webview2.$WebView2Version.nupkg"
+if (-not (Test-Path -LiteralPath $WebView2Nupkg -PathType Leaf) -or (Get-Sha256 $WebView2Nupkg) -ne $WebView2PackageSha256) {
+    throw "The pinned WebView2 package failed its SHA-256 check."
+}
+foreach ($required in @($WebView2Core, $WebView2Wpf, $WebView2Loader)) {
+    if (-not (Test-Path -LiteralPath $required -PathType Leaf)) { throw "The pinned WebView2 dependency is missing: $required" }
+}
 $launcherConfig = Join-Path $Here "packaging\RERC-e.exe.config"
 $launcherManifest = Join-Path $Here "packaging\RERC-e.exe.manifest"
 $cscArgs = @(
@@ -212,11 +244,20 @@ $cscArgs = @(
     "/reference:System.dll", "/reference:System.Core.dll", "/reference:System.Drawing.dll",
     "/reference:System.Windows.Forms.dll", "/reference:System.Net.Http.dll",
     "/reference:System.Web.Extensions.dll", "/reference:System.Security.dll",
+    "/reference:$(Join-Path $FrameworkReferences 'WindowsFormsIntegration.dll')",
+    "/reference:$(Join-Path $FrameworkReferences 'PresentationCore.dll')",
+    "/reference:$(Join-Path $FrameworkReferences 'PresentationFramework.dll')",
+    "/reference:$(Join-Path $FrameworkReferences 'WindowsBase.dll')",
+    "/reference:$(Join-Path $FrameworkReferences 'System.Xaml.dll')",
+    "/reference:$WebView2Core", "/reference:$WebView2Wpf",
     (Join-Path $Here "packaging\RERC-eLauncher.cs")
 )
 & $Csc @cscArgs
 if ($LASTEXITCODE -ne 0) { throw "The native RERC-e launcher build failed." }
 Copy-Item -LiteralPath $launcherConfig -Destination (Join-Path $PackageRoot "RERC-e.exe.config")
+Copy-Item -LiteralPath $WebView2Core -Destination $PackageRoot
+Copy-Item -LiteralPath $WebView2Wpf -Destination $PackageRoot
+Copy-Item -LiteralPath $WebView2Loader -Destination $PackageRoot
 $launcherSignatureStatus = Sign-RercBinary (Join-Path $PackageRoot "RERC-e.exe")
 $serviceSignatureStatus = Sign-RercBinary (Join-Path $PackageRoot "service\RERC-eService.exe")
 
@@ -226,6 +267,8 @@ if (-not (Test-Path -LiteralPath $PythonLicense -PathType Leaf)) { throw "The Py
 Copy-Item -LiteralPath $PythonLicense -Destination (Join-Path $PackageRoot "LICENSE-PYTHON.txt")
 [IO.Directory]::CreateDirectory((Join-Path $PackageRoot "licenses")) | Out-Null
 Copy-Item -LiteralPath (Join-Path $Here "licenses\GEMMA_TERMS.txt") -Destination (Join-Path $PackageRoot "licenses\GEMMA_TERMS.txt")
+Copy-Item -LiteralPath (Join-Path $WebView2Package "LICENSE.txt") -Destination (Join-Path $PackageRoot "licenses\WEBVIEW2-LICENSE.txt")
+Copy-Item -LiteralPath (Join-Path $WebView2Package "NOTICE.txt") -Destination (Join-Path $PackageRoot "licenses\WEBVIEW2-NOTICE.txt")
 curl.exe -L --fail --retry 3 --output (Join-Path $PackageRoot "runtime\llama\LICENSE-llama.cpp") $LicenseUrl
 if ($LASTEXITCODE -ne 0) { throw "The llama.cpp license download failed." }
 
@@ -340,7 +383,7 @@ if (-not (Test-Path -LiteralPath $smokePath -PathType Leaf)) { throw "The native
 $smoke = Get-Content -LiteralPath $smokePath -Raw | ConvertFrom-Json
 if ($smoke.status -ne "PASS" -or $smoke.version -ne $Version -or $smoke.powershell_required -ne $false) { throw "The native launcher smoke report was not valid for RERC-e $Version." }
 if ($smoke.model_name -ne "gemma-3-1b-it-Q4_K_M.gguf" -or $smoke.model_sha256 -ne "8ccc5cd1f1b3602548715ae25a66ed73fd5dc68a210412eea643eb20eb75a135") { throw "The launcher smoke report does not identify the approved Gemma model." }
-if ($smoke.app_window_mode -ne "Microsoft Edge --app" -or $smoke.edge_publisher_trusted -ne $true -or $smoke.full_session_token_in_command_line -ne $false) { throw "The native launcher smoke report does not validate the secure Edge app-window host." }
+if ($smoke.app_window_mode -ne "embedded WebView2 composition" -or $smoke.composition_visual_host -ne $true -or $smoke.same_window_transition -ne $true -or $smoke.address_bar_visible -ne $false -or $smoke.full_session_token_in_url -ne $false -or $smoke.full_session_token_in_command_line -ne $false) { throw "The native launcher smoke report does not validate the embedded composition host." }
 
 $downloadProbePath = Join-Path $BuildRoot "launcher-download-probe.json"
 $downloadProbeProcess = Start-Process -FilePath (Join-Path $PackageRoot "RERC-e.exe") -ArgumentList @("--probe-download-output", ('"' + $downloadProbePath + '"')) -Wait -PassThru

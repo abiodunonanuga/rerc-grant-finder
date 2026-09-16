@@ -263,7 +263,8 @@ namespace RERCeDesktop
                     File.AppendAllText(progressPath, "setup" + Environment.NewLine, new UTF8Encoding(false));
                     form.PrepareAcceptanceSetup();
                     await Task.Delay(250);
-                    CaptureWindow(form, Path.Combine(outputDirectory, "setup-current-dpi.png"));
+                    CaptureControl(form, Path.Combine(outputDirectory, "setup-current-dpi.png"));
+                    IntPtr setupWindowHandle = form.Handle;
                     object current = Summarize(form, "current", false, (int)GetDpiForWindow(form.Handle));
                     List<ControlEvidence> currentControls = Inspect(form);
                     File.AppendAllText(progressPath, "geometry" + Environment.NewLine, new UTF8Encoding(false));
@@ -276,11 +277,13 @@ namespace RERCeDesktop
                     string profile = Path.Combine(outputDirectory, "webview-profile");
                     string dom = await form.OpenAcceptanceAppAsync(address, profile);
                     await Task.Delay(750);
-                    bool embeddedContentVisible = form.AcceptanceWebView.Visible && form.AcceptanceWebView.Width > 0 && form.AcceptanceWebView.Height > 0;
+                    bool embeddedContentVisible = form.AcceptanceWebViewHost.Visible && form.AcceptanceWebViewHost.Width > 0 && form.AcceptanceWebViewHost.Height > 0;
+                    bool sameWindowTransition = setupWindowHandle == form.Handle;
+                    bool compositionVisualHost = form.UsesCompositionWebView;
                     string webViewImage = Path.Combine(outputDirectory, "embedded-rerc-e.png");
                     using (FileStream stream = new FileStream(webViewImage, FileMode.Create, FileAccess.Write, FileShare.None))
                         await form.AcceptanceWebView.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, stream);
-                    CaptureWindowWithWebView(form, form.AcceptanceWebView, webViewImage, Path.Combine(outputDirectory, "native-shell-with-webview.png"));
+                    CaptureWindowWithWebView(form, form.AcceptanceWebViewHost, webViewImage, Path.Combine(outputDirectory, "native-shell-with-webview.png"));
 
                     int dpiAwareness;
                     int awarenessCall = GetProcessDpiAwareness(IntPtr.Zero, out dpiAwareness);
@@ -294,7 +297,11 @@ namespace RERCeDesktop
                         && embeddedDom.ContainsKey("stepCount")
                         && Convert.ToInt32(embeddedDom["stepCount"]) == 3
                         && embeddedDom.ContainsKey("tokenStored")
-                        && Convert.ToBoolean(embeddedDom["tokenStored"])
+                        && !Convert.ToBoolean(embeddedDom["tokenStored"])
+                        && embeddedDom.ContainsKey("cookieAuth")
+                        && Convert.ToBoolean(embeddedDom["cookieAuth"])
+                        && embeddedDom.ContainsKey("localSession")
+                        && Convert.ToBoolean(embeddedDom["localSession"])
                         && embeddedDom.ContainsKey("pageOverflow")
                         && !Convert.ToBoolean(embeddedDom["pageOverflow"])
                         && embeddedDom.ContainsKey("nativeHost")
@@ -304,11 +311,9 @@ namespace RERCeDesktop
                     bool nativePass = !currentControls.Any(control => control.visible && (control.text_clipped || control.outside_parent))
                         && currentControls.Any(control => control.visible && control.type == "Button" && control.text == "Download and start" && !control.text_clipped)
                         && !currentControls.Any(control => control.visible && control.tab_stop && IsInteractiveName(control.type) && string.IsNullOrWhiteSpace(control.accessible_name));
-                    string edgeExecutable = Runtime.FindEdgeExecutable();
-                    bool edgePublisherTrusted = AuthenticodeVerifier.IsTrustedMicrosoftFile(edgeExecutable);
                     object report = new
                     {
-                        status = perMonitorDpiAware && nativePass && geometryPass && embeddedPass && embeddedContentVisible && edgePublisherTrusted ? "PASS" : "FAIL",
+                        status = perMonitorDpiAware && nativePass && geometryPass && embeddedPass && embeddedContentVisible && sameWindowTransition && compositionVisualHost ? "PASS" : "FAIL",
                         app = "RERC-e",
                         version = Config.Version,
                         os = Environment.OSVersion.VersionString,
@@ -322,16 +327,17 @@ namespace RERCeDesktop
                         web_content_visible = embeddedContentVisible,
                         app_window_host = new
                         {
-                            mode = "Microsoft Edge --app",
-                            executable = edgeExecutable,
-                            microsoft_publisher_trusted = edgePublisherTrusted,
+                            mode = "embedded WebView2 composition",
+                            same_window_transition = sameWindowTransition,
+                            composition_visual_host = compositionVisualHost,
+                            control_type = form.AcceptanceWebView.GetType().FullName,
                             address_bar_visible = false,
                         },
                         current,
                         geometry = new[] { scale100, scale150, scale200 },
                         web_content = new
                         {
-                            url = address,
+                            url = new Uri(address).GetLeftPart(UriPartial.Path),
                             dom = embeddedDom,
                             screenshot = Path.GetFileName(webViewImage),
                             webview_runtime = CoreWebView2Environment.GetAvailableBrowserVersionString(),

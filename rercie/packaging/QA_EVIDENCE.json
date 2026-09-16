@@ -52,7 +52,7 @@
         "150%",
         "200%"
       ],
-      "layout_geometry_sha256": "5d916682607f8ac58fc2acd8f09ac9d54df536a716d4e46afc6f05282c4f8f4c",
+      "layout_geometry_sha256": "ef498418bf0b3a3d8c30690ad7d806a75d49261c9c2585036df0476f36db12c3",
       "historical_reviewed_geometry_sha256": "df70b1e32a489edfa0fa82309dccd30207a2ae1e1876ae11d4623766e3f7b697",
       "historical_layout_hash_matches": false,
       "dpi_autoscaling_and_scroll_enabled": true
@@ -155,7 +155,7 @@
     "The public installer is not code-signed, so Windows may show a safety notice.",
     "The isolated installer test runs on the build computer rather than a clean Windows virtual machine.",
     "Users must review every generated draft and verify current funding rules at the official source.",
-    "The native setup passed at 150% actual display scaling; 100% and 200% were geometry simulations. The signed Edge app host and one-time cookie handoff passed locally. Signed-package and clean-machine Windows 10/11 testing remain required."
+    "The native setup passed at 150% actual display scaling; 100% and 200% were geometry simulations. The same-window composition host and one-time cookie handoff passed locally. Signed-package and clean-machine Windows 10/11 testing remain required."
   ],
   "release_binding": {
     "source_commit": null,
@@ -166,6 +166,6 @@
   "verification_inputs": {
     "browser_contract_sha256": "35dfb522baec5ae8d6d16ff68345260fabcfe9053cceea58f96f9f0cf8119545",
     "local_gemma_report_sha256": "6e6a290b77edd2abe1732a6f2cbadd2c0dbe295124971eb1c39282f25dcdcd3b",
-    "native_windows_report_sha256": "176db4719a4f6b82a15d4e1a6dc13219e43d08edde87a4a05f570b98df46a77a"
+    "native_windows_report_sha256": "918e05c0a09caa807e1bbea6444bd7647a39eefb9aa49ee2880f6306c8924ebd"
   }
 }
