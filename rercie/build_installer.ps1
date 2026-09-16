@@ -3,7 +3,11 @@ param(
     [string]$OutputDirectory = "",
     [string]$InnoCompiler = "",
     [string]$CodeSigningThumbprint = "",
+    [string]$ArtifactSigningDlib = "",
+    [string]$ArtifactSigningMetadata = "",
+    [string]$PublisherLegalName = "",
     [string]$TimestampUrl = "http://timestamp.digicert.com",
+    [string]$ArtifactTimestampUrl = "http://timestamp.acs.microsoft.com",
     [switch]$RequireCodeSignature,
     [switch]$AllowUnsignedQaBuild
 )
@@ -34,9 +38,14 @@ $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
 $InstallerPath = Join-Path $OutputDirectory "RERC-e-Setup.exe"
 $Csc = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
 if (-not $InnoCompiler) { $InnoCompiler = Join-Path $env:LOCALAPPDATA "Programs\Inno Setup 6\ISCC.exe" }
+$ArtifactSigningRequested = [bool]($ArtifactSigningDlib -or $ArtifactSigningMetadata)
+$PublisherSignatureRequested = [bool]($CodeSigningThumbprint -or $ArtifactSigningRequested)
 if ($RequireCodeSignature -and $AllowUnsignedQaBuild) { throw "Choose a signed release build or an unsigned QA-only build, not both." }
-if (-not $CodeSigningThumbprint -and -not $AllowUnsignedQaBuild) {
-    throw "Public RERC-e installers require an authorized, trusted publisher signature. Supply -CodeSigningThumbprint, or use -AllowUnsignedQaBuild only for local QA."
+if ($CodeSigningThumbprint -and $ArtifactSigningRequested) { throw "Choose either a local certificate thumbprint or Azure Artifact Signing, not both." }
+if ([bool]$ArtifactSigningDlib -ne [bool]$ArtifactSigningMetadata) { throw "Azure Artifact Signing requires both -ArtifactSigningDlib and -ArtifactSigningMetadata." }
+if ($ArtifactSigningRequested -and -not $PublisherLegalName) { throw "Azure Artifact Signing requires -PublisherLegalName to match the validated public certificate identity." }
+if (-not $PublisherSignatureRequested -and -not $AllowUnsignedQaBuild) {
+    throw "Public RERC-e installers require an authorized, trusted publisher signature. Supply -CodeSigningThumbprint or the Azure Artifact Signing parameters, or use -AllowUnsignedQaBuild only for local QA."
 }
 
 function Get-Sha256([string]$Path) {
@@ -56,31 +65,48 @@ function Get-SignToolPath {
     return $candidates | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } | Select-Object -First 1
 }
 
-function Sign-TimberwingBinary([string]$Path) {
-    if (-not $CodeSigningThumbprint) {
+function Sign-RercBinary([string]$Path) {
+    if (-not $PublisherSignatureRequested) {
         if ($RequireCodeSignature) { throw "An authorized EPR, P.C. or Timberwing Systems code-signing certificate thumbprint is required." }
         return "NotSigned"
     }
-    $certificate = Get-ChildItem -LiteralPath "Cert:\CurrentUser\My\$CodeSigningThumbprint" -ErrorAction SilentlyContinue
-    if (-not $certificate -or -not $certificate.HasPrivateKey) { throw "The requested code-signing certificate is unavailable or has no private key." }
-    if ($certificate.Subject -notmatch "Timberwing Systems|EPR, P[.]C[.]") { throw "The code-signing certificate identity does not name the authorized RERC-e publisher." }
-    if ($certificate.NotBefore -gt (Get-Date) -or $certificate.NotAfter -lt (Get-Date)) { throw "The code-signing certificate is outside its valid date range." }
-    $eku = $certificate.Extensions | Where-Object { $_.Oid.Value -eq "2.5.29.37" } | Select-Object -First 1
-    if (-not $eku -or -not ($eku.EnhancedKeyUsages | Where-Object { $_.Value -eq "1.3.6.1.5.5.7.3.3" })) {
-        throw "The certificate is not authorized for code signing."
-    }
     $signTool = Get-SignToolPath
     if (-not $signTool) { throw "SignTool was not found." }
-    & $signTool sign /sha1 $CodeSigningThumbprint /fd SHA256 /tr $TimestampUrl /td SHA256 $Path
+    if ($ArtifactSigningRequested) {
+        & $signTool sign /v /fd SHA256 /tr $ArtifactTimestampUrl /td SHA256 /dlib $ArtifactSigningDlib /dmdf $ArtifactSigningMetadata $Path
+    } else {
+        $certificate = Get-ChildItem -LiteralPath "Cert:\CurrentUser\My\$CodeSigningThumbprint" -ErrorAction SilentlyContinue
+        if (-not $certificate -or -not $certificate.HasPrivateKey) { throw "The requested code-signing certificate is unavailable or has no private key." }
+        if ($certificate.Subject -notmatch "Timberwing Systems|EPR, P[.]C[.]") { throw "The code-signing certificate identity does not name the authorized RERC-e publisher." }
+        if ($certificate.NotBefore -gt (Get-Date) -or $certificate.NotAfter -lt (Get-Date)) { throw "The code-signing certificate is outside its valid date range." }
+        $eku = $certificate.Extensions | Where-Object { $_.Oid.Value -eq "2.5.29.37" } | Select-Object -First 1
+        if (-not $eku -or -not ($eku.EnhancedKeyUsages | Where-Object { $_.Value -eq "1.3.6.1.5.5.7.3.3" })) {
+            throw "The certificate is not authorized for code signing."
+        }
+        & $signTool sign /sha1 $CodeSigningThumbprint /fd SHA256 /tr $TimestampUrl /td SHA256 $Path
+    }
     if ($LASTEXITCODE -ne 0) { throw "Authenticode signing failed for $Path." }
     & $signTool verify /pa /v $Path
     if ($LASTEXITCODE -ne 0) { throw "Authenticode verification failed for $Path." }
     $status = Get-AuthenticodeSignature -LiteralPath $Path
     if ($status.Status -ne "Valid") { throw "The Authenticode signature is not valid for ${Path}: $($status.Status)." }
+    if (-not $status.SignerCertificate) { throw "The signed file does not expose a publisher certificate: $Path" }
+    $signedPublisher = $status.SignerCertificate.GetNameInfo([Security.Cryptography.X509Certificates.X509NameType]::SimpleName, $false)
+    if ($PublisherLegalName -and $signedPublisher -ne $PublisherLegalName) {
+        throw "The signed publisher '$signedPublisher' does not match -PublisherLegalName '$PublisherLegalName'."
+    }
     return [string]$status.Status
 }
 
-if ($CodeSigningThumbprint) {
+if ($ArtifactSigningRequested) {
+    if (-not (Test-Path -LiteralPath $ArtifactSigningDlib -PathType Leaf)) { throw "The Azure Artifact Signing dlib was not found: $ArtifactSigningDlib" }
+    if (-not (Test-Path -LiteralPath $ArtifactSigningMetadata -PathType Leaf)) { throw "The Azure Artifact Signing metadata file was not found: $ArtifactSigningMetadata" }
+    $artifactMetadata = Get-Content -LiteralPath $ArtifactSigningMetadata -Raw | ConvertFrom-Json
+    foreach ($name in @("Endpoint", "CodeSigningAccountName", "CertificateProfileName")) {
+        if (-not $artifactMetadata.PSObject.Properties[$name] -or -not $artifactMetadata.$name) { throw "The Azure Artifact Signing metadata is missing $name." }
+    }
+    if (-not (Get-SignToolPath)) { throw "SignTool is required for an Azure Artifact Signing release build." }
+} elseif ($CodeSigningThumbprint) {
     $publisherCertificate = Get-ChildItem -LiteralPath "Cert:\CurrentUser\My\$CodeSigningThumbprint" -ErrorAction SilentlyContinue
     if (-not $publisherCertificate -or -not $publisherCertificate.HasPrivateKey) {
         throw "The authorized RERC-e publisher certificate is unavailable or has no private key."
@@ -97,7 +123,7 @@ if ($sourceQa.checks.local_generation.source_normalized_sha256 -ne (Get-Sha256 (
 }
 if ($sourceQa.PSObject.Properties["historical"] -and $sourceQa.historical) { throw "Historical QA evidence cannot authorize a current release build." }
 if ($sourceQa.evidence_stage -ne "source") { throw "QA_EVIDENCE.json must be current source-stage evidence." }
-$requiredQaChecks = @("source_smoke", "display_scaling", "live_catalog", "community_lookup", "local_generation", "docx_export", "api_privacy_regression", "service_identity_checks", "licensing_and_runtime")
+$requiredQaChecks = @("source_smoke", "native_launcher", "display_scaling", "live_catalog", "community_lookup", "local_generation", "docx_export", "api_privacy_regression", "service_identity_checks", "licensing_and_runtime")
 foreach ($checkName in $requiredQaChecks) {
     $check = $sourceQa.checks.PSObject.Properties[$checkName]
     if (-not $check -or $check.Value.status -ne "PASS") { throw "Required QA check is not PASS: $checkName" }
@@ -198,6 +224,8 @@ $webView2Lib = Join-Path $WebView2PackageDir "lib\net462"
 $webView2Core = Join-Path $webView2Lib "Microsoft.Web.WebView2.Core.dll"
 $webView2WinForms = Join-Path $webView2Lib "Microsoft.Web.WebView2.WinForms.dll"
 $webView2Loader = Join-Path $WebView2PackageDir "runtimes\win-x64\native\WebView2Loader.dll"
+$launcherConfig = Join-Path $Here "packaging\RERC-e.exe.config"
+$launcherManifest = Join-Path $Here "packaging\RERC-e.exe.manifest"
 foreach ($file in @($webView2Core, $webView2WinForms, $webView2Loader)) {
     if (-not (Test-Path -LiteralPath $file -PathType Leaf)) { throw "The pinned Microsoft WebView2 SDK is missing $file." }
     Copy-Item -LiteralPath $file -Destination $PackageRoot
@@ -206,6 +234,7 @@ $cscArgs = @(
     "/nologo", "/target:winexe", "/optimize+", "/platform:x64",
     "/out:$(Join-Path $PackageRoot 'RERC-e.exe')",
     "/win32icon:$(Join-Path $AssetRoot 'rerc-e.ico')",
+    "/win32manifest:$launcherManifest",
     "/reference:System.dll", "/reference:System.Core.dll", "/reference:System.Drawing.dll",
     "/reference:System.Windows.Forms.dll", "/reference:System.Net.Http.dll",
     "/reference:System.Web.Extensions.dll", "/reference:System.Security.dll",
@@ -214,8 +243,9 @@ $cscArgs = @(
 )
 & $Csc @cscArgs
 if ($LASTEXITCODE -ne 0) { throw "The native RERC-e launcher build failed." }
-$launcherSignatureStatus = Sign-TimberwingBinary (Join-Path $PackageRoot "RERC-e.exe")
-$serviceSignatureStatus = Sign-TimberwingBinary (Join-Path $PackageRoot "service\RERC-eService.exe")
+Copy-Item -LiteralPath $launcherConfig -Destination (Join-Path $PackageRoot "RERC-e.exe.config")
+$launcherSignatureStatus = Sign-RercBinary (Join-Path $PackageRoot "RERC-e.exe")
+$serviceSignatureStatus = Sign-RercBinary (Join-Path $PackageRoot "service\RERC-eService.exe")
 
 $PythonRoot = (& python -c "import sys; print(sys.base_prefix)").Trim()
 $PythonLicense = Join-Path $PythonRoot "LICENSE.txt"
@@ -242,6 +272,7 @@ Copy-Item -LiteralPath (Join-Path $AssetRoot "ASSET_PROVENANCE.md") -Destination
 
 $integrityFiles = @(
     Get-Item -LiteralPath (Join-Path $PackageRoot "RERC-e.exe")
+    Get-Item -LiteralPath (Join-Path $PackageRoot "RERC-e.exe.config")
     Get-ChildItem -LiteralPath $PackageRoot -Filter "*.dll" -File
     Get-ChildItem -LiteralPath (Join-Path $PackageRoot "service") -Recurse -File | Where-Object { $_.Extension -in @(".exe", ".dll", ".pyd") }
     Get-ChildItem -LiteralPath (Join-Path $PackageRoot "runtime\llama") -File | Where-Object { $_.Extension -in @(".exe", ".dll") }
@@ -339,7 +370,7 @@ if (Test-Path -LiteralPath $InstallerPath) { Remove-Item -LiteralPath $Installer
 & $InnoCompiler "/DSourceRoot=$PackageRoot" "/DOutputDir=$OutputDirectory" "/DAppVersion=$Version" (Join-Path $Here "packaging\RERC-e.iss")
 if ($LASTEXITCODE -ne 0) { throw "The RERC-e installer build failed." }
 if (-not (Test-Path -LiteralPath $InstallerPath -PathType Leaf)) { throw "The RERC-e installer was not created." }
-$installerSignatureStatus = Sign-TimberwingBinary $InstallerPath
+$installerSignatureStatus = Sign-RercBinary $InstallerPath
 
 $installerSha256 = Get-Sha256 $InstallerPath
 $checksumPath = Join-Path $OutputDirectory "RERC-e-Setup.exe.sha256"
@@ -397,7 +428,10 @@ $releaseQa = [ordered]@{
     integrity_manifest_sha256 = Get-Sha256 $integrityPath
     integrity_files = @($entries).Count
     signature_status = [string]$signature.Status
-    publisher_signature_requested = [bool]$CodeSigningThumbprint
+    publisher_signature_requested = $PublisherSignatureRequested
+    signing_method = if ($ArtifactSigningRequested) { "Azure Artifact Signing" } elseif ($CodeSigningThumbprint) { "Local certificate" } else { "Unsigned QA" }
+    publisher_legal_name = $PublisherLegalName
+    signature_subject = if ($signature.SignerCertificate) { $signature.SignerCertificate.Subject } else { $null }
     public_release_allowed = ($signature.Status -eq "Valid")
     launcher_signature_status = $launcherSignatureStatus
     service_signature_status = $serviceSignatureStatus
@@ -429,7 +463,8 @@ $releaseQa = [ordered]@{
     checksum = $checksumPath
     release_qa = $releaseQaPath
     signature_status = [string]$signature.Status
-    publisher_signature_requested = [bool]$CodeSigningThumbprint
+    publisher_signature_requested = $PublisherSignatureRequested
+    signing_method = if ($ArtifactSigningRequested) { "Azure Artifact Signing" } elseif ($CodeSigningThumbprint) { "Local certificate" } else { "Unsigned QA" }
     launcher_signature_status = $launcherSignatureStatus
     service_signature_status = $serviceSignatureStatus
     powershell_required = $false

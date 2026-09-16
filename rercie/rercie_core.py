@@ -1244,6 +1244,8 @@ HTML_PAGE = r'''<!doctype html>
     * { box-sizing:border-box; }
     body { margin:0; color:var(--ink); background:var(--mist); font-family:Arial,Helvetica,sans-serif; line-height:1.5; letter-spacing:0; }
     a { color:var(--river); }
+    .skip-link { position:fixed; z-index:9999; top:8px; left:8px; min-height:44px; padding:10px 14px; color:var(--green); background:#fff; border:2px solid var(--green); border-radius:5px; transform:translateY(-150%); }
+    .skip-link:focus { transform:translateY(0); }
     header { padding:24px max(20px,calc((100vw - 1280px)/2)); color:#fff; background:var(--green); border-bottom:5px solid var(--sun); }
     header .brand { display:flex; justify-content:space-between; gap:20px; align-items:center; }
     header .welcome { display:grid; grid-template-columns:minmax(0,1fr) 120px; gap:24px; align-items:center; }
@@ -1305,14 +1307,14 @@ HTML_PAGE = r'''<!doctype html>
     body { background:#edf3ef; font-family:"Segoe UI",Arial,sans-serif; }
     header { padding:22px max(20px,calc((100vw - 1080px)/2)) 28px; background:linear-gradient(130deg,#173f35,#00573f 70%); border-bottom:4px solid var(--sun); }
     header .brand { font-size:.88rem; letter-spacing:.02em; }
-    header .brand a { font-size:.88rem; }
+    header .brand a { display:inline-flex; min-height:44px; align-items:center; font-size:.88rem; }
     header .welcome { grid-template-columns:minmax(0,1fr) 240px; }
     header h1 { margin-top:22px; font-size:clamp(2rem,4vw,3rem); letter-spacing:-.035em; }
     header p { max-width:620px; font-size:1.08rem; }
     header .mascot-stage { width:240px; height:135px; }
     header .mascot { object-fit:cover; border:3px solid rgba(255,255,255,.85); border-radius:12px; }
     .assurance { width:min(1080px,calc(100% - 32px)); margin:14px auto 0; padding:9px 14px; border:1px solid #d3e2d8; border-radius:10px; background:#fff; font-size:.88rem; }
-    .assurance summary { color:var(--forest); font-weight:800; cursor:pointer; }
+    .assurance summary { display:flex; min-height:44px; align-items:center; color:var(--forest); font-weight:800; cursor:pointer; }
     .assurance .privacy,.assurance .notice { margin-top:10px; padding:8px 10px; border-radius:8px; font-size:.88rem; }
     .journey { display:flex; gap:10px; width:min(1080px,100%); margin:20px auto 0; padding:0 16px; }
     .journey button { flex:1; min-height:62px; padding:9px 15px; border:1px solid #cbd9d0; border-radius:12px; color:var(--forest); background:#fff; font-size:.95rem; font-weight:700; text-align:left; box-shadow:0 3px 12px rgba(23,63,53,.05); }
@@ -1347,6 +1349,7 @@ HTML_PAGE = r'''<!doctype html>
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#mainContent">Skip to the RERC-e project</a>
   <header>
     <div class="brand"><strong>Recreation Economy <em>for</em> Rural Communities</strong><a href="https://henkelpress.github.io/rerc-grant-finder/" target="_blank" rel="noopener">Open the public explorer</a></div>
     <div class="welcome"><div><h1>Meet RERC-e</h1><p>Use a funding match and your project notes to create a first draft. Check every fact before you apply.</p></div><div class="mascot-stage"><img class="mascot" src="/assets/rerc-e-eagle.jpg" alt="RERC-e, a bald eagle field guide holding a notebook"></div></div>
@@ -1362,7 +1365,7 @@ HTML_PAGE = r'''<!doctype html>
     <button type="button" data-step="draft"><span class="step-number">3</span> Draft and export</button>
   </nav>
   <p id="status" class="status global-status" aria-live="polite">Ready.</p>
-  <main>
+  <main id="mainContent" tabindex="-1">
     <section class="panel step-panel" id="projectStep" data-panel="project" aria-labelledby="projectStepTitle">
       <p class="step-eyebrow">Step 1 of 3</p>
       <h2 id="projectStepTitle">Tell RERC-e about your project</h2>
@@ -1413,7 +1416,7 @@ HTML_PAGE = r'''<!doctype html>
       <div class="actions">
         <button id="draftButton" class="secondary" type="button">Create first draft</button>
       </div>
-      <div class="actions draft-exports" aria-label="Draft exports">
+      <div class="actions draft-exports" role="group" aria-label="Draft exports">
         <button id="downloadDocx" class="quiet" type="button">Export Word</button>
         <button id="downloadMd" class="quiet" type="button">Export Markdown</button>
         <button id="copyDraft" class="quiet" type="button">Copy</button>

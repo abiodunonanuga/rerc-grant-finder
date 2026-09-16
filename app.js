@@ -494,7 +494,7 @@ function renderCard(item, headingLevel = 3) {
         </details>
         ${renderSourceLink(item, "Read the example")}
       </div>
-      <div class="score" aria-label="${escapeHtml(scoreLabel)}"><strong>${escapeHtml(scoreLabel)}</strong><span>${hasSubstantiveAnswers() ? "match level" : "add details to rank"}</span></div>
+      <div class="score"><strong>${escapeHtml(scoreLabel)}</strong><span>${hasSubstantiveAnswers() ? "match level" : "add details to rank"}</span></div>
     </article>`;
   }
 
@@ -522,7 +522,7 @@ function renderCard(item, headingLevel = 3) {
       </details>
       ${renderSourceLink(item, item.item_type === "Resource" ? "Open resource" : "Program Website")}
     </div>
-    <div class="score" aria-label="${escapeHtml(scoreLabel)}"><strong>${escapeHtml(scoreLabel)}</strong><span>${hasSubstantiveAnswers() ? "match level" : "add details to rank"}</span></div>
+    <div class="score"><strong>${escapeHtml(scoreLabel)}</strong><span>${hasSubstantiveAnswers() ? "match level" : "add details to rank"}</span></div>
   </article>`;
 }
 

@@ -4,9 +4,11 @@
   "version": "1.0.0",
   "scripts": {
     "test": "python scripts/qa_release.py",
-    "qa:browser": "node scripts/qa_public_site.cjs"
+    "qa:browser": "node scripts/qa_public_site.cjs",
+    "qa:accessibility": "node scripts/qa_accessibility.cjs"
   },
   "devDependencies": {
+    "axe-core": "4.10.3",
     "playwright": "1.61.1"
   }
 }

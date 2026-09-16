@@ -47,7 +47,7 @@ p { margin: 0; }
 .agency-actions a:hover, .agency-actions button:hover { background: rgba(255,255,255,0.13); }
 
 .photo-scene { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; min-height: 310px; align-items: end; gap: 34px; padding: 48px max(24px, calc((100vw - 1500px) / 2)); overflow: hidden; color: var(--white); background: var(--forest) url("assets/hero-outdoor.jpg") center 54% / cover no-repeat; isolation: isolate; }
-.photo-scene::before { position: absolute; z-index: -1; inset: 0; content: ""; background: rgba(7,42,31,0.68); }
+.photo-scene::before { position: absolute; z-index: -1; inset: 0; content: ""; background: rgba(7,42,31,0.72); }
 .scene-copy { max-width: 760px; padding-bottom: 8px; }
 .scene-copy .eyebrow { color: #cce9d9; }
 .scene-copy > p:not(.eyebrow) { max-width: 650px; margin: 14px 0 20px; font-size: 1.1rem; }

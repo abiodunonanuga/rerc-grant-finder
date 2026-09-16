@@ -14,5 +14,7 @@ qa/
 *.test.exe
 node_modules/
 browser-qa/
+browser-qa-rercie/
+browser-qa-rercie-mascot/
 .source-monitor/
 intake-review/

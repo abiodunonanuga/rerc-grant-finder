@@ -51,7 +51,7 @@ RERC-e Local Grant-Writing Guide is an optional Windows app. It helps people rev
 
 [Download RERC-e for Windows](https://github.com/henkelpress/rerc-grant-finder/releases/latest)
 
-The current public installer is RERC-e 0.4.0. It passed installer QA and uses Google Gemma 3 1B. The installer is not code-signed, so Windows may show a safety notice and an unknown publisher. RERC-e 0.5.1 source now includes a guided interface and embedded WebView2 app window; these source changes are not in the current public installer. The next package is held for an authorized, trusted publisher signature, package QA, and clean-machine Windows security testing. RERC-e is a community-built tool. It is not an EPA grant program, does not decide eligibility, and does not submit applications.
+The current public installer is RERC-e 0.4.0. It passed installer QA and uses Google Gemma 3 1B. The installer is not code-signed, so Windows may show a safety notice and an unknown publisher. RERC-e 0.5.1 source now includes a guided interface, embedded WebView2 app window, and Per-Monitor V2 native scaling; its source-built native window passed on Windows 10 at the actual 150% display setting. These source changes are not in the current public installer. The next package is held for an authorized, trusted publisher signature, package QA, and clean-machine Windows 10/11 security testing. RERC-e is a community-built tool. It is not an EPA grant program, does not decide eligibility, and does not submit applications.
 
 The reviewed source and Timberwing Systems license are in `rercie/`. Model weights are not stored in this repository or installer.
 

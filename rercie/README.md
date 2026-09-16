@@ -22,7 +22,7 @@ No command line is needed. Open RERC-e from the Start Menu. The newer launcher o
 
 RERC-e source can also open a Community Explorer plan. Use **Open Community Explorer plan** inside RERC-e, or open an installed `.rerc-e` file from Windows. RERC-e checks the file before filling any fields and shows what it imported. Older plan files remain readable.
 
-RERC-e 0.5.1 source now includes a three-step interface, a larger first-run button, embedded Microsoft WebView2 display, and RERC-e-branded new plan files. The public 0.4.0 installer does not include these changes. Native launcher compilation and browser flows pass in source QA; integrated native-window behavior still needs a signed-package and clean-machine test. No authorized RERC-e code-signing certificate was available on this computer, so verified-publisher distribution remains on hold.
+RERC-e 0.5.1 source now includes a three-step interface, a complete first-run **Download and start** button, embedded Microsoft WebView2 display, Per-Monitor V2 scaling, and RERC-e-branded new plan files. The public 0.4.0 installer does not include these changes. The source-built native window passed on Windows 10 at the computer's actual 150% display scale, with additional 100%, 150%, and 200% geometry checks. A signed-package and clean-machine Windows 10/11 test is still required before release. No authorized RERC-e code-signing identity was available on this computer, so verified-publisher distribution remains on hold.
 
 ## What RERC-e Does
 
@@ -91,13 +91,14 @@ The build does not regenerate source QA evidence. It generates `file_integrity.j
 python -m pip install -r .\requirements-build.txt
 python ..\scripts\qa_local_gemma.py
 python ..\scripts\qa_release.py
+& ..\scripts\qa_native_windows.ps1
 $publisherThumbprint = "<authorized-publisher-certificate-thumbprint>"
 .\build_installer.ps1 -AcceptRuntimeDownload -CodeSigningThumbprint $publisherThumbprint -RequireCodeSignature
 ```
 
 The local Gemma service must be running for `qa_local_gemma.py`. A pending or failed QA result is a release hold, not a reason to edit the evidence to `PASS`.
 
-The build now requires a trusted, identity-matched publisher certificate by default and signs the launcher, service, and installer with a SHA-256 timestamp. The certificate and SignTool must be available on the authorized signing computer. For isolated QA only, use `-AllowUnsignedQaBuild`; that path labels its result `QA_ONLY_UNSIGNED` and does not authorize a public release. A valid signature identifies the publisher but does not guarantee that a new download has enough Windows SmartScreen reputation to suppress its initial warning.
+The build requires a trusted, identity-matched publisher signature by default and signs the launcher, service, and installer with a SHA-256 timestamp. It supports either a local organization-validation certificate by thumbprint or Azure Artifact Signing with `-ArtifactSigningDlib`, `-ArtifactSigningMetadata`, and `-PublisherLegalName`. See [packaging/PUBLISHER_SIGNING.md](packaging/PUBLISHER_SIGNING.md) for the identity decision, enrollment steps, prerequisites, and verification commands. For isolated QA only, use `-AllowUnsignedQaBuild`; that path labels its result `QA_ONLY_UNSIGNED` and does not authorize a public release. A valid signature identifies the publisher but does not guarantee that a new download has enough Windows SmartScreen reputation to suppress its initial warning.
 
 ## Help
 

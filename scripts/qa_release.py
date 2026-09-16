@@ -393,6 +393,17 @@ def main() -> int:
     source_qa = json.loads((ROOT / "rercie" / "packaging" / "QA_EVIDENCE.json").read_text(encoding="utf-8"))
     assert source_qa["status"] in {"SOURCE_PASS", "SOURCE_PENDING_NATIVE_QA"} and source_qa["evidence_stage"] == "source"
     assert source_qa["checks"]["display_scaling"]["status"] == ("PASS" if source_qa["status"] == "SOURCE_PASS" else "PENDING_RETEST")
+    if source_qa["status"] == "SOURCE_PASS":
+        native_qa_path = ROOT / "rercie" / "packaging" / "NATIVE_WINDOWS_QA.json"
+        native_qa = json.loads(native_qa_path.read_text(encoding="utf-8"))
+        assert native_qa["status"] == "PASS" and native_qa["evidence_stage"] == "source"
+        assert native_qa["app"] == "RERC-e" and native_qa["app_version"] == EXPECTED_RERCIE_VERSION
+        assert native_qa["per_monitor_v2"] is True and native_qa["actual_monitor"]["layout_pass"] is True
+        assert {row["scale"] for row in native_qa["simulated_geometry"] if row["status"] == "PASS"} == {"100%", "150%", "200%"}
+        assert native_qa["embedded_app"]["status"] == "PASS" and native_qa["embedded_app"]["step_count"] == 3
+        for relative, expected_hash in native_qa["source_sha256"].items():
+            assert sha256(ROOT / relative) == expected_hash
+        assert source_qa["verification_inputs"]["native_windows_report_sha256"] == sha256(native_qa_path)
     assert source_qa["checks"]["source_smoke"]["handoff_schema"] == app.app.HANDOFF_SCHEMA
     assert source_qa["app_version"] == EXPECTED_RERCIE_VERSION
     assert source_qa["app_version"] == expected_app_version

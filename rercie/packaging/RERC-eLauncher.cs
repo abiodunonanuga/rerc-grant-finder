@@ -20,6 +20,59 @@ using Microsoft.Web.WebView2.WinForms;
 
 namespace RERCeDesktop
 {
+    internal static class DpiAwareness
+    {
+        private static readonly IntPtr PerMonitorV2 = new IntPtr(-4);
+
+        [DllImport("user32.dll", EntryPoint = "SetProcessDpiAwarenessContext", SetLastError = true)]
+        private static extern bool SetProcessDpiAwarenessContext(IntPtr value);
+
+        [DllImport("shcore.dll")]
+        private static extern int SetProcessDpiAwareness(int value);
+
+        [DllImport("user32.dll")]
+        private static extern bool SetProcessDPIAware();
+
+        [DllImport("user32.dll")]
+        private static extern uint GetDpiForWindow(IntPtr window);
+
+        internal static void Initialize()
+        {
+            try
+            {
+                if (SetProcessDpiAwarenessContext(PerMonitorV2)) return;
+            }
+            catch (EntryPointNotFoundException) { }
+            catch (DllNotFoundException) { }
+
+            try
+            {
+                if (SetProcessDpiAwareness(2) == 0) return;
+            }
+            catch (EntryPointNotFoundException) { }
+            catch (DllNotFoundException) { }
+
+            try { SetProcessDPIAware(); }
+            catch (EntryPointNotFoundException) { }
+            catch (DllNotFoundException) { }
+        }
+
+        internal static int WindowDpi(Control control)
+        {
+            try
+            {
+                if (control != null && control.IsHandleCreated)
+                {
+                    uint dpi = GetDpiForWindow(control.Handle);
+                    if (dpi >= 96) return (int)dpi;
+                }
+            }
+            catch (EntryPointNotFoundException) { }
+            catch (DllNotFoundException) { }
+            return 96;
+        }
+    }
+
     internal static class Config
     {
         public const string Version = "0.5.1";
@@ -526,10 +579,11 @@ namespace RERCeDesktop
         {
             startupPlanStaged = hasStartupPlan;
             Text = "RERC-e";
-            ClientSize = new Size(700, 520);
-            MinimumSize = new Size(716, 559);
-            StartPosition = FormStartPosition.CenterScreen;
+            AutoScaleDimensions = new SizeF(96f, 96f);
             AutoScaleMode = AutoScaleMode.Dpi;
+            ClientSize = new Size(760, 540);
+            MinimumSize = new Size(776, 579);
+            StartPosition = FormStartPosition.CenterScreen;
             AutoScroll = true;
             BackColor = Color.FromArgb(248, 249, 245);
             Font = new Font("Segoe UI", 9.5f);
@@ -553,15 +607,7 @@ namespace RERCeDesktop
             if (File.Exists(imagePath)) picture.Image = Image.FromFile(imagePath);
             hero.Controls.Add(picture);
 
-            RichTextBox brand = new RichTextBox();
-            brand.Location = new Point(32, 28);
-            brand.Size = new Size(525, 30);
-            brand.BorderStyle = BorderStyle.None;
-            brand.BackColor = Color.FromArgb(17, 67, 53);
-            brand.ReadOnly = true;
-            brand.TabStop = false;
-            brand.ScrollBars = RichTextBoxScrollBars.None;
-            brand.Rtf = @"{\rtf1\ansi\deff0{\fonttbl{\f0 Segoe UI;}}{\colortbl;\red255\green255\blue255;}\f0\fs22\cf1\b Recreation Economy \i for\i0  Rural Communities\b0}";
+            Label brand = MakeLabel("Recreation Economy for Rural Communities", 32, 28, 525, 30, 10.5f, true, Color.White);
             Label title = MakeLabel("Meet RERC-e", 32, 75, 525, 50, 27f, true, Color.White);
             Label intro = MakeLabel("Your local guide from project idea to a grant draft.", 32, 135, 525, 36, 13f, false, Color.FromArgb(242, 248, 243));
             Label boundary = MakeLabel("Community-built by Timberwing Systems. RERC-e does not determine eligibility or submit an application.", 32, 183, 525, 48, 9.5f, false, Color.FromArgb(212, 228, 216));
@@ -577,8 +623,8 @@ namespace RERCeDesktop
             Label modelNote = MakeLabel("First use: download Google Gemma (about 0.81 GB)", 32, 265, 696, 28, 11f, true, Color.FromArgb(23, 63, 53));
             Controls.Add(modelNote);
 
-            LinkLabel modelLink = MakeLink("View the model page", 32, 324, 160, Config.ModelPageUrl);
-            LinkLabel licenseLink = MakeLink("Read the Gemma Terms", 202, 324, 190, Config.ModelLicenseUrl);
+            LinkLabel modelLink = MakeLink("View the model page", 32, 324, 190, Config.ModelPageUrl);
+            LinkLabel licenseLink = MakeLink("Read the Gemma Terms", 234, 324, 220, Config.ModelLicenseUrl);
             Controls.Add(modelLink); Controls.Add(licenseLink);
 
             Label licenseNote = MakeLabel("The model stays on this computer. Review the Gemma Terms before downloading.", 32, 296, 696, 28, 9.5f, false, Color.FromArgb(70, 80, 75));
@@ -644,8 +690,37 @@ namespace RERCeDesktop
             Controls.Add(browserPanel);
             browserPanel.BringToFront();
 
+#if RERC_E_ACCEPTANCE_QA
+            Shown += delegate
+            {
+                statusLabel.Text = "Native acceptance preview. No model download will run.";
+                RefreshButtons();
+            };
+#else
             Shown += async delegate { await RefreshStateAsync(); };
+#endif
             FormClosed += delegate { int failures; Runtime.StopOwnedProcesses(out failures); };
+            // Programmatic WinForms controls do not receive the designer-generated
+            // initial scale pass. Scale the complete 96-DPI layout once after it
+            // exists, then retain that baseline for future per-monitor DPI changes.
+            ApplyInitialDpiScale();
+        }
+
+        private void ApplyInitialDpiScale()
+        {
+            int dpi = Math.Max(96, DeviceDpi);
+            if (dpi != 96)
+            {
+                SuspendLayout();
+                Scale(new SizeF(dpi / 96f, dpi / 96f));
+                ResumeLayout(true);
+            }
+            AutoScaleDimensions = new SizeF(dpi, dpi);
+        }
+
+        private int ScaleLogical(int value)
+        {
+            return (int)Math.Round(value * DpiAwareness.WindowDpi(this) / 96d);
         }
 
         private Label MakeLabel(string text, int x, int y, int width, int height, float size, bool bold, Color color)
@@ -720,9 +795,9 @@ namespace RERCeDesktop
             bool modelExists = File.Exists(Runtime.ModelPath) && new FileInfo(Runtime.ModelPath).Length == Config.ModelBytes;
             startButton.Text = modelExists ? "&Start RERC-e" : "&Download and start";
             // WinForms does not enlarge a fixed button when the first-run label changes.
-            startButton.Width = Math.Max(190, TextRenderer.MeasureText(startButton.Text.Replace("&", ""), startButton.Font).Width + 28);
-            openButton.Left = startButton.Right + 8;
-            stopButton.Left = openButton.Right + 8;
+            startButton.Width = Math.Max(ScaleLogical(190), TextRenderer.MeasureText(startButton.Text.Replace("&", ""), startButton.Font).Width + ScaleLogical(28));
+            openButton.Left = startButton.Right + ScaleLogical(8);
+            stopButton.Left = openButton.Right + ScaleLogical(8);
             startButton.Enabled = !busy && !appReady;
             openButton.Enabled = !busy && appReady;
             stopButton.Text = busy ? "&Cancel" : "&Stop";
@@ -814,8 +889,8 @@ namespace RERCeDesktop
                 AcceptButton = null;
                 CancelButton = null;
                 AutoScroll = false;
-                ClientSize = new Size(1180, 780);
-                MinimumSize = new Size(700, 540);
+                ClientSize = new Size(ScaleLogical(1180), ScaleLogical(780));
+                MinimumSize = new Size(ScaleLogical(700), ScaleLogical(540));
                 appView.CoreWebView2.Navigate(Runtime.AppBrowserUrl());
                 appView.Focus();
             }
@@ -849,6 +924,68 @@ namespace RERCeDesktop
                 }
             }
         }
+
+#if RERC_E_ACCEPTANCE_QA
+        internal WebView2 AcceptanceWebView { get { return appView; } }
+
+        internal void PrepareAcceptanceSetup()
+        {
+            ShowSetup();
+            statusLabel.Text = "Native acceptance preview. No model download will run.";
+            RefreshButtons();
+            PerformLayout();
+        }
+
+        internal async Task<string> OpenAcceptanceAppAsync(string address, string profile)
+        {
+            Uri allowed = new Uri(address);
+            if (appEnvironment == null) appEnvironment = await CoreWebView2Environment.CreateAsync(null, profile);
+            await appView.EnsureCoreWebView2Async(appEnvironment);
+            if (appView.CoreWebView2 == null) throw new InvalidOperationException("The WebView2 control did not initialize.");
+            appView.CoreWebView2.Settings.AreDevToolsEnabled = false;
+            appView.CoreWebView2.Settings.IsStatusBarEnabled = false;
+            appView.CoreWebView2.NewWindowRequested += delegate(object sender, CoreWebView2NewWindowRequestedEventArgs args)
+            {
+                args.Handled = true;
+            };
+            appView.NavigationStarting += delegate(object sender, CoreWebView2NavigationStartingEventArgs args)
+            {
+                Uri target;
+                if (!Uri.TryCreate(args.Uri, UriKind.Absolute, out target)
+                    || target.Scheme != allowed.Scheme
+                    || !string.Equals(target.Host, allowed.Host, StringComparison.OrdinalIgnoreCase)
+                    || target.Port != allowed.Port)
+                    args.Cancel = true;
+            };
+            browserPanel.Visible = true;
+            browserPanel.BringToFront();
+            AcceptButton = null;
+            CancelButton = null;
+            AutoScroll = false;
+            ClientSize = new Size(ScaleLogical(1180), ScaleLogical(780));
+            MinimumSize = new Size(ScaleLogical(700), ScaleLogical(540));
+
+            TaskCompletionSource<bool> navigation = new TaskCompletionSource<bool>();
+            EventHandler<CoreWebView2NavigationCompletedEventArgs> completed = null;
+            completed = delegate(object sender, CoreWebView2NavigationCompletedEventArgs args)
+            {
+                Uri completedUri;
+                if (!Uri.TryCreate(appView.CoreWebView2.Source, UriKind.Absolute, out completedUri)
+                    || completedUri.Scheme != allowed.Scheme
+                    || !string.Equals(completedUri.Host, allowed.Host, StringComparison.OrdinalIgnoreCase)
+                    || completedUri.Port != allowed.Port)
+                    return;
+                appView.CoreWebView2.NavigationCompleted -= completed;
+                if (args.IsSuccess) navigation.TrySetResult(true);
+                else navigation.TrySetException(new InvalidOperationException("The embedded RERC-e page did not finish navigation."));
+            };
+            appView.CoreWebView2.NavigationCompleted += completed;
+            appView.CoreWebView2.Navigate(address);
+            await navigation.Task;
+            appView.Focus();
+            return await appView.CoreWebView2.ExecuteScriptAsync("JSON.stringify({title:document.title,projectVisible:!document.getElementById('projectStep').hidden,stepCount:document.querySelectorAll('.journey button').length,tokenStored:!!sessionStorage.getItem('rercie.tabSessionToken.v1'),pageOverflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1})");
+        }
+#endif
 
         private async Task InstallWebView2RuntimeAsync()
         {
@@ -888,8 +1025,8 @@ namespace RERCeDesktop
             AcceptButton = startButton;
             CancelButton = stopButton;
             AutoScroll = true;
-            ClientSize = new Size(760, 540);
-            MinimumSize = new Size(776, 579);
+            ClientSize = new Size(ScaleLogical(760), ScaleLogical(540));
+            MinimumSize = new Size(ScaleLogical(776), ScaleLogical(579));
             RefreshButtons();
         }
 
@@ -1086,6 +1223,7 @@ namespace RERCeDesktop
         [STAThread]
         private static int Main(string[] args)
         {
+            DpiAwareness.Initialize();
             if (Array.IndexOf(args, "--stop") >= 0)
             {
                 int failures;

@@ -788,7 +788,8 @@
     const element = byId(id);
     if (!element) return;
     element.textContent = String(count);
-    element.setAttribute("aria-label", t(key, { count: count }));
+    element.removeAttribute("aria-label");
+    element.title = t(key, { count: count });
   }
 
   function savedItems() {
@@ -1541,7 +1542,7 @@
       badge.id = "mobileSavedCount";
       badge.className = "mobile-nav-badge";
       badge.textContent = String(state.workspace.savedIds.length);
-      badge.setAttribute("aria-label", t("savedCount", { count: state.workspace.savedIds.length }));
+      badge.title = t("savedCount", { count: state.workspace.savedIds.length });
       saved.appendChild(badge);
       const plan = mobileNavItem(t("myPlan"), "clipboard-list", "", "plan");
       plan.dataset.labelKey = "myPlan";
