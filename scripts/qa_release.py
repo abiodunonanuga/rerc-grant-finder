@@ -378,7 +378,7 @@ def main() -> int:
     launcher = (ROOT / "rercie" / "packaging" / "RERC-eLauncher.cs").read_text(encoding="utf-8")
     assert "Read the Gemma Terms" in launcher
     assert "Apache License 2.0" not in launcher
-    assert "--app=\"" in launcher and "/api/app-window-code" in launcher
+    assert r'--app=\"' in launcher and "/api/app-window-code" in launcher
     assert "full_session_token_in_command_line = false" in launcher
     installer_script = (ROOT / "rercie" / "packaging" / "RERC-e.iss").read_text(encoding="utf-8")
     assert '[InstallDelete]' not in installer_script

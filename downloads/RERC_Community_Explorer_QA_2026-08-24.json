@@ -24,7 +24,7 @@
     "vendor/lucide.min.js": "3411692820cb8d47543f69496aa25fd603a358f4498046f41c508a5a3342210e",
     "assets/hero-outdoor.jpg": "c401e10950d2fbc0698ef754003010cc6045b5ecd2ed7ce230fce72715c3983c",
     "assets/rerc-e-eagle.jpg": "a549963e0172f9a8f27f9f78288cb974ef7a567ac0c9818fbb7f35b6d5a2e57a",
-    "README.md": "4072197718d669aa86d3e712fb5d64949fd5cfa8a253a9ab8c4731e548819c24"
+    "README.md": "50ccb422bc0d75e133be2a89e5fd44358c199c741df81b5d074d76605cbd3556"
   },
   "source_sha256": {
     "data.js": "5a5bc827ca95418b76353bc2afffad695b2ca3ffeb3378a4695478f4855a6af9",
@@ -48,8 +48,8 @@
   "site_validation": {
     "status": "PASS",
     "checked_on": "2026-09-16",
-    "site_commit": "766a0803dbf31bd6b0a6b220fa19be6dfec326d2",
-    "browser_report_sha256": "eb35f6812e84f4b3987c3e1accf771d6e71327b9969f42119236f8db789b81c1",
+    "site_commit": "5d37d191d2eea668eafcfbc38f6af5fe62e8e89f",
+    "browser_report_sha256": "f83a155da26cc6593a4350cda725abad1cd0e704be11f3fc1be7eae094d401d4",
     "note": "Site interface source and browser QA refreshed; the linked static catalog files and their original package source remain unchanged."
   }
 }

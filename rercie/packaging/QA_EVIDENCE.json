@@ -35,7 +35,9 @@
       "powershell_required": false,
       "plan_handoff_supported": true,
       "per_monitor_v2": true,
-      "embedded_webview": "PASS"
+      "app_window_host": "PASS",
+      "one_time_launch_code": true,
+      "web_content_acceptance": "PASS"
     },
     "display_scaling": {
       "status": "PASS",
@@ -50,7 +52,7 @@
         "150%",
         "200%"
       ],
-      "layout_geometry_sha256": "836fb0772e0912cf4767f532764678df34eea461bc347bf568ca762022916eab",
+      "layout_geometry_sha256": "5d916682607f8ac58fc2acd8f09ac9d54df536a716d4e46afc6f05282c4f8f4c",
       "historical_reviewed_geometry_sha256": "df70b1e32a489edfa0fa82309dccd30207a2ae1e1876ae11d4623766e3f7b697",
       "historical_layout_hash_matches": false,
       "dpi_autoscaling_and_scroll_enabled": true
@@ -80,8 +82,8 @@
     "local_generation": {
       "status": "PASS",
       "model": "Google Gemma 3 1B Instruct Q4_K_M",
-      "source_sha256": "9a1a3047268ed26fe8eb1ae83277000c6df22b538f4f81a17132d6fc516a6486",
-      "source_normalized_sha256": "9a1a3047268ed26fe8eb1ae83277000c6df22b538f4f81a17132d6fc516a6486",
+      "source_sha256": "fa9dd0102b55660d543ac687f2c2b9673ad40c7b48ca39c79bec9b307b638776",
+      "source_normalized_sha256": "fa9dd0102b55660d543ac687f2c2b9673ad40c7b48ca39c79bec9b307b638776",
       "verified_excerpt_count": 1,
       "raw_model_prose_exposed": false,
       "later_standalone_rerun_status": "PASS"
@@ -109,6 +111,10 @@
       "missing_token_status": 403,
       "wrong_host_status": 421,
       "wrong_origin_status": 403,
+      "app_window_code_ttl_seconds": 60,
+      "app_window_cookie_httponly": true,
+      "app_window_cookie_health_status": 200,
+      "app_window_code_replay_status": 403,
       "packaged_authenticated_health": "PENDING_BUILD"
     },
     "licensing_and_runtime": {
@@ -149,7 +155,7 @@
     "The public installer is not code-signed, so Windows may show a safety notice.",
     "The isolated installer test runs on the build computer rather than a clean Windows virtual machine.",
     "Users must review every generated draft and verify current funding rules at the official source.",
-    "The native window passed at 150% actual display scaling; 100% and 200% were geometry simulations. Signed-package and clean-machine Windows 10/11 testing remain required."
+    "The native setup passed at 150% actual display scaling; 100% and 200% were geometry simulations. The signed Edge app host and one-time cookie handoff passed locally. Signed-package and clean-machine Windows 10/11 testing remain required."
   ],
   "release_binding": {
     "source_commit": null,
@@ -159,7 +165,7 @@
   },
   "verification_inputs": {
     "browser_contract_sha256": "35dfb522baec5ae8d6d16ff68345260fabcfe9053cceea58f96f9f0cf8119545",
-    "local_gemma_report_sha256": "8678e1b1f75d3da96fa93b268267268f29f77039fb2e6e8ad29ddb41d5c43ff5",
-    "native_windows_report_sha256": "57bad112825a46e3e6d8ddfd9990f5fe68b50dd0f1581248e3c715111d11b73e"
+    "local_gemma_report_sha256": "6e6a290b77edd2abe1732a6f2cbadd2c0dbe295124971eb1c39282f25dcdcd3b",
+    "native_windows_report_sha256": "176db4719a4f6b82a15d4e1a6dc13219e43d08edde87a4a05f570b98df46a77a"
   }
 }
