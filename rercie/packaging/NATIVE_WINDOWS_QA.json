@@ -3,7 +3,7 @@
   "evidence_stage": "source",
   "app": "RERC-e",
   "app_version": "0.5.1",
-  "tested_utc": "2026-09-16T20:52:26.6334867Z",
+  "tested_utc": "2026-09-16T21:44:22.7971625Z",
   "os": "Microsoft Windows NT 10.0.19045.0",
   "clr": "4.0.30319.42000",
   "process_dpi_awareness": 2,
@@ -75,10 +75,10 @@
     "acceptance_runtime": "153.0.4234.32"
   },
   "source_sha256": {
-    "rercie/packaging/RERC-eLauncher.cs": "5968a5d1e9bd7c131a4cda87b9d58141a168bdc6744e1c1924a9d8269bf72739",
+    "rercie/packaging/RERC-eLauncher.cs": "0329531231b7ff8a0d23deb6a394bd404670ea5f86ab598e6b8a778c1a610932",
     "rercie/packaging/RERC-e.exe.config": "d7650d4b2368a73c610efe40a55af5251470949d12b4d86db3b62acbdd73d121",
     "rercie/packaging/RERC-e.exe.manifest": "8f0f5d5658bde98faa5e9a52f0fe3932c453ca9127ef68507aa654079001fe41",
-    "rercie/packaging/NativeAcceptanceHarness.cs": "3bcbd8b331bd72a7c6a97ecb2c007e50e351514cfbb59f419cf97cca6cef4629",
+    "rercie/packaging/NativeAcceptanceHarness.cs": "4023fdb503b0d6177a48a4d52c451e5c95a9680d42e5c1c460b234a38ff836db",
     "rercie/rercie_core.py": "fa9dd0102b55660d543ac687f2c2b9673ad40c7b48ca39c79bec9b307b638776"
   },
   "evidence_files": [

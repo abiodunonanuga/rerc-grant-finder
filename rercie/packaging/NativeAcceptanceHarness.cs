@@ -237,10 +237,16 @@ namespace RERCeDesktop
         {
             if (args.Length < 2)
             {
-                Console.Error.WriteLine("Usage: RERC-e.exe <app-url> <output-directory>");
+                Console.Error.WriteLine("Usage: RERC-e.exe <app-origin> <output-directory>");
                 return 2;
             }
-            string address = args[0];
+            string appOrigin = args[0];
+            string token = Environment.GetEnvironmentVariable("RERCIE_SESSION_TOKEN");
+            if (String.IsNullOrWhiteSpace(token))
+            {
+                Console.Error.WriteLine("The native acceptance session token is missing.");
+                return 2;
+            }
             string outputDirectory = Path.GetFullPath(args[1]);
             Directory.CreateDirectory(outputDirectory);
             DpiAwareness.Initialize();
@@ -275,7 +281,11 @@ namespace RERCeDesktop
 
                     File.AppendAllText(progressPath, "webview" + Environment.NewLine, new UTF8Encoding(false));
                     string profile = Path.Combine(outputDirectory, "webview-profile");
-                    string dom = await form.OpenAcceptanceAppAsync(address, profile);
+                    string allowedAddress = new Uri(new Uri(appOrigin), "/native").AbsoluteUri;
+                    string dom = await form.OpenAcceptanceAppAsync(
+                        delegate { return Runtime.CreateAppWindowUrl(token, appOrigin); },
+                        allowedAddress,
+                        profile);
                     await Task.Delay(750);
                     bool embeddedContentVisible = form.AcceptanceWebViewHost.Visible && form.AcceptanceWebViewHost.Width > 0 && form.AcceptanceWebViewHost.Height > 0;
                     bool sameWindowTransition = setupWindowHandle == form.Handle;
@@ -337,7 +347,7 @@ namespace RERCeDesktop
                         geometry = new[] { scale100, scale150, scale200 },
                         web_content = new
                         {
-                            url = new Uri(address).GetLeftPart(UriPartial.Path),
+                            url = new Uri(form.AcceptanceWebView.CoreWebView2.Source).GetLeftPart(UriPartial.Path),
                             dom = embeddedDom,
                             screenshot = Path.GetFileName(webViewImage),
                             webview_runtime = CoreWebView2Environment.GetAvailableBrowserVersionString(),

@@ -382,6 +382,9 @@ def main() -> int:
     assert r'--app=\"' not in launcher
     assert "same_window_transition = true" in launcher and "composition_visual_host = true" in launcher
     assert "full_session_token_in_command_line = false" in launcher
+    open_app = launcher[launcher.index("private async Task OpenAppAsync()") : launcher.index("private void ShowAppView()")]
+    assert open_app.index("EnsureEmbeddedViewAsync") < open_app.index("Runtime.CreateAppWindowUrl")
+    assert "acceptanceManualAddressFactory" in launcher
     installer_script = (ROOT / "rercie" / "packaging" / "RERC-e.iss").read_text(encoding="utf-8")
     assert '[InstallDelete]' not in installer_script
     assert 'Name: "{app}\\models"' in installer_script  # Uninstall cleanup remains intentional.

@@ -303,8 +303,20 @@ namespace RERCeDesktop
 
         internal static string CreateAppWindowUrl(string sessionToken)
         {
+            return CreateAppWindowUrl(sessionToken, Config.AppUrl);
+        }
+
+        internal static string CreateAppWindowUrl(string sessionToken, string appUrl)
+        {
             if (string.IsNullOrWhiteSpace(sessionToken)) throw new InvalidOperationException("RERC-e's local session is not ready. Start RERC-e again.");
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Config.AppUrl + "/api/app-window-code");
+            Uri suppliedOrigin;
+            if (!Uri.TryCreate(appUrl, UriKind.Absolute, out suppliedOrigin)
+                || suppliedOrigin.Scheme != "http"
+                || !string.Equals(suppliedOrigin.Host, "127.0.0.1", StringComparison.OrdinalIgnoreCase)
+                || !string.IsNullOrEmpty(suppliedOrigin.UserInfo))
+                throw new InvalidOperationException("RERC-e refused an invalid local app origin.");
+            string localOrigin = suppliedOrigin.GetLeftPart(UriPartial.Authority);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(localOrigin + "/api/app-window-code");
             request.Method = "POST";
             request.ContentType = "application/json";
             request.Timeout = 5000;
@@ -320,7 +332,7 @@ namespace RERCeDesktop
                 AppWindowCodeResponse result = Json.Deserialize<AppWindowCodeResponse>(reader.ReadToEnd());
                 if (result == null || string.IsNullOrWhiteSpace(result.code) || result.expiresInSeconds <= 0)
                     throw new InvalidOperationException("RERC-e could not create a secure app-window link.");
-                return Config.AppUrl + "/app-window?code=" + Uri.EscapeDataString(result.code);
+                return localOrigin + "/app-window?code=" + Uri.EscapeDataString(result.code);
             }
         }
 
@@ -614,6 +626,7 @@ namespace RERCeDesktop
         private CancellationTokenSource activeOperationCancellation;
 #if RERC_E_ACCEPTANCE_QA
         private string acceptanceManualAddress;
+        private Func<string> acceptanceManualAddressFactory;
         private string acceptanceManualProfile;
 #endif
 
@@ -858,7 +871,7 @@ namespace RERCeDesktop
         private void RefreshButtons()
         {
 #if RERC_E_ACCEPTANCE_QA
-            if (!string.IsNullOrWhiteSpace(acceptanceManualAddress))
+            if (!string.IsNullOrWhiteSpace(acceptanceManualAddress) || acceptanceManualAddressFactory != null)
             {
                 startButton.Text = "&Start RERC-e";
                 startButton.Width = Math.Max(ScaleLogical(190), TextRenderer.MeasureText(startButton.Text.Replace("&", ""), startButton.Font).Width + ScaleLogical(28));
@@ -883,7 +896,7 @@ namespace RERCeDesktop
         private async void StartClicked(object sender, EventArgs args)
         {
 #if RERC_E_ACCEPTANCE_QA
-            if (!string.IsNullOrWhiteSpace(acceptanceManualAddress))
+            if (!string.IsNullOrWhiteSpace(acceptanceManualAddress) || acceptanceManualAddressFactory != null)
             {
                 busy = true;
                 statusLabel.ForeColor = Color.FromArgb(70, 80, 75);
@@ -891,7 +904,10 @@ namespace RERCeDesktop
                 RefreshButtons();
                 try
                 {
-                    await OpenAcceptanceAppAsync(acceptanceManualAddress, acceptanceManualProfile);
+                    if (acceptanceManualAddressFactory != null)
+                        await OpenAcceptanceAppAsync(acceptanceManualAddressFactory, acceptanceManualProfile);
+                    else
+                        await OpenAcceptanceAppAsync(acceptanceManualAddress, acceptanceManualProfile);
                 }
                 catch (Exception error)
                 {
@@ -963,10 +979,12 @@ namespace RERCeDesktop
             try
             {
                 if (!Runtime.AppReady()) throw new InvalidOperationException("RERC-e's local service is not ready yet.");
-                string address = await Task.Run((Func<string>)Runtime.CreateAppWindowUrl);
                 string profile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RERC-e", "WebView2");
                 ShowAppView();
-                await EnsureEmbeddedViewAsync(address, profile);
+                await EnsureEmbeddedViewAsync(Config.AppUrl + "/native", profile);
+                // Mint the 60-second link only after WebView2 is ready. First-use
+                // environment creation can otherwise consume most or all of its life.
+                string address = await Task.Run((Func<string>)Runtime.CreateAppWindowUrl);
                 await NavigateEmbeddedViewAsync(address);
                 appView.Focus();
             }
@@ -1069,27 +1087,52 @@ namespace RERCeDesktop
 
         private async Task NavigateEmbeddedViewAsync(string address)
         {
+            CoreWebView2 core = appView.CoreWebView2;
+            if (core == null) throw new InvalidOperationException("The embedded RERC-e display is unavailable.");
             TaskCompletionSource<bool> navigation = new TaskCompletionSource<bool>();
+            HashSet<ulong> expectedNavigations = new HashSet<ulong>();
+            string lastNavigationFailure = null;
+            EventHandler<CoreWebView2NavigationStartingEventArgs> starting = null;
             EventHandler<CoreWebView2NavigationCompletedEventArgs> completed = null;
             EventHandler<CoreWebView2DOMContentLoadedEventArgs> domContentLoaded = null;
+            EventHandler<CoreWebView2ProcessFailedEventArgs> processFailed = null;
             Action detachNavigationHandlers = delegate
             {
-                CoreWebView2 core = appView.CoreWebView2;
-                if (core == null) return;
+                core.NavigationStarting -= starting;
                 core.NavigationCompleted -= completed;
                 core.DOMContentLoaded -= domContentLoaded;
+                core.ProcessFailed -= processFailed;
+            };
+            starting = delegate(object sender, CoreWebView2NavigationStartingEventArgs args)
+            {
+                Uri target;
+                if (!Uri.TryCreate(args.Uri, UriKind.Absolute, out target)
+                    || embeddedOrigin == null
+                    || target.Scheme != embeddedOrigin.Scheme
+                    || !string.Equals(target.Host, embeddedOrigin.Host, StringComparison.OrdinalIgnoreCase)
+                    || target.Port != embeddedOrigin.Port
+                    || (target.AbsolutePath != "/app-window" && target.AbsolutePath != "/native"))
+                    return;
+                expectedNavigations.Add(args.NavigationId);
+                ReportAcceptance("target-navigation-starting " + target.AbsolutePath + " " + args.NavigationId);
             };
             completed = delegate(object sender, CoreWebView2NavigationCompletedEventArgs args)
             {
-                ReportAcceptance("navigation-completed " + (args.IsSuccess ? "success" : "failed"));
+                if (!expectedNavigations.Contains(args.NavigationId))
+                {
+                    ReportAcceptance("navigation-completed ignored " + args.NavigationId);
+                    return;
+                }
+                ReportAcceptance("navigation-completed " + (args.IsSuccess ? "success" : "failed") + " " + args.NavigationId);
                 if (!args.IsSuccess)
                 {
-                    detachNavigationHandlers();
-                    navigation.TrySetException(new InvalidOperationException("The embedded RERC-e page did not finish navigation."));
+                    lastNavigationFailure = args.WebErrorStatus + " (HTTP " + args.HttpStatusCode + ")";
+                    ReportAcceptance("navigation-failure " + lastNavigationFailure);
                 }
             };
             domContentLoaded = delegate(object sender, CoreWebView2DOMContentLoadedEventArgs args)
             {
+                if (!expectedNavigations.Contains(args.NavigationId)) return;
                 Uri completedUri;
                 if (!Uri.TryCreate(appView.CoreWebView2.Source, UriKind.Absolute, out completedUri)
                     || embeddedOrigin == null
@@ -1102,15 +1145,27 @@ namespace RERCeDesktop
                 detachNavigationHandlers();
                 navigation.TrySetResult(true);
             };
-            appView.CoreWebView2.NavigationCompleted += completed;
-            appView.CoreWebView2.DOMContentLoaded += domContentLoaded;
+            processFailed = delegate(object sender, CoreWebView2ProcessFailedEventArgs args)
+            {
+                string failure = args.ProcessFailedKind + "; " + args.Reason + "; exit " + args.ExitCode;
+                ReportAcceptance("webview-process-failed " + failure);
+                detachNavigationHandlers();
+                navigation.TrySetException(new InvalidOperationException("The embedded RERC-e display process stopped unexpectedly (" + failure + ")."));
+            };
+            core.NavigationStarting += starting;
+            core.NavigationCompleted += completed;
+            core.DOMContentLoaded += domContentLoaded;
+            core.ProcessFailed += processFailed;
             ReportAcceptance("webview-navigate " + new Uri(address).GetLeftPart(UriPartial.Path));
-            appView.CoreWebView2.Navigate(address);
+            core.Navigate(address);
             Task finished = await Task.WhenAny(navigation.Task, Task.Delay(15000));
             if (finished != navigation.Task)
             {
                 detachNavigationHandlers();
-                throw new TimeoutException("The embedded RERC-e page did not finish navigation within 15 seconds.");
+                string current = "no page";
+                try { if (!string.IsNullOrWhiteSpace(core.Source)) current = core.Source; } catch { }
+                string detail = string.IsNullOrWhiteSpace(lastNavigationFailure) ? "" : " WebView2 reported " + lastNavigationFailure + ".";
+                throw new TimeoutException("The embedded RERC-e page did not reach its local app screen within 15 seconds (current page: " + current + ")." + detail);
             }
             await navigation.Task;
         }
@@ -1148,6 +1203,7 @@ namespace RERCeDesktop
         internal void PrepareAcceptanceManualFlow(string address, string profile)
         {
             acceptanceManualAddress = address;
+            acceptanceManualAddressFactory = null;
             acceptanceManualProfile = profile;
             ShowSetup();
             statusLabel.ForeColor = Color.FromArgb(70, 80, 75);
@@ -1157,10 +1213,43 @@ namespace RERCeDesktop
             PerformLayout();
         }
 
+        internal void PrepareAcceptanceManualFlow(Func<string> addressFactory, string profile)
+        {
+            if (addressFactory == null) throw new ArgumentNullException("addressFactory");
+            acceptanceManualAddress = null;
+            acceptanceManualAddressFactory = addressFactory;
+            acceptanceManualProfile = profile;
+            ShowSetup();
+            statusLabel.ForeColor = Color.FromArgb(70, 80, 75);
+            statusLabel.Text = "RERC-e is ready. Select Start RERC-e to open the guide in this window.";
+            progressBar.Value = 0;
+            RefreshButtons();
+            PerformLayout();
+        }
+
+        internal async Task<string> OpenAcceptanceAppAsync(Func<string> addressFactory, string profile)
+        {
+            return await OpenAcceptanceAppAsync(addressFactory, Config.AppUrl + "/native", profile);
+        }
+
+        internal async Task<string> OpenAcceptanceAppAsync(Func<string> addressFactory, string allowedAddress, string profile)
+        {
+            if (addressFactory == null) throw new ArgumentNullException("addressFactory");
+            ShowAppView();
+            await EnsureEmbeddedViewAsync(allowedAddress, profile);
+            string address = await Task.Run(addressFactory);
+            return await CompleteAcceptanceNavigationAsync(address);
+        }
+
         internal async Task<string> OpenAcceptanceAppAsync(string address, string profile)
         {
             ShowAppView();
             await EnsureEmbeddedViewAsync(address, profile);
+            return await CompleteAcceptanceNavigationAsync(address);
+        }
+
+        private async Task<string> CompleteAcceptanceNavigationAsync(string address)
+        {
             await NavigateEmbeddedViewAsync(address);
             ReportAcceptance("webview-dom");
             appView.Focus();

@@ -121,9 +121,7 @@ try {
         if ($_.Exception.Response) { $ReplayStatus = [int]$_.Exception.Response.StatusCode }
     }
     if ($ReplayStatus -ne 403) { throw "The one-time app-window code could be reused." }
-    $EmbeddedLaunchCodeResponse = Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:$Port/api/app-window-code" -Headers @{ "X-RERC-e-Token" = $Token; Host = "127.0.0.1:$Port" } -ContentType "application/json" -Body "{}" -TimeoutSec 3
-    if (-not $EmbeddedLaunchCodeResponse.code -or $EmbeddedLaunchCodeResponse.expiresInSeconds -ne 60) { throw "The embedded-view launch code endpoint returned an invalid response." }
-    $EmbeddedLaunchAddress = "http://127.0.0.1:$Port/app-window?code=$([Uri]::EscapeDataString([string]$EmbeddedLaunchCodeResponse.code))"
+    $EmbeddedAppOrigin = "http://127.0.0.1:$Port"
     $AppWindowSecurity = [ordered]@{
         launch_code_ttl_seconds = [int]$LaunchCodeResponse.expiresInSeconds
         full_session_token_in_url = $false
@@ -133,7 +131,7 @@ try {
         replay_status = $ReplayStatus
     }
 
-    $App = Start-Process -FilePath (Join-Path $OutputDirectory "RERC-e.exe") -ArgumentList @($EmbeddedLaunchAddress, ('"' + $EvidenceDirectory + '"')) -PassThru -Wait
+    $App = Start-Process -FilePath (Join-Path $OutputDirectory "RERC-e.exe") -ArgumentList @($EmbeddedAppOrigin, ('"' + $EvidenceDirectory + '"')) -PassThru -Wait
     if ($App.ExitCode -ne 0) { throw "The RERC-e native acceptance harness exited with code $($App.ExitCode)." }
     $ReportPath = Join-Path $EvidenceDirectory "native-acceptance.json"
     if (-not (Test-Path -LiteralPath $ReportPath -PathType Leaf)) { throw "The native acceptance report was not created." }
