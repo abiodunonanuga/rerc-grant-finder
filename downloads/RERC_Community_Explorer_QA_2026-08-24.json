@@ -48,7 +48,7 @@
   "site_validation": {
     "status": "PASS",
     "checked_on": "2026-09-16",
-    "site_commit": "44976a943f6c5657607da4b14846b1b7cf7af83f",
+    "site_commit": "766a0803dbf31bd6b0a6b220fa19be6dfec326d2",
     "browser_report_sha256": "eb35f6812e84f4b3987c3e1accf771d6e71327b9969f42119236f8db789b81c1",
     "note": "Site interface source and browser QA refreshed; the linked static catalog files and their original package source remain unchanged."
   }
