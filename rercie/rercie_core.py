@@ -1239,6 +1239,7 @@ HTML_PAGE = r'''<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>RERC-e Local Grant-Writing Guide</title>
   <link rel="icon" type="image/jpeg" href="/assets/rerc-e-eagle.jpg">
+  <script>if(location.pathname==="/native"){document.documentElement.classList.add("native-host");}</script>
   <style>
     :root { --green:#00573f; --forest:#173f35; --leaf:#3e7c59; --river:#1b6a8f; --sky:#dceef5; --sun:#f2c14e; --ink:#20312b; --muted:#5d6b66; --line:#d8e0dc; --paper:#fff; --mist:#f3f7f4; --danger:#8b1e1e; }
     * { box-sizing:border-box; }
@@ -1250,6 +1251,7 @@ HTML_PAGE = r'''<!doctype html>
     header .brand { display:flex; justify-content:space-between; gap:20px; align-items:center; }
     header .welcome { display:grid; grid-template-columns:minmax(0,1fr) 120px; gap:24px; align-items:center; }
     header .mascot-stage { position:relative; width:120px; height:168px; justify-self:end; transform-origin:50% 90%; animation:rercie-bob 4s ease-in-out infinite; }
+    html.native-host header .mascot-stage { animation:none; }
     header .mascot { display:block; width:100%; height:100%; object-fit:contain; border:4px solid rgba(255,255,255,.82); border-radius:6px; background:#fff; }
     @keyframes rercie-bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
     header h1 { margin:12px 0 6px; font-size:2.25rem; line-height:1.05; }
@@ -1604,7 +1606,7 @@ class RERCeHandler(BaseHTTPRequestHandler):
         require_token = self.path == "/health" or self.path.startswith("/api/")
         if not self._authorize(require_token=require_token):
             return
-        if self.path in {"/", "/index.html"}:
+        if self.path in {"/", "/index.html", "/native"}:
             self.send_text(HTML_PAGE)
         elif self.path == "/assets/rerc-e-eagle.jpg":
             asset_path = ASSET_DIR / "rerc-e-eagle.jpg"

@@ -3,7 +3,7 @@
   "evidence_stage": "source",
   "app": "RERC-e",
   "app_version": "0.5.1",
-  "tested_utc": "2026-09-16T15:32:47.3634626Z",
+  "tested_utc": "2026-09-16T16:56:47.4374546Z",
   "os": "Microsoft Windows NT 10.0.19045.0",
   "clr": "4.0.30319.42000",
   "process_dpi_awareness": 2,
@@ -53,17 +53,20 @@
     "step_count": 3,
     "token_stored": true,
     "page_overflow": false,
+    "live_content_visible": true,
     "webview_runtime": "153.0.4234.32"
   },
   "source_sha256": {
-    "rercie/packaging/RERC-eLauncher.cs": "21884455ebbb535e336450e7ec67ef4202308dbe2d6daf4abcebfdf2f06f1504",
+    "rercie/packaging/RERC-eLauncher.cs": "4d5904d6f1d03b56cc86ef9ca7573962ce0b2499f6e3a85d20854cddf30fc956",
     "rercie/packaging/RERC-e.exe.config": "d7650d4b2368a73c610efe40a55af5251470949d12b4d86db3b62acbdd73d121",
     "rercie/packaging/RERC-e.exe.manifest": "8f0f5d5658bde98faa5e9a52f0fe3932c453ca9127ef68507aa654079001fe41",
-    "rercie/packaging/NativeAcceptanceHarness.cs": "e1bbc653eed7a79183f5b0568a39ea67836a2782e93bf8c80f184135a4d4232d",
-    "rercie/rercie_core.py": "826e43e6210798bd66a9ae29ceaa7c2c4ce059e2b52568e97a099f0877eb7071"
+    "rercie/packaging/NativeAcceptanceHarness.cs": "6b44b865657baebd8e314233c1a3c9156ddcdd62a354f3506f8ef51a6e275e7b",
+    "rercie/rercie_core.py": "9a1a3047268ed26fe8eb1ae83277000c6df22b538f4f81a17132d6fc516a6486"
   },
   "evidence_files": [
     "native-acceptance.json",
+    "acceptance-progress.txt",
+    "service-requests.log",
     "setup-current-dpi.png",
     "setup-100-simulated.png",
     "setup-150-simulated.png",

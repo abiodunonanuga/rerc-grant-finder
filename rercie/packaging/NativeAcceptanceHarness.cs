@@ -196,30 +196,27 @@ namespace RERCeDesktop
             }
         }
 
-        private static void ScaleFonts(Control root, float factor)
-        {
-            foreach (Control control in new[] { root }.Concat(Descendants(root)))
-            {
-                if (control.Font == null) continue;
-                control.Font = new Font(control.Font.FontFamily, control.Font.SizeInPoints * factor, control.Font.Style, GraphicsUnit.Point);
-            }
-        }
-
         private static object SimulateScale(float factor, string label, string outputDirectory)
         {
             using (MainForm form = new MainForm(false))
             {
                 form.StartPosition = FormStartPosition.Manual;
-                form.Location = new Point(0, 0);
+                form.ShowInTaskbar = false;
+                form.Location = new Point(SystemInformation.VirtualScreen.Left - form.Width - 100, SystemInformation.VirtualScreen.Top - form.Height - 100);
                 form.Show();
                 Application.DoEvents();
                 form.PrepareAcceptanceSetup();
                 float currentFactor = Math.Max(1f, GetDpiForWindow(form.Handle) / 96f);
                 float scaleFactor = factor / currentFactor;
+                Dictionary<Control, Font> originalFonts = new Dictionary<Control, Font>();
+                foreach (Control control in new[] { form }.Concat(Descendants(form)))
+                    if (control.Font != null) originalFonts[control] = (Font)control.Font.Clone();
                 form.SuspendLayout();
                 form.Scale(new SizeF(scaleFactor, scaleFactor));
-                ScaleFonts(form, scaleFactor);
+                foreach (KeyValuePair<Control, Font> entry in originalFonts)
+                    entry.Key.Font = new Font(entry.Value.FontFamily, entry.Value.SizeInPoints * scaleFactor, entry.Value.Style, GraphicsUnit.Point);
                 form.ResumeLayout(true);
+                foreach (Font font in originalFonts.Values) font.Dispose();
                 form.PerformLayout();
                 Application.DoEvents();
                 CaptureControl(form, Path.Combine(outputDirectory, "setup-" + label.Replace("%", "") + "-simulated.png"));
@@ -250,24 +247,36 @@ namespace RERCeDesktop
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             MainForm form = new MainForm(false);
+            form.StartPosition = FormStartPosition.Manual;
+            form.ShowInTaskbar = false;
+            form.Location = new Point(SystemInformation.VirtualScreen.Left - form.Width - 100, SystemInformation.VirtualScreen.Top - form.Height - 100);
             int exitCode = 1;
+            string progressPath = Path.Combine(outputDirectory, "acceptance-progress.txt");
+            form.AcceptanceProgress = delegate(string stage)
+            {
+                File.AppendAllText(progressPath, stage + Environment.NewLine, new UTF8Encoding(false));
+            };
             form.Shown += async delegate
             {
                 try
                 {
+                    File.AppendAllText(progressPath, "setup" + Environment.NewLine, new UTF8Encoding(false));
                     form.PrepareAcceptanceSetup();
                     await Task.Delay(250);
                     CaptureWindow(form, Path.Combine(outputDirectory, "setup-current-dpi.png"));
                     object current = Summarize(form, "current", false, (int)GetDpiForWindow(form.Handle));
                     List<ControlEvidence> currentControls = Inspect(form);
+                    File.AppendAllText(progressPath, "geometry" + Environment.NewLine, new UTF8Encoding(false));
                     object scale100 = SimulateScale(1.0f, "100%", outputDirectory);
                     object scale150 = SimulateScale(1.5f, "150%", outputDirectory);
                     object scale200 = SimulateScale(2.0f, "200%", outputDirectory);
                     bool geometryPass = SummaryPass(scale100) && SummaryPass(scale150) && SummaryPass(scale200);
 
+                    File.AppendAllText(progressPath, "webview" + Environment.NewLine, new UTF8Encoding(false));
                     string profile = Path.Combine(outputDirectory, "webview-profile");
                     string dom = await form.OpenAcceptanceAppAsync(address, profile);
                     await Task.Delay(750);
+                    bool embeddedContentVisible = form.AcceptanceWebView.Visible && form.AcceptanceWebView.Width > 0 && form.AcceptanceWebView.Height > 0;
                     string webViewImage = Path.Combine(outputDirectory, "embedded-rerc-e.png");
                     using (FileStream stream = new FileStream(webViewImage, FileMode.Create, FileAccess.Write, FileShare.None))
                         await form.AcceptanceWebView.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, stream);
@@ -287,13 +296,17 @@ namespace RERCeDesktop
                         && embeddedDom.ContainsKey("tokenStored")
                         && Convert.ToBoolean(embeddedDom["tokenStored"])
                         && embeddedDom.ContainsKey("pageOverflow")
-                        && !Convert.ToBoolean(embeddedDom["pageOverflow"]);
+                        && !Convert.ToBoolean(embeddedDom["pageOverflow"])
+                        && embeddedDom.ContainsKey("nativeHost")
+                        && Convert.ToBoolean(embeddedDom["nativeHost"])
+                        && embeddedDom.ContainsKey("mascotAnimation")
+                        && string.Equals(Convert.ToString(embeddedDom["mascotAnimation"]), "none", StringComparison.OrdinalIgnoreCase);
                     bool nativePass = !currentControls.Any(control => control.visible && (control.text_clipped || control.outside_parent))
                         && currentControls.Any(control => control.visible && control.type == "Button" && control.text == "Download and start" && !control.text_clipped)
                         && !currentControls.Any(control => control.visible && control.tab_stop && IsInteractiveName(control.type) && string.IsNullOrWhiteSpace(control.accessible_name));
                     object report = new
                     {
-                        status = perMonitorDpiAware && nativePass && geometryPass && embeddedPass ? "PASS" : "FAIL",
+                        status = perMonitorDpiAware && nativePass && geometryPass && embeddedPass && embeddedContentVisible ? "PASS" : "FAIL",
                         app = "RERC-e",
                         version = Config.Version,
                         os = Environment.OSVersion.VersionString,
@@ -304,6 +317,7 @@ namespace RERCeDesktop
                         native_layout_pass = nativePass,
                         simulated_geometry_pass = geometryPass,
                         embedded_app_pass = embeddedPass,
+                        embedded_content_visible = embeddedContentVisible,
                         current,
                         geometry = new[] { scale100, scale150, scale200 },
                         embedded = new
@@ -315,6 +329,7 @@ namespace RERCeDesktop
                         },
                     };
                     File.WriteAllText(Path.Combine(outputDirectory, "native-acceptance.json"), Json.Serialize(report), new UTF8Encoding(false));
+                    File.AppendAllText(progressPath, "complete" + Environment.NewLine, new UTF8Encoding(false));
                     exitCode = 0;
                 }
                 catch (Exception error)

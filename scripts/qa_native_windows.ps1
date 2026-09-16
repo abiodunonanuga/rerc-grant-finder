@@ -66,7 +66,8 @@ try {
     $env:RERCIE_SESSION_TOKEN = $Token
     $env:RERCIE_EXPECTED_HOST = "127.0.0.1:$Port"
     $env:RERCIE_APP_ROOT = Join-Path $RepoRoot "rercie"
-    $Service = Start-Process -FilePath $Python.Source -ArgumentList @("rercie.py", "--serve", "--host", "127.0.0.1", "--port", "$Port") -WorkingDirectory (Join-Path $RepoRoot "rercie") -PassThru -WindowStyle Hidden
+    $ServiceLog = Join-Path $EvidenceDirectory "service-requests.log"
+    $Service = Start-Process -FilePath $Python.Source -ArgumentList @("rercie.py", "--serve", "--host", "127.0.0.1", "--port", "$Port") -WorkingDirectory (Join-Path $RepoRoot "rercie") -PassThru -WindowStyle Hidden -RedirectStandardError $ServiceLog
     $Ready = $false
     foreach ($Attempt in 1..60) {
         try {
@@ -77,7 +78,7 @@ try {
     }
     if (-not $Ready) { throw "The local RERC-e service did not become ready for native acceptance." }
 
-    $App = Start-Process -FilePath (Join-Path $OutputDirectory "RERC-e.exe") -ArgumentList @("http://127.0.0.1:$Port/#token=$Token", ('"' + $EvidenceDirectory + '"')) -PassThru -Wait
+    $App = Start-Process -FilePath (Join-Path $OutputDirectory "RERC-e.exe") -ArgumentList @("http://127.0.0.1:$Port/native#token=$Token", ('"' + $EvidenceDirectory + '"')) -PassThru -Wait
     if ($App.ExitCode -ne 0) { throw "The RERC-e native acceptance harness exited with code $($App.ExitCode)." }
     $ReportPath = Join-Path $EvidenceDirectory "native-acceptance.json"
     if (-not (Test-Path -LiteralPath $ReportPath -PathType Leaf)) { throw "The native acceptance report was not created." }
@@ -127,10 +128,11 @@ try {
             step_count = $Report.embedded.dom.stepCount
             token_stored = $Report.embedded.dom.tokenStored
             page_overflow = $Report.embedded.dom.pageOverflow
+            live_content_visible = [bool]$Report.embedded_content_visible
             webview_runtime = $Report.embedded.webview_runtime
         }
         source_sha256 = $BoundSources
-        evidence_files = @("native-acceptance.json", "setup-current-dpi.png", "setup-100-simulated.png", "setup-150-simulated.png", "setup-200-simulated.png", "native-shell-with-webview.png", "embedded-rerc-e.png")
+        evidence_files = @("native-acceptance.json", "acceptance-progress.txt", "service-requests.log", "setup-current-dpi.png", "setup-100-simulated.png", "setup-150-simulated.png", "setup-200-simulated.png", "native-shell-with-webview.png", "embedded-rerc-e.png")
         limitations = @(
             "The actual native-window run used this computer's 150% display scale.",
             "The 100% and 200% results are off-monitor geometry and font simulations; final release acceptance still requires clean Windows 10 and Windows 11 machines.",

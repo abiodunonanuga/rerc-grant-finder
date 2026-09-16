@@ -286,7 +286,7 @@ namespace RERCeDesktop
             Process process;
             if (!TryGetOwnedProcess("app", ServiceExe, out record, out process) || string.IsNullOrWhiteSpace(record.session_token))
                 throw new InvalidOperationException("RERC-e's local session is not ready. Start RERC-e again.");
-            return Config.AppUrl + "/#token=" + Uri.EscapeDataString(record.session_token);
+            return Config.AppUrl + "/native#token=" + Uri.EscapeDataString(record.session_token);
         }
 
         public static string CreateSessionToken()
@@ -565,6 +565,8 @@ namespace RERCeDesktop
         private readonly Button startButton = new Button();
         private readonly Button openButton = new Button();
         private readonly Button stopButton = new Button();
+        private readonly Panel setupPanel = new Panel();
+        private readonly PictureBox mascotPicture = new PictureBox();
         private readonly Panel browserPanel = new Panel();
         private readonly WebView2 appView = new WebView2();
         private readonly Button setupButton = new Button();
@@ -575,6 +577,10 @@ namespace RERCeDesktop
         private bool busy;
         private CancellationTokenSource activeOperationCancellation;
 
+#if RERC_E_ACCEPTANCE_QA
+        protected override bool ShowWithoutActivation { get { return true; } }
+#endif
+
         public MainForm(bool hasStartupPlan)
         {
             startupPlanStaged = hasStartupPlan;
@@ -584,28 +590,34 @@ namespace RERCeDesktop
             ClientSize = new Size(760, 540);
             MinimumSize = new Size(776, 579);
             StartPosition = FormStartPosition.CenterScreen;
-            AutoScroll = true;
+            AutoScroll = false;
             BackColor = Color.FromArgb(248, 249, 245);
             Font = new Font("Segoe UI", 9.5f);
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            DoubleBuffered = true;
+            ResizeRedraw = false;
+
+            setupPanel.Dock = DockStyle.Fill;
+            setupPanel.AutoScroll = true;
+            setupPanel.BackColor = BackColor;
+            Controls.Add(setupPanel);
 
             Panel hero = new Panel();
             hero.Location = new Point(0, 0);
             hero.Size = new Size(760, 242);
             hero.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             hero.BackColor = Color.FromArgb(17, 67, 53);
-            Controls.Add(hero);
+            setupPanel.Controls.Add(hero);
 
-            PictureBox picture = new PictureBox();
-            picture.Location = new Point(570, 26);
-            picture.Size = new Size(160, 186);
-            picture.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            picture.SizeMode = PictureBoxSizeMode.Zoom;
-            picture.AccessibleName = "RERC-e, a bald eagle field guide holding a notebook";
-            picture.AccessibleDescription = "RERC-e is the outdoor guide character for this local grant-writing app.";
+            mascotPicture.Location = new Point(570, 26);
+            mascotPicture.Size = new Size(160, 186);
+            mascotPicture.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            mascotPicture.SizeMode = PictureBoxSizeMode.Zoom;
+            mascotPicture.AccessibleName = "RERC-e, a bald eagle field guide holding a notebook";
+            mascotPicture.AccessibleDescription = "RERC-e is the outdoor guide character for this local grant-writing app.";
             string imagePath = Path.Combine(Runtime.Root, "assets", "rerc-e-eagle.jpg");
-            if (File.Exists(imagePath)) picture.Image = Image.FromFile(imagePath);
-            hero.Controls.Add(picture);
+            if (File.Exists(imagePath)) mascotPicture.Image = LoadDisplayImage(imagePath);
+            hero.Controls.Add(mascotPicture);
 
             Label brand = MakeLabel("Recreation Economy for Rural Communities", 32, 28, 525, 30, 10.5f, true, Color.White);
             Label title = MakeLabel("Meet RERC-e", 32, 75, 525, 50, 27f, true, Color.White);
@@ -618,20 +630,20 @@ namespace RERCeDesktop
             accent.Size = new Size(760, 4);
             accent.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             accent.BackColor = Color.FromArgb(222, 181, 97);
-            Controls.Add(accent);
+            setupPanel.Controls.Add(accent);
 
             Label modelNote = MakeLabel("First use: download Google Gemma (about 0.81 GB)", 32, 265, 696, 28, 11f, true, Color.FromArgb(23, 63, 53));
-            Controls.Add(modelNote);
+            setupPanel.Controls.Add(modelNote);
 
             LinkLabel modelLink = MakeLink("View the model page", 32, 324, 190, Config.ModelPageUrl);
             LinkLabel licenseLink = MakeLink("Read the Gemma Terms", 234, 324, 220, Config.ModelLicenseUrl);
-            Controls.Add(modelLink); Controls.Add(licenseLink);
+            setupPanel.Controls.Add(modelLink); setupPanel.Controls.Add(licenseLink);
 
             Label licenseNote = MakeLabel("The model stays on this computer. Review the Gemma Terms before downloading.", 32, 296, 696, 28, 9.5f, false, Color.FromArgb(70, 80, 75));
-            Controls.Add(licenseNote);
+            setupPanel.Controls.Add(licenseNote);
 
             Label setupHeading = MakeLabel("Setup and status", 32, 348, 696, 24, 11f, true, Color.FromArgb(23, 63, 53));
-            Controls.Add(setupHeading);
+            setupPanel.Controls.Add(setupHeading);
 
 
 
@@ -642,35 +654,35 @@ namespace RERCeDesktop
             statusLabel.ForeColor = Color.FromArgb(70, 80, 75);
             statusLabel.AccessibleName = "RERC-e status";
             statusLabel.AccessibleDescription = statusLabel.Text;
-            Controls.Add(statusLabel);
+            setupPanel.Controls.Add(statusLabel);
 
             progressBar.Location = new Point(32, 414);
             progressBar.Size = new Size(696, 12);
             progressBar.Style = ProgressBarStyle.Continuous;
             progressBar.AccessibleName = "RERC-e setup progress";
             progressBar.AccessibleDescription = "Shows download and startup progress.";
-            Controls.Add(progressBar);
+            setupPanel.Controls.Add(progressBar);
 
             startButton.Text = "&Start RERC-e";
             startButton.Location = new Point(32, 451);
             startButton.Size = new Size(190, 46);
             StylePrimary(startButton);
             startButton.Click += StartClicked;
-            Controls.Add(startButton);
+            setupPanel.Controls.Add(startButton);
 
             openButton.Text = "&Open RERC-e";
             openButton.Location = new Point(234, 451);
             openButton.Size = new Size(140, 46);
             StyleSecondary(openButton);
             openButton.Click += async delegate { await OpenAppAsync(); };
-            Controls.Add(openButton);
+            setupPanel.Controls.Add(openButton);
 
             stopButton.Text = "&Stop";
             stopButton.Location = new Point(386, 451);
             stopButton.Size = new Size(100, 46);
             StyleSecondary(stopButton);
             stopButton.Click += StopClicked;
-            Controls.Add(stopButton);
+            setupPanel.Controls.Add(stopButton);
             AcceptButton = startButton;
             CancelButton = stopButton;
 
@@ -699,7 +711,12 @@ namespace RERCeDesktop
 #else
             Shown += async delegate { await RefreshStateAsync(); };
 #endif
-            FormClosed += delegate { int failures; Runtime.StopOwnedProcesses(out failures); };
+            FormClosed += delegate
+            {
+                if (mascotPicture.Image != null) mascotPicture.Image.Dispose();
+                int failures;
+                Runtime.StopOwnedProcesses(out failures);
+            };
             // Programmatic WinForms controls do not receive the designer-generated
             // initial scale pass. Scale the complete 96-DPI layout once after it
             // exists, then retain that baseline for future per-monitor DPI changes.
@@ -732,6 +749,16 @@ namespace RERCeDesktop
             label.Font = new Font("Segoe UI", size, bold ? FontStyle.Bold : FontStyle.Regular);
             label.ForeColor = color;
             return label;
+        }
+
+        private static Image LoadDisplayImage(string path)
+        {
+            using (Image source = Image.FromFile(path))
+            {
+                const int targetWidth = 640;
+                int targetHeight = Math.Max(1, (int)Math.Round(source.Height * targetWidth / (double)source.Width));
+                return new Bitmap(source, new Size(targetWidth, targetHeight));
+            }
         }
 
         private LinkLabel MakeLink(string text, int x, int y, int width, string url)
@@ -855,6 +882,13 @@ namespace RERCeDesktop
             try
             {
                 if (!Runtime.AppReady()) throw new InvalidOperationException("RERC-e's local service is not ready yet.");
+                setupPanel.Visible = false;
+                browserPanel.Visible = true;
+                browserPanel.BringToFront();
+                AcceptButton = null;
+                CancelButton = null;
+                ClientSize = new Size(ScaleLogical(1180), ScaleLogical(780));
+                MinimumSize = new Size(ScaleLogical(700), ScaleLogical(540));
                 // Keep local service credentials inside the app's own WebView2 profile.
                 string profile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RERC-e", "WebView2");
                 Directory.CreateDirectory(profile);
@@ -884,22 +918,17 @@ namespace RERCeDesktop
                     };
                     viewConfigured = true;
                 }
-                browserPanel.Visible = true;
-                browserPanel.BringToFront();
-                AcceptButton = null;
-                CancelButton = null;
-                AutoScroll = false;
-                ClientSize = new Size(ScaleLogical(1180), ScaleLogical(780));
-                MinimumSize = new Size(ScaleLogical(700), ScaleLogical(540));
                 appView.CoreWebView2.Navigate(Runtime.AppBrowserUrl());
                 appView.Focus();
             }
             catch (WebView2RuntimeNotFoundException)
             {
+                ShowSetup();
                 runtimeMissing = true;
             }
             catch (Exception error)
             {
+                ShowSetup();
                 statusLabel.Text = "The app window could not open: " + error.Message;
                 MessageBox.Show(this, statusLabel.Text, "RERC-e app window", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
@@ -927,6 +956,7 @@ namespace RERCeDesktop
 
 #if RERC_E_ACCEPTANCE_QA
         internal WebView2 AcceptanceWebView { get { return appView; } }
+        internal Action<string> AcceptanceProgress { get; set; }
 
         internal void PrepareAcceptanceSetup()
         {
@@ -939,8 +969,18 @@ namespace RERCeDesktop
         internal async Task<string> OpenAcceptanceAppAsync(string address, string profile)
         {
             Uri allowed = new Uri(address);
+            setupPanel.Visible = false;
+            browserPanel.Visible = true;
+            browserPanel.BringToFront();
+            AcceptButton = null;
+            CancelButton = null;
+            ClientSize = new Size(ScaleLogical(1180), ScaleLogical(780));
+            MinimumSize = new Size(ScaleLogical(700), ScaleLogical(540));
+            if (AcceptanceProgress != null) AcceptanceProgress("webview-environment");
             if (appEnvironment == null) appEnvironment = await CoreWebView2Environment.CreateAsync(null, profile);
+            if (AcceptanceProgress != null) AcceptanceProgress("webview-controller");
             await appView.EnsureCoreWebView2Async(appEnvironment);
+            if (AcceptanceProgress != null) AcceptanceProgress("webview-configure");
             if (appView.CoreWebView2 == null) throw new InvalidOperationException("The WebView2 control did not initialize.");
             appView.CoreWebView2.Settings.AreDevToolsEnabled = false;
             appView.CoreWebView2.Settings.IsStatusBarEnabled = false;
@@ -951,23 +991,43 @@ namespace RERCeDesktop
             appView.NavigationStarting += delegate(object sender, CoreWebView2NavigationStartingEventArgs args)
             {
                 Uri target;
-                if (!Uri.TryCreate(args.Uri, UriKind.Absolute, out target)
+                bool targetValid = Uri.TryCreate(args.Uri, UriKind.Absolute, out target);
+                if (AcceptanceProgress != null)
+                    AcceptanceProgress("navigation-starting " + (targetValid ? target.GetLeftPart(UriPartial.Path) : "invalid"));
+                if (!targetValid
                     || target.Scheme != allowed.Scheme
                     || !string.Equals(target.Host, allowed.Host, StringComparison.OrdinalIgnoreCase)
                     || target.Port != allowed.Port)
                     args.Cancel = true;
             };
-            browserPanel.Visible = true;
-            browserPanel.BringToFront();
-            AcceptButton = null;
-            CancelButton = null;
-            AutoScroll = false;
-            ClientSize = new Size(ScaleLogical(1180), ScaleLogical(780));
-            MinimumSize = new Size(ScaleLogical(700), ScaleLogical(540));
-
             TaskCompletionSource<bool> navigation = new TaskCompletionSource<bool>();
             EventHandler<CoreWebView2NavigationCompletedEventArgs> completed = null;
+            EventHandler<CoreWebView2DOMContentLoadedEventArgs> domContentLoaded = null;
+            Action detachNavigationHandlers = null;
+            detachNavigationHandlers = delegate
+            {
+                CoreWebView2 core = appView.CoreWebView2;
+                if (core == null) return;
+                core.NavigationCompleted -= completed;
+                core.DOMContentLoaded -= domContentLoaded;
+            };
             completed = delegate(object sender, CoreWebView2NavigationCompletedEventArgs args)
+            {
+                Uri completedUri;
+                if (AcceptanceProgress != null)
+                    AcceptanceProgress("navigation-completed " + (args.IsSuccess ? "success" : "failed"));
+                if (!Uri.TryCreate(appView.CoreWebView2.Source, UriKind.Absolute, out completedUri)
+                    || completedUri.Scheme != allowed.Scheme
+                    || !string.Equals(completedUri.Host, allowed.Host, StringComparison.OrdinalIgnoreCase)
+                    || completedUri.Port != allowed.Port)
+                    return;
+                if (!args.IsSuccess)
+                {
+                    detachNavigationHandlers();
+                    navigation.TrySetException(new InvalidOperationException("The embedded RERC-e page did not finish navigation."));
+                }
+            };
+            domContentLoaded = delegate(object sender, CoreWebView2DOMContentLoadedEventArgs args)
             {
                 Uri completedUri;
                 if (!Uri.TryCreate(appView.CoreWebView2.Source, UriKind.Absolute, out completedUri)
@@ -975,15 +1035,24 @@ namespace RERCeDesktop
                     || !string.Equals(completedUri.Host, allowed.Host, StringComparison.OrdinalIgnoreCase)
                     || completedUri.Port != allowed.Port)
                     return;
-                appView.CoreWebView2.NavigationCompleted -= completed;
-                if (args.IsSuccess) navigation.TrySetResult(true);
-                else navigation.TrySetException(new InvalidOperationException("The embedded RERC-e page did not finish navigation."));
+                if (AcceptanceProgress != null) AcceptanceProgress("dom-content-loaded " + completedUri.GetLeftPart(UriPartial.Path));
+                detachNavigationHandlers();
+                navigation.TrySetResult(true);
             };
             appView.CoreWebView2.NavigationCompleted += completed;
+            appView.CoreWebView2.DOMContentLoaded += domContentLoaded;
+            if (AcceptanceProgress != null) AcceptanceProgress("webview-navigate " + allowed.GetLeftPart(UriPartial.Path));
             appView.CoreWebView2.Navigate(address);
+            Task finished = await Task.WhenAny(navigation.Task, Task.Delay(15000));
+            if (finished != navigation.Task)
+            {
+                detachNavigationHandlers();
+                throw new TimeoutException("The embedded RERC-e page did not finish navigation within 15 seconds.");
+            }
             await navigation.Task;
+            if (AcceptanceProgress != null) AcceptanceProgress("webview-dom");
             appView.Focus();
-            return await appView.CoreWebView2.ExecuteScriptAsync("JSON.stringify({title:document.title,projectVisible:!document.getElementById('projectStep').hidden,stepCount:document.querySelectorAll('.journey button').length,tokenStored:!!sessionStorage.getItem('rercie.tabSessionToken.v1'),pageOverflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1})");
+            return await appView.CoreWebView2.ExecuteScriptAsync("JSON.stringify({title:document.title,projectVisible:!document.getElementById('projectStep').hidden,stepCount:document.querySelectorAll('.journey button').length,tokenStored:!!sessionStorage.getItem('rercie.tabSessionToken.v1'),pageOverflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1,nativeHost:document.documentElement.classList.contains('native-host'),mascotAnimation:getComputedStyle(document.querySelector('.mascot-stage')).animationName})");
         }
 #endif
 
@@ -1022,9 +1091,10 @@ namespace RERCeDesktop
         private void ShowSetup()
         {
             browserPanel.Visible = false;
+            setupPanel.Visible = true;
+            setupPanel.BringToFront();
             AcceptButton = startButton;
             CancelButton = stopButton;
-            AutoScroll = true;
             ClientSize = new Size(ScaleLogical(760), ScaleLogical(540));
             MinimumSize = new Size(ScaleLogical(776), ScaleLogical(579));
             RefreshButtons();
