@@ -98,7 +98,7 @@ async function main() {
     }));
     assert(reducedAnimation.stage === "none" && reducedAnimation.imageLoaded, "Reduced-motion preference did not stop mascot animation");
     assert(reducedAnimation.overflow, "RERC-e mobile interface has horizontal overflow");
-    await reduced.page.screenshot({ path: path.join(outDir, "rercie-mobile-reduced-motion.png"), fullPage: true });
+    await reduced.page.screenshot({ path: path.join(outDir, "rerc-e-mobile-reduced-motion.png"), fullPage: true });
     assert(errors.length === 0 && reduced.errors.length === 0, `Browser errors: ${[...errors, ...reduced.errors].join(" | ")}`);
 
     const report = { status: "PASS", animation, importedProfile: { status: importedProfile.profileStatus }, reducedAnimation, errors };
