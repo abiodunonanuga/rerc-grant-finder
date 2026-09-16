@@ -180,7 +180,7 @@ def main() -> int:
         ),
         "",
     )
-    assert rercie_download == "https://github.com/henkelpress/rerc-grant-finder/releases/latest/download/RERCie-Setup.exe"
+    assert rercie_download == "https://github.com/henkelpress/rerc-grant-finder/releases/latest"
 
     meta_by_name = {
         attrs.get("name", "").lower(): attrs.get("content", "")
