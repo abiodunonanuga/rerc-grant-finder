@@ -8,11 +8,11 @@
   "catalog_source_commit": "bc435b9c8db32573f852f8dfb3fba71a9fd5e234",
   "release_binding_note": "This is the source commit used to generate the files. The QA report records the generated file hashes.",
   "site_sha256": {
-    "index.html": "ee79b84384fd8734388c5d1e56ced25157dd20c55c8ff8d011166e1724ad2c4d",
+    "index.html": "59d0b99864fc7cb0ee82c0dd39b78997bb4ab52946bb5608b0d29bfa03fd0b49",
     "styles.css": "7566e6d75c5e21b9c9f1bca3a3aad9f7d60687e41fd87ffe177cc1e97575614b",
     "rercie.css": "218bfb2993d46f1c396719bacbbb69cfcef47b6fccb7f76eb1f2c97a73ac475c",
     "app.js": "e3355f6a7ac67b84e1ae165dc6baf4905e04cf62536160509b947bfff30133a2",
-    "planner.js": "8487473e70ff1b75c5dbdbd284927adca753638092b837110930201c839b34f2",
+    "planner.js": "cba44d578ff303988ac8f2c298c6d100b5eec55c8b796b89c695edfbfe785185",
     "ui-i18n.js": "736a0f89476242c87ad7ae1a6020d1ed84a0f5a0613a823424c422fb130401f6",
     "deadline-utils.js": "9630163876672f5d0dd801ba18ab96b1c91b076a657e6b42f0130f7db959d402",
     "site-config.js": "7802db1651f5ea8e7d3f6b7bf5b5f055c4ca509e0990cda47aba7226d17881c5",
@@ -48,8 +48,8 @@
   "site_validation": {
     "status": "PASS",
     "checked_on": "2026-09-16",
-    "site_commit": "dbda7a95f90938a424aa4e3f30da376005bf8adf",
-    "browser_report_sha256": "ada019b408a3ed018c55df899db7b7999bb108541429b56cec5d870ed21915e3",
+    "site_commit": "a538c46b70b1c85a7ccf042cbb56ab57d04e683b",
+    "browser_report_sha256": "db3ffae83eaa1ed60f9db954579a3f748e2d22976492fea04feaf33b88500215",
     "note": "Site interface source and browser QA refreshed; the linked static catalog files and their original package source remain unchanged."
   }
 }
