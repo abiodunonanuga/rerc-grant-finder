@@ -82,8 +82,8 @@
     "local_generation": {
       "status": "PASS",
       "model": "Google Gemma 3 4B Instruct Q4_K_M",
-      "source_sha256": "2381a23e25110b08097c8a14f2d61b4081985b74f8518b7ca18a6cdeb4b4d12d",
-      "source_normalized_sha256": "2381a23e25110b08097c8a14f2d61b4081985b74f8518b7ca18a6cdeb4b4d12d",
+      "source_sha256": "7f92edfcf9085874bfc85af9d10577edd8a4a9bbe42564c2149caa9f16336443",
+      "source_normalized_sha256": "7f92edfcf9085874bfc85af9d10577edd8a4a9bbe42564c2149caa9f16336443",
       "raw_model_prose_exposed": true,
       "schema_constrained_batch": true,
       "protected_statement_validation": true,
@@ -104,7 +104,7 @@
           "warnings": []
         },
         "developed": {
-          "elapsed_seconds": 14.3,
+          "elapsed_seconds": 12.75,
           "fit_status": "screening",
           "model_written_sections": [
             "Project Need",
@@ -119,7 +119,7 @@
           "warnings": []
         },
         "detailed": {
-          "elapsed_seconds": 41.73,
+          "elapsed_seconds": 40.94,
           "fit_status": "closed",
           "model_written_sections": [
             "Project Need",
@@ -227,7 +227,7 @@
   },
   "verification_inputs": {
     "browser_contract_sha256": "35dfb522baec5ae8d6d16ff68345260fabcfe9053cceea58f96f9f0cf8119545",
-    "local_gemma_report_sha256": "3baccfd69455436ddffcf0d03fe99bc8398fcaa40b939e18935cf83f7d3ebaf7",
-    "native_windows_report_sha256": "b40240985bbe54f7519995eef2968524d6c0a7507e25f33eee02481a38d67893"
+    "local_gemma_report_sha256": "cadf9f98e8fb193fa1253f4583ad69b80e86e57f1464bbb9d7c73d8b3290edee",
+    "native_windows_report_sha256": "5c5905989ff5612288b6a7614b2f74c597a7344991023310c247841297dbf4f7"
   }
 }

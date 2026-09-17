@@ -3,7 +3,7 @@
     "evidence_stage":  "source",
     "app":  "RERC-e",
     "app_version":  "0.5.2",
-    "tested_utc":  "2026-09-17T00:03:36.3940954Z",
+    "tested_utc":  "2026-09-17T00:11:28.2544298Z",
     "os":  "Microsoft Windows NT 10.0.19045.0",
     "clr":  "4.0.30319.42000",
     "process_dpi_awareness":  2,
@@ -103,7 +103,7 @@
                           "rercie/packaging/RERC-e.exe.config":  "d7650d4b2368a73c610efe40a55af5251470949d12b4d86db3b62acbdd73d121",
                           "rercie/packaging/RERC-e.exe.manifest":  "8f0f5d5658bde98faa5e9a52f0fe3932c453ca9127ef68507aa654079001fe41",
                           "rercie/packaging/NativeAcceptanceHarness.cs":  "4023fdb503b0d6177a48a4d52c451e5c95a9680d42e5c1c460b234a38ff836db",
-                          "rercie/rercie_core.py":  "2381a23e25110b08097c8a14f2d61b4081985b74f8518b7ca18a6cdeb4b4d12d"
+                          "rercie/rercie_core.py":  "7f92edfcf9085874bfc85af9d10577edd8a4a9bbe42564c2149caa9f16336443"
                       },
     "evidence_files":  [
                            "native-acceptance.json",
