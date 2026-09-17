@@ -8,12 +8,12 @@
   "catalog_source_commit": "bc435b9c8db32573f852f8dfb3fba71a9fd5e234",
   "release_binding_note": "This is the source commit used to generate the files. The QA report records the generated file hashes.",
   "site_sha256": {
-    "index.html": "8d20e520918e28c533f8a6e3f37c17140a7f154972b284c0e7114202418dc588",
+    "index.html": "5e1e4a37e18e556a991bec97417333333a7b18f6cbe1763d78e56ebfa2acc37c",
     "styles.css": "1a54fa382c8195ba1831d1746ee488a929dc048b612ff234783224fca99e423e",
     "rercie.css": "218bfb2993d46f1c396719bacbbb69cfcef47b6fccb7f76eb1f2c97a73ac475c",
     "app.js": "976c156f56a01e97e42211911b15278ab82c09cfd75b63a385bb888952cae8ce",
     "planner.js": "16def58c0f0e39b26ab4005ad3ae03ff476a0dcc4a5ecc72c81dfaa36d10c23d",
-    "ui-i18n.js": "736a0f89476242c87ad7ae1a6020d1ed84a0f5a0613a823424c422fb130401f6",
+    "ui-i18n.js": "ebf8e00e4a2647e5feb60238244e494ae4269d6d38aa2db89663e87ad92d3671",
     "deadline-utils.js": "9630163876672f5d0dd801ba18ab96b1c91b076a657e6b42f0130f7db959d402",
     "site-config.js": "7802db1651f5ea8e7d3f6b7bf5b5f055c4ca509e0990cda47aba7226d17881c5",
     "data.js": "5a5bc827ca95418b76353bc2afffad695b2ca3ffeb3378a4695478f4855a6af9",
@@ -24,7 +24,7 @@
     "vendor/lucide.min.js": "3411692820cb8d47543f69496aa25fd603a358f4498046f41c508a5a3342210e",
     "assets/hero-outdoor.jpg": "c401e10950d2fbc0698ef754003010cc6045b5ecd2ed7ce230fce72715c3983c",
     "assets/rerc-e-eagle.jpg": "a549963e0172f9a8f27f9f78288cb974ef7a567ac0c9818fbb7f35b6d5a2e57a",
-    "README.md": "50ccb422bc0d75e133be2a89e5fd44358c199c741df81b5d074d76605cbd3556"
+    "README.md": "b29597af7319e7354e6ef10b5163b9941d10a534b9d827cc0f669c846552ff4a"
   },
   "source_sha256": {
     "data.js": "5a5bc827ca95418b76353bc2afffad695b2ca3ffeb3378a4695478f4855a6af9",
@@ -48,8 +48,8 @@
   "site_validation": {
     "status": "PASS",
     "checked_on": "2026-09-16",
-    "site_commit": "5d37d191d2eea668eafcfbc38f6af5fe62e8e89f",
-    "browser_report_sha256": "f83a155da26cc6593a4350cda725abad1cd0e704be11f3fc1be7eae094d401d4",
+    "site_commit": "e88a5d8865bed26cd4940de971cc78763ea55436",
+    "browser_report_sha256": "8e8f920bc3c8240dd38b3d12ff2e60cfaa681df82eb43153f951b5dd98c0bc73",
     "note": "Site interface source and browser QA refreshed; the linked static catalog files and their original package source remain unchanged."
   }
 }
