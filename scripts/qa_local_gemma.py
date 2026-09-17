@@ -154,6 +154,7 @@ def main() -> int:
     assert built["sparse"]["modelWrittenSections"] == []
     assert built["sparse"]["warnings"] == []
     assert set(built["developed"]["modelWrittenSections"]) == {"Project Need", "Proposed Work"}
+    assert "No crash data or economic impact estimate has been verified." not in built["developed"]["draft"]
     assert "[add local fact] Add the intended beneficiaries, measurable outcomes, baseline, and target." in built["developed"]["draft"]
     assert set(built["detailed"]["modelWrittenSections"]) == {"Project Need", "Proposed Work", "Community Benefit"}
     detailed = built["detailed"]["draft"]

@@ -1099,6 +1099,10 @@ _NEED_PATTERN = r"\b(?:need|problem|unsafe|lack|barrier|confus\w*|congest\w*|cra
 _ACTION_PATTERN = r"\b(?:plans? to|propos\w*|add\w*|construct(?:s|ed|ing)?|install\w*|replace\w*|reconstruct\w*|develop\w*|create\w*|repair\w*|renovat\w*|acquir\w*)\b"
 _WORK_PATTERN = r"\b(?:if funding|by (?:january|february|march|april|may|june|july|august|september|october|november|december)|proposed for (?:january|february|march|april|may|june|july|august|september|october|november|december)|will manage|will oversee|responsib\w*|procurement|grant administration|advertis\w*|open\w* by|design drawings|cost estimate|repeat\w*|one year after|timeline|schedule)\b"
 _BENEFIT_PATTERN = r"\b(?:benefit\w*|target|goal|intended|aim\w*|reduce\w*|increase\w*|eliminate\w*|provide\w*|protect\w*|improv\w*|accessib\w*|people served|visitor\w*|resident\w*|result\w*)\b"
+_UNAVAILABLE_EVIDENCE_PATTERN = re.compile(
+    r"\bno\b[^.]{0,80}\b(?:data|estimate|evidence|information)\b[^.]{0,80}\b(?:available|confirmed|documented|verified)\b",
+    re.IGNORECASE,
+)
 
 
 def section_evidence(
@@ -1128,7 +1132,10 @@ def section_evidence(
     if deadline and not _field_represented(deadline, supplied_budget_text):
         record_budget.append(f"The supplied funding record lists the deadline or availability as {deadline}.")
 
-    need = _unique_facts(_facts_matching(combined_notes, _NEED_PATTERN, 6), limit=6)
+    need = _unique_facts(
+        [fact for fact in _facts_matching(combined_notes, _NEED_PATTERN, 8) if not _UNAVAILABLE_EVIDENCE_PATTERN.search(fact)],
+        limit=6,
+    )
     if len(need) < 2:
         need = _unique_facts(need, _facts_matching(summary, _NEED_PATTERN, 2), limit=6)
     proposed = _unique_facts(
@@ -1761,7 +1768,7 @@ def build_draft(payload: dict[str, Any]) -> dict[str, Any]:
     attempted_sections: list[str] = []
     fit_conflict = _explicit_fit_conflict(payload)
     thresholds = {
-        "Project Need": 2,
+        "Project Need": 1,
         "Proposed Work": 2,
         "Community Benefit": 2,
         "Work Plan": 2,
