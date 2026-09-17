@@ -1,15 +1,90 @@
 {
   "status": "PASS",
   "tested_date": "2026-09-16",
-  "app_version": "0.5.1",
-  "model": "gemma-3-1b-it-Q4_K_M.gguf",
-  "source_sha256": "fa9dd0102b55660d543ac687f2c2b9673ad40c7b48ca39c79bec9b307b638776",
-  "source_normalized_sha256": "fa9dd0102b55660d543ac687f2c2b9673ad40c7b48ca39c79bec9b307b638776",
-  "verified_excerpt_count": 1,
-  "raw_model_prose_exposed": false,
-  "deterministic_scaffold": true,
+  "app_version": "0.5.2",
+  "model": "gemma-3-4b-it-Q4_K_M.gguf",
+  "loaded_model_ids": [
+    "C:\\Users\\abiod\\Documents\\Work\\rerc-grant-finder-qa-repairs\\rercie\\build-cache\\models\\gemma-3-4b-it-Q4_K_M.gguf"
+  ],
+  "source_sha256": "2381a23e25110b08097c8a14f2d61b4081985b74f8518b7ca18a6cdeb4b4d12d",
+  "source_normalized_sha256": "2381a23e25110b08097c8a14f2d61b4081985b74f8518b7ca18a6cdeb4b4d12d",
+  "raw_model_prose_exposed": true,
+  "schema_constrained_batch": true,
+  "protected_statement_validation": true,
+  "section_level_fallback": true,
   "unsupported_eligibility_claim_absent": true,
-  "evidence_scope": "Source-bound local Gemma inference passed against the final RERC-e source before packaging.",
+  "scenarios": {
+    "sparse": {
+      "elapsed_seconds": 0.01,
+      "fit_status": "screening",
+      "model_written_sections": [],
+      "fallback_sections": [
+        "Project Need",
+        "Proposed Work",
+        "Community Benefit",
+        "Work Plan",
+        "Budget and Match Notes"
+      ],
+      "raw_model_prose_exposed": false,
+      "warnings": []
+    },
+    "developed": {
+      "elapsed_seconds": 14.3,
+      "fit_status": "screening",
+      "model_written_sections": [
+        "Project Need",
+        "Proposed Work"
+      ],
+      "fallback_sections": [
+        "Community Benefit",
+        "Work Plan",
+        "Budget and Match Notes"
+      ],
+      "raw_model_prose_exposed": true,
+      "warnings": []
+    },
+    "detailed": {
+      "elapsed_seconds": 41.73,
+      "fit_status": "closed",
+      "model_written_sections": [
+        "Project Need",
+        "Proposed Work",
+        "Community Benefit"
+      ],
+      "fallback_sections": [
+        "Work Plan",
+        "Budget and Match Notes"
+      ],
+      "raw_model_prose_exposed": true,
+      "warnings": []
+    },
+    "mismatch": {
+      "elapsed_seconds": 0.0,
+      "fit_status": "conflict",
+      "model_written_sections": [],
+      "fallback_sections": [
+        "Project Need",
+        "Proposed Work",
+        "Community Benefit",
+        "Work Plan",
+        "Budget and Match Notes"
+      ],
+      "raw_model_prose_exposed": false,
+      "warnings": []
+    }
+  },
+  "rejection_probe": {
+    "status": "PASS",
+    "model_written_sections": [],
+    "fallback_sections": [
+      "Project Need",
+      "Proposed Work",
+      "Community Benefit",
+      "Work Plan",
+      "Budget and Match Notes"
+    ]
+  },
+  "evidence_scope": "Source-bound Gemma 3 4B inference passed sparse, developed, detailed, mismatch, and forced-rejection cases against the final RERC-e source before packaging.",
   "later_standalone_rerun": {
     "status": "PASS",
     "reason": "Completed against the pinned approved local Gemma service."
