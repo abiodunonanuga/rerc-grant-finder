@@ -1,12 +1,12 @@
 {
-  "app_version": "0.5.1",
+  "app_version": "0.5.2",
   "status": "SOURCE_PASS",
   "tested_date": "2026-09-16",
   "evidence_stage": "source",
   "checks": {
     "source_smoke": {
       "status": "PASS",
-      "version": "0.5.1",
+      "version": "0.5.2",
       "catalog_formats": 2,
       "territories": 5,
       "handoff_schema": "rerc-e-handoff",
@@ -27,7 +27,7 @@
         "key_direct_fallback",
         "no_key_to_gemma"
       ],
-      "model": "gemma-3-1b-it-Q4_K_M.gguf",
+      "model": "gemma-3-4b-it-Q4_K_M.gguf",
       "docx_minimum_bytes": 3000
     },
     "native_launcher": {
@@ -81,11 +81,73 @@
     },
     "local_generation": {
       "status": "PASS",
-      "model": "Google Gemma 3 1B Instruct Q4_K_M",
-      "source_sha256": "fa9dd0102b55660d543ac687f2c2b9673ad40c7b48ca39c79bec9b307b638776",
-      "source_normalized_sha256": "fa9dd0102b55660d543ac687f2c2b9673ad40c7b48ca39c79bec9b307b638776",
-      "verified_excerpt_count": 1,
-      "raw_model_prose_exposed": false,
+      "model": "Google Gemma 3 4B Instruct Q4_K_M",
+      "source_sha256": "2381a23e25110b08097c8a14f2d61b4081985b74f8518b7ca18a6cdeb4b4d12d",
+      "source_normalized_sha256": "2381a23e25110b08097c8a14f2d61b4081985b74f8518b7ca18a6cdeb4b4d12d",
+      "raw_model_prose_exposed": true,
+      "schema_constrained_batch": true,
+      "protected_statement_validation": true,
+      "section_level_fallback": true,
+      "scenarios": {
+        "sparse": {
+          "elapsed_seconds": 0.01,
+          "fit_status": "screening",
+          "model_written_sections": [],
+          "fallback_sections": [
+            "Project Need",
+            "Proposed Work",
+            "Community Benefit",
+            "Work Plan",
+            "Budget and Match Notes"
+          ],
+          "raw_model_prose_exposed": false,
+          "warnings": []
+        },
+        "developed": {
+          "elapsed_seconds": 14.3,
+          "fit_status": "screening",
+          "model_written_sections": [
+            "Project Need",
+            "Proposed Work"
+          ],
+          "fallback_sections": [
+            "Community Benefit",
+            "Work Plan",
+            "Budget and Match Notes"
+          ],
+          "raw_model_prose_exposed": true,
+          "warnings": []
+        },
+        "detailed": {
+          "elapsed_seconds": 41.73,
+          "fit_status": "closed",
+          "model_written_sections": [
+            "Project Need",
+            "Proposed Work",
+            "Community Benefit"
+          ],
+          "fallback_sections": [
+            "Work Plan",
+            "Budget and Match Notes"
+          ],
+          "raw_model_prose_exposed": true,
+          "warnings": []
+        },
+        "mismatch": {
+          "elapsed_seconds": 0.0,
+          "fit_status": "conflict",
+          "model_written_sections": [],
+          "fallback_sections": [
+            "Project Need",
+            "Proposed Work",
+            "Community Benefit",
+            "Work Plan",
+            "Budget and Match Notes"
+          ],
+          "raw_model_prose_exposed": false,
+          "warnings": []
+        }
+      },
       "later_standalone_rerun_status": "PASS"
     },
     "docx_export": {
@@ -119,7 +181,7 @@
     },
     "licensing_and_runtime": {
       "status": "PASS",
-      "approved_model": "gemma-3-1b-it-Q4_K_M.gguf",
+      "approved_model": "gemma-3-4b-it-Q4_K_M.gguf",
       "llama_cpp_release": "b9987",
       "runtime_sha256_pinned": true,
       "model_sha256_pinned": true,
@@ -165,7 +227,7 @@
   },
   "verification_inputs": {
     "browser_contract_sha256": "35dfb522baec5ae8d6d16ff68345260fabcfe9053cceea58f96f9f0cf8119545",
-    "local_gemma_report_sha256": "6e6a290b77edd2abe1732a6f2cbadd2c0dbe295124971eb1c39282f25dcdcd3b",
-    "native_windows_report_sha256": "919015de6e3d2c683905afc693b09ec3c515b75e71a175486fc1bed80efa0e85"
+    "local_gemma_report_sha256": "3baccfd69455436ddffcf0d03fe99bc8398fcaa40b939e18935cf83f7d3ebaf7",
+    "native_windows_report_sha256": "b40240985bbe54f7519995eef2968524d6c0a7507e25f33eee02481a38d67893"
   }
 }

@@ -1,101 +1,125 @@
 {
-  "status": "PASS",
-  "evidence_stage": "source",
-  "app": "RERC-e",
-  "app_version": "0.5.1",
-  "tested_utc": "2026-09-16T21:44:22.7971625Z",
-  "os": "Microsoft Windows NT 10.0.19045.0",
-  "clr": "4.0.30319.42000",
-  "process_dpi_awareness": 2,
-  "per_monitor_v2": true,
-  "actual_monitor": {
-    "dpi": 144,
-    "scale_percent": 150,
-    "layout_pass": true,
-    "clipped_text": [],
-    "outside_parent": [],
-    "unnamed_interactive": [],
-    "download_button": {
-      "width": 285,
-      "height": 69,
-      "text_clipped": false
-    }
-  },
-  "simulated_geometry": [
-    {
-      "scale": "100%",
-      "evaluated_dpi": 96,
-      "status": "PASS",
-      "clipped_text": [],
-      "outside_parent": [],
-      "unnamed_interactive": []
-    },
-    {
-      "scale": "150%",
-      "evaluated_dpi": 144,
-      "status": "PASS",
-      "clipped_text": [],
-      "outside_parent": [],
-      "unnamed_interactive": []
-    },
-    {
-      "scale": "200%",
-      "evaluated_dpi": 192,
-      "status": "PASS",
-      "clipped_text": [],
-      "outside_parent": [],
-      "unnamed_interactive": []
-    }
-  ],
-  "app_window_host": {
-    "status": "PASS",
-    "mode": "embedded WebView2 composition",
-    "same_window_transition": true,
-    "composition_visual_host": true,
-    "control_type": "Microsoft.Web.WebView2.Wpf.WebView2CompositionControl",
-    "address_bar_visible": false,
-    "security": {
-      "launch_code_ttl_seconds": 60,
-      "full_session_token_in_url": false,
-      "redirected_to_native": true,
-      "httponly_cookie": true,
-      "cookie_authorized_health": true,
-      "replay_status": 403
-    }
-  },
-  "web_content": {
-    "status": "PASS",
-    "title": "RERC-e Local Grant-Writing Guide",
-    "step_count": 3,
-    "token_stored": false,
-    "cookie_auth": true,
-    "local_session": true,
-    "page_overflow": false,
-    "live_content_visible": true,
-    "acceptance_runtime": "153.0.4234.32"
-  },
-  "source_sha256": {
-    "rercie/packaging/RERC-eLauncher.cs": "0329531231b7ff8a0d23deb6a394bd404670ea5f86ab598e6b8a778c1a610932",
-    "rercie/packaging/RERC-e.exe.config": "d7650d4b2368a73c610efe40a55af5251470949d12b4d86db3b62acbdd73d121",
-    "rercie/packaging/RERC-e.exe.manifest": "8f0f5d5658bde98faa5e9a52f0fe3932c453ca9127ef68507aa654079001fe41",
-    "rercie/packaging/NativeAcceptanceHarness.cs": "4023fdb503b0d6177a48a4d52c451e5c95a9680d42e5c1c460b234a38ff836db",
-    "rercie/rercie_core.py": "fa9dd0102b55660d543ac687f2c2b9673ad40c7b48ca39c79bec9b307b638776"
-  },
-  "evidence_files": [
-    "native-acceptance.json",
-    "acceptance-progress.txt",
-    "service-requests.log",
-    "setup-current-dpi.png",
-    "setup-100-simulated.png",
-    "setup-150-simulated.png",
-    "setup-200-simulated.png",
-    "native-shell-with-webview.png",
-    "embedded-rerc-e.png"
-  ],
-  "limitations": [
-    "The actual native-window run used this computer's 150% display scale.",
-    "The 100% and 200% results are off-monitor geometry and font simulations; final release acceptance still requires clean Windows 10 and Windows 11 machines.",
-    "The embedded browser-content run uses the same WebView2 composition host as the shipped launcher, but movement feel still requires a visible user acceptance pass on the target computer.",
-    "The source-built executable is unsigned and is not a public release candidate."
-  ]
+    "status":  "PASS",
+    "evidence_stage":  "source",
+    "app":  "RERC-e",
+    "app_version":  "0.5.2",
+    "tested_utc":  "2026-09-17T00:03:36.3940954Z",
+    "os":  "Microsoft Windows NT 10.0.19045.0",
+    "clr":  "4.0.30319.42000",
+    "process_dpi_awareness":  2,
+    "per_monitor_v2":  true,
+    "actual_monitor":  {
+                           "dpi":  144,
+                           "scale_percent":  150,
+                           "layout_pass":  true,
+                           "clipped_text":  [
+
+                                            ],
+                           "outside_parent":  [
+
+                                              ],
+                           "unnamed_interactive":  [
+
+                                                   ],
+                           "download_button":  {
+                                                   "width":  285,
+                                                   "height":  69,
+                                                   "text_clipped":  false
+                                               }
+                       },
+    "simulated_geometry":  [
+                               {
+                                   "scale":  "100%",
+                                   "evaluated_dpi":  96,
+                                   "status":  "PASS",
+                                   "clipped_text":  [
+
+                                                    ],
+                                   "outside_parent":  [
+
+                                                      ],
+                                   "unnamed_interactive":  [
+
+                                                           ]
+                               },
+                               {
+                                   "scale":  "150%",
+                                   "evaluated_dpi":  144,
+                                   "status":  "PASS",
+                                   "clipped_text":  [
+
+                                                    ],
+                                   "outside_parent":  [
+
+                                                      ],
+                                   "unnamed_interactive":  [
+
+                                                           ]
+                               },
+                               {
+                                   "scale":  "200%",
+                                   "evaluated_dpi":  192,
+                                   "status":  "PASS",
+                                   "clipped_text":  [
+
+                                                    ],
+                                   "outside_parent":  [
+
+                                                      ],
+                                   "unnamed_interactive":  [
+
+                                                           ]
+                               }
+                           ],
+    "app_window_host":  {
+                            "status":  "PASS",
+                            "mode":  "embedded WebView2 composition",
+                            "same_window_transition":  true,
+                            "composition_visual_host":  true,
+                            "control_type":  "Microsoft.Web.WebView2.Wpf.WebView2CompositionControl",
+                            "address_bar_visible":  false,
+                            "security":  {
+                                             "launch_code_ttl_seconds":  60,
+                                             "full_session_token_in_url":  false,
+                                             "redirected_to_native":  true,
+                                             "httponly_cookie":  true,
+                                             "cookie_authorized_health":  true,
+                                             "replay_status":  403
+                                         }
+                        },
+    "web_content":  {
+                        "status":  "PASS",
+                        "title":  "RERC-e Local Grant-Writing Guide",
+                        "step_count":  3,
+                        "token_stored":  false,
+                        "cookie_auth":  true,
+                        "local_session":  true,
+                        "page_overflow":  false,
+                        "live_content_visible":  true,
+                        "acceptance_runtime":  "153.0.4234.32"
+                    },
+    "source_sha256":  {
+                          "rercie/packaging/RERC-eLauncher.cs":  "053894e6d9c88b884e55e946595c2b8f99e5e951ddeb4d64917e404e23702890",
+                          "rercie/packaging/RERC-e.exe.config":  "d7650d4b2368a73c610efe40a55af5251470949d12b4d86db3b62acbdd73d121",
+                          "rercie/packaging/RERC-e.exe.manifest":  "8f0f5d5658bde98faa5e9a52f0fe3932c453ca9127ef68507aa654079001fe41",
+                          "rercie/packaging/NativeAcceptanceHarness.cs":  "4023fdb503b0d6177a48a4d52c451e5c95a9680d42e5c1c460b234a38ff836db",
+                          "rercie/rercie_core.py":  "2381a23e25110b08097c8a14f2d61b4081985b74f8518b7ca18a6cdeb4b4d12d"
+                      },
+    "evidence_files":  [
+                           "native-acceptance.json",
+                           "acceptance-progress.txt",
+                           "service-requests.log",
+                           "setup-current-dpi.png",
+                           "setup-100-simulated.png",
+                           "setup-150-simulated.png",
+                           "setup-200-simulated.png",
+                           "native-shell-with-webview.png",
+                           "embedded-rerc-e.png"
+                       ],
+    "limitations":  [
+                        "The actual native-window run used this computer\u0027s 150% display scale.",
+                        "The 100% and 200% results are off-monitor geometry and font simulations; final release acceptance still requires clean Windows 10 and Windows 11 machines.",
+                        "The embedded browser-content run uses the same WebView2 composition host as the shipped launcher, but movement feel still requires a visible user acceptance pass on the target computer.",
+                        "The source-built executable is unsigned and is not a public release candidate."
+                    ]
 }
