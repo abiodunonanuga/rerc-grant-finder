@@ -6,8 +6,8 @@
   "loaded_model_ids": [
     "C:\\Users\\abiod\\Documents\\Work\\rerc-grant-finder-qa-repairs\\rercie\\build-cache\\models\\gemma-3-4b-it-Q4_K_M.gguf"
   ],
-  "source_sha256": "2381a23e25110b08097c8a14f2d61b4081985b74f8518b7ca18a6cdeb4b4d12d",
-  "source_normalized_sha256": "2381a23e25110b08097c8a14f2d61b4081985b74f8518b7ca18a6cdeb4b4d12d",
+  "source_sha256": "7f92edfcf9085874bfc85af9d10577edd8a4a9bbe42564c2149caa9f16336443",
+  "source_normalized_sha256": "7f92edfcf9085874bfc85af9d10577edd8a4a9bbe42564c2149caa9f16336443",
   "raw_model_prose_exposed": true,
   "schema_constrained_batch": true,
   "protected_statement_validation": true,
@@ -29,7 +29,7 @@
       "warnings": []
     },
     "developed": {
-      "elapsed_seconds": 14.3,
+      "elapsed_seconds": 12.75,
       "fit_status": "screening",
       "model_written_sections": [
         "Project Need",
@@ -44,7 +44,7 @@
       "warnings": []
     },
     "detailed": {
-      "elapsed_seconds": 41.73,
+      "elapsed_seconds": 40.94,
       "fit_status": "closed",
       "model_written_sections": [
         "Project Need",
